@@ -1,0 +1,54 @@
+[
+  {
+    "id": "shura-news-official",
+    "name": "Shura News Official",
+    "url": "https://shura.example/official/news/rss.xml",
+    "type": "rss",
+    "category": [
+      "news",
+      "general"
+    ],
+    "classification": "safe",
+    "verified": true,
+    "description": "النشرة الرسمية لأخبار مشروع Shura",
+    "tags": [
+      "official",
+      "news",
+      "shura"
+    ]
+  },
+  {
+    "id": "example-docs",
+    "name": "Example Public Docs",
+    "url": "https://docs.example.com/feed.xml",
+    "type": "rss",
+    "category": [
+      "documentation",
+      "technology"
+    ],
+    "classification": "safe",
+    "verified": true,
+    "description": "وثائق تقنية عامة تابعة لمشاريع موثوقة",
+    "tags": [
+      "docs",
+      "technology"
+    ]
+  },
+  {
+    "id": "example-tutorial",
+    "name": "Example Tutorial Hub",
+    "url": "https://tutorials.example.com/rss",
+    "type": "rss",
+    "category": [
+      "education",
+      "technology"
+    ],
+    "classification": "safe",
+    "verified": true,
+    "description": "دروس تعليمية عامة ومحتوى آمن",
+    "tags": [
+      "education",
+      "tutorials"
+    ]
+  }
+]
