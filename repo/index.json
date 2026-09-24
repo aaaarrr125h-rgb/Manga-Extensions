@@ -7012,8 +7012,8 @@
       {
         "name": "XOXO Comics",
         "packageName": "eu.kanade.tachiyomi.extension.en.xoxocomics",
-        "versionCode": "106013",
-        "versionName": "1.6.13",
+        "versionCode": "106014",
+        "versionName": "1.6.14",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
@@ -7024,9 +7024,9 @@
           }
         ],
         "resources": {
-          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/4217666-1/tachiyomi-en.xoxocomics-v1.6.13.apk",
+          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-en.xoxocomics-v1.6.14.apk",
           "iconUrl": "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/en/xoxocomics/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/19c8e5f-1/tachiyomi-en.xoxocomics-v1.6.13.jar"
+          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-en.xoxocomics-v1.6.14.jar"
         },
         "extensionLib": "1.6"
       },
@@ -13038,8 +13038,8 @@
       {
         "name": "MoeTruyen",
         "packageName": "eu.kanade.tachiyomi.extension.vi.moetruyen",
-        "versionCode": "106014",
-        "versionName": "1.6.14",
+        "versionCode": "106015",
+        "versionName": "1.6.15",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
@@ -13054,17 +13054,17 @@
           }
         ],
         "resources": {
-          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/62a33ed/tachiyomi-vi.moetruyen-v1.6.14.apk",
+          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.moetruyen-v1.6.15.apk",
           "iconUrl": "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/vi/moetruyen/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/62a33ed/tachiyomi-vi.moetruyen-v1.6.14.jar"
+          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.moetruyen-v1.6.15.jar"
         },
         "extensionLib": "1.6"
       },
       {
         "name": "NetTruyenCO (unoriginal)",
         "packageName": "eu.kanade.tachiyomi.extension.vi.nettruyenco",
-        "versionCode": "106016",
-        "versionName": "1.6.16",
+        "versionCode": "106017",
+        "versionName": "1.6.17",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
@@ -13075,9 +13075,9 @@
           }
         ],
         "resources": {
-          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/4217666-2/tachiyomi-vi.nettruyenco-v1.6.16.apk",
+          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nettruyenco-v1.6.17.apk",
           "iconUrl": "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/vi/nettruyenco/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/19c8e5f-2/tachiyomi-vi.nettruyenco-v1.6.16.jar"
+          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nettruyenco-v1.6.17.jar"
         },
         "extensionLib": "1.6"
       },
@@ -13105,8 +13105,8 @@
       {
         "name": "NetTruyenX (unoriginal)",
         "packageName": "eu.kanade.tachiyomi.extension.vi.nettruyenx",
-        "versionCode": "106009",
-        "versionName": "1.6.9",
+        "versionCode": "106010",
+        "versionName": "1.6.10",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
@@ -13117,17 +13117,17 @@
           }
         ],
         "resources": {
-          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/4217666-2/tachiyomi-vi.nettruyenx-v1.6.9.apk",
+          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nettruyenx-v1.6.10.apk",
           "iconUrl": "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/vi/nettruyenx/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/19c8e5f-2/tachiyomi-vi.nettruyenx-v1.6.9.jar"
+          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nettruyenx-v1.6.10.jar"
         },
         "extensionLib": "1.6"
       },
       {
         "name": "NhatTruyen",
         "packageName": "eu.kanade.tachiyomi.extension.vi.nhattruyen",
-        "versionCode": "106029",
-        "versionName": "1.6.29",
+        "versionCode": "106030",
+        "versionName": "1.6.30",
         "contentWarning": "CONTENT_WARNING_SAFE",
         "sources": [
           {
@@ -13138,9 +13138,9 @@
           }
         ],
         "resources": {
-          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/4217666-2/tachiyomi-vi.nhattruyen-v1.6.29.apk",
+          "apkUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nhattruyen-v1.6.30.apk",
           "iconUrl": "https://cdn.jsdelivr.net/gh/keiyoushi/extensions-source@main/src/vi/nhattruyen/res/mipmap-xhdpi/ic_launcher.png",
-          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/19c8e5f-2/tachiyomi-vi.nhattruyen-v1.6.29.jar"
+          "jarUrl": "https://github.com/keiyoushi/extensions/releases/download/bda9041/tachiyomi-vi.nhattruyen-v1.6.30.jar"
         },
         "extensionLib": "1.6"
       },
