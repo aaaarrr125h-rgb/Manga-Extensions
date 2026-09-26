@@ -1,0 +1,5138 @@
+{
+ "eu.kanade.tachiyomi.extension.all.ahottie": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.all.akuma": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.all.allporncomicsco": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.all.asmhentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.all.baobua": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.all.beauty3600000": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.all.buondua": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.all.comicfury": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.all.comicklive": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.all.comicsvalley": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.all.coomer": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104024"
+ },
+ "eu.kanade.tachiyomi.extension.all.cosplaytele": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.all.danbooru": {
+  "at": 1790415730,
+  "reason": "url:nsfw-term:booru",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.deviantart": {
+  "at": 1790416848,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.all.doujiva": {
+  "at": 1790416848,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.all.e621": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.elitebabes": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.everiaclub": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104012"
+ },
+ "eu.kanade.tachiyomi.extension.all.everiaclubcom": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.femjoyhunter": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.foamgirl": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.all.foolslidecustomizable": {
+  "at": 1790437837,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.all.fourkhd": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.ftvhunter": {
+  "at": 1790418699,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.globalcomix": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.hdoujin": {
+  "at": 1790418702,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.hennojin": {
+  "at": 1790418703,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentai3": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaicosplay": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaienvy": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaiera": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaifox": {
+  "at": 1790418707,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106018"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaihand": {
+  "at": 1790418707,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104011"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentailoop": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentairox": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.all.hentaizap": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.all.honeytoon": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.imhentai": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106025"
+ },
+ "eu.kanade.tachiyomi.extension.all.izneo": {
+  "at": 1790418710,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.all.jjcos": {
+  "at": 1790418710,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.all.joymiihub": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.junmeitu": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.all.kagane": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106031"
+ },
+ "eu.kanade.tachiyomi.extension.all.kemono": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104025"
+ },
+ "eu.kanade.tachiyomi.extension.all.kiutaku": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.all.koharu": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104020"
+ },
+ "eu.kanade.tachiyomi.extension.all.komga": {
+  "at": 1790437839,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106070"
+ },
+ "eu.kanade.tachiyomi.extension.all.lanraragi": {
+  "at": 1790437840,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "104025"
+ },
+ "eu.kanade.tachiyomi.extension.all.lunaranime": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.all.luscious": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104032"
+ },
+ "eu.kanade.tachiyomi.extension.all.manga18fx": {
+  "at": 1790418714,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.all.manga18me": {
+  "at": 1790418717,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangaball": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangacrazy": {
+  "at": 1790418717,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangadex": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangadna": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangafire": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106034"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangaforfree": {
+  "at": 1790418751,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangataro": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104011"
+ },
+ "eu.kanade.tachiyomi.extension.all.mangaup": {
+  "at": 1790437488,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.all.manhuarm": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104077"
+ },
+ "eu.kanade.tachiyomi.extension.all.manhwa18cc": {
+  "at": 1790437489,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106063"
+ },
+ "eu.kanade.tachiyomi.extension.all.manhwa18net": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.all.manhwaclubnet": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.all.manhwadashraw": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.all.manta": {
+  "at": 1790418767,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.all.metarthunter": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.miauscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.all.misskon": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.all.mitaku": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.myreadingmanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104061"
+ },
+ "eu.kanade.tachiyomi.extension.all.nhentaicom": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.all.nhentaito": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.all.nhentaixxx": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:xxx",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.all.niadd": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.all.novelcool": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.all.onisaga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.all.ososedki": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.pandachaika": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.pawchive": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.all.photos18": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.all.pixiv": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104012"
+ },
+ "eu.kanade.tachiyomi.extension.all.playmatehunter": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.pornpics": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.rokuhentai": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.saymanhwa": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.all.seraphicdeviltry": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.all.simplycosplay": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.simplyhentai": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.all.stashapp": {
+  "at": 1790437842,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.all.tappytoon": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.all.toomics": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.all.twicomi": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.v2ph": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.all.xarthunter": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.all.xasiatalbums": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.xcomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.all.xgmn": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.xiutaku": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.all.yabai": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.all.yaoimangaonline": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.all.yellownote": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.ar.arabhentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ar.arabmanhwa": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.ar.arabshentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.ar.arabtoons": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.ar.arbxcomix": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.ar.duskoryvile": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ar.empirewebtoon": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106061"
+ },
+ "eu.kanade.tachiyomi.extension.ar.goonscans": {
+  "at": 1790415729,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ar.hentailek": {
+  "at": 1790415730,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ar.hentaiman": {
+  "at": 1790416848,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ar.hentaislayer": {
+  "at": 1790437471,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ar.mangahub": {
+  "at": 1790418699,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.ar.mangalek": {
+  "at": 1790418701,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106068"
+ },
+ "eu.kanade.tachiyomi.extension.ar.mangalionz": {
+  "at": 1790418703,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.ar.mangaspark": {
+  "at": 1790418705,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106063"
+ },
+ "eu.kanade.tachiyomi.extension.ar.mangatuk": {
+  "at": 1790418707,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104052"
+ },
+ "eu.kanade.tachiyomi.extension.ar.manhatic": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.ar.paradisebl": {
+  "at": 1790418710,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.ar.rocksmanga": {
+  "at": 1790418711,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.ar.yonabar": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.ar.yurimoonsub": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.ca.fansubscathentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.cs.evilproduction": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.allanime": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106029"
+ },
+ "eu.kanade.tachiyomi.extension.en.allporncomic": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.allporncomicio": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.anisascans": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.apcomics": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.aquamanga": {
+  "at": 1790437471,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106069"
+ },
+ "eu.kanade.tachiyomi.extension.en.arenascans": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.armageddon": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.artlapsa": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106027"
+ },
+ "eu.kanade.tachiyomi.extension.en.asiatoon": {
+  "at": 1790415729,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.en.asterscans": {
+  "at": 1790416850,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.athreascans": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.atsumaru": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106024"
+ },
+ "eu.kanade.tachiyomi.extension.en.azuki": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.en.bakkin": {
+  "at": 1790437476,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.bakkinselfhosted": {
+  "at": 1790437836,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.bbato": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.bookwalker": {
+  "at": 1790418701,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.buttsmithy": {
+  "at": 1790418705,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.en.cmanhua": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.cocomic": {
+  "at": 1790418707,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.comicasura": {
+  "at": 1790418708,
+  "reason": "url:brand-typosquat:asura",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.en.comiccx": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.comickfan": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.comicland": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.comix": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106040"
+ },
+ "eu.kanade.tachiyomi.extension.en.coolmic": {
+  "at": 1790418710,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.en.cucumbermanga": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.culturedworks": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.cutiecomics": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.en.dankefurslesen": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.en.decadencescans": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.divascans": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106027"
+ },
+ "eu.kanade.tachiyomi.extension.en.doujinio": {
+  "at": 1790418713,
+  "reason": "url:nsfw-word:[a-z0-9])doujin(?![a",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.en.doujins": {
+  "at": 1790418714,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.en.dynasty": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.eggporncomics": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.eighteenporncomic": {
+  "at": 1790418719,
+  "reason": "url:nsfw-term:18p",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.eightmuses": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.emaqi": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.erisscans": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106021"
+ },
+ "eu.kanade.tachiyomi.extension.en.ero18x": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.erofus": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.ezmanga": {
+  "at": 1790437498,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.fairyscans": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104034"
+ },
+ "eu.kanade.tachiyomi.extension.en.frierenonline": {
+  "at": 1790418768,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.galaxydegenscans": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.en.galaxymanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.gedecomix": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.gingertoon": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.girlstop": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.gourmetscans": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hachirumi": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentai3zcc": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentai4free": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaihere": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaikisu": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaikun": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentainexus": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106020"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentairead": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104062"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaireadio": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaisco": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaixcomic": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaixdickgirl": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentaixyuri": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hentara": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.heytoon": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.en.hiperdex": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106089"
+ },
+ "eu.kanade.tachiyomi.extension.en.hm2d": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.hotcomics": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.hunlightcomics": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.hyakuro": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.infinityscans": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.en.inkr": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.irovedout": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.en.jinmangas": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.kaizenscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106021"
+ },
+ "eu.kanade.tachiyomi.extension.en.kaliscancom": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104025"
+ },
+ "eu.kanade.tachiyomi.extension.en.kappabeast": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.kingcomix": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.kingofshojo": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.kissmangain": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.en.kodansha": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.ksgroupscans": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.kunmangaonline": {
+  "at": 1790437499,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.kuramanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.en.likemanga": {
+  "at": 1790437500,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.likemangain": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.lilymanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106062"
+ },
+ "eu.kanade.tachiyomi.extension.en.linkmanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.lunatoons": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106021"
+ },
+ "eu.kanade.tachiyomi.extension.en.lusttoon": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.madaradex": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.en.mahouirexnohentaikarte": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.manga18club": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.manga18free": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.manga18x": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangabat": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106023"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangabay": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangabuddy": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106034"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangadass": {
+  "at": 1790437500,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangade": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangadistrict": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106073"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangadotnet": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106023"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangadrama": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104052"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangaforfreecom": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangafox": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangafoxfun": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangafreak": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104015"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangafree": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangagg": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangago": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106040"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangahe": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangahen": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangahere": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangahereonl": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangahubio": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106046"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangakakalot": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106024"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangakakalotfun": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangakatana": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangalix": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangamaniacs": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangamelon": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.manganel": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.manganelo": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106022"
+ },
+ "eu.kanade.tachiyomi.extension.en.manganow": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangaonlinefun": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangaowlio": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangapill": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104009"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangarawclub": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104034"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangareadercc": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangareadorg": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangatoday": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangatown": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangatx": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mangauno": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhuatop": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhuazonghe": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwa18": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104014"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwa68": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwabuddy": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwacomics": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwaden": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwahub": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwalike": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwamanhua": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwaread": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwareads": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwatoon": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwatop": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwaxxl": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwaz": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106042"
+ },
+ "eu.kanade.tachiyomi.extension.en.manhwazone": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.mehgazone": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.en.mgreadio": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.en.milftoon": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:milf",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.multporn": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.en.murimscan": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106050"
+ },
+ "eu.kanade.tachiyomi.extension.en.myadultcomics": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.myhentaicomics": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.en.myhentaigallery": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.en.newmanhwa": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106035"
+ },
+ "eu.kanade.tachiyomi.extension.en.nexcomic": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.nineanime": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.en.ninehentai": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.en.ninekon": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.nixmanga": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.en.nyrascans": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106021"
+ },
+ "eu.kanade.tachiyomi.extension.en.octopusmanga": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.oglaf": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.en.ohjoysextoy": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.en.omegascans": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106051"
+ },
+ "eu.kanade.tachiyomi.extension.en.onemangaco": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.onemangainfo": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.en.onlythebesthentai": {
+  "at": 1790418769,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.oppaistream": {
+  "at": 1790418769,
+  "reason": "url:nsfw-word:[a-z0-9])oppai(?![a-",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.en.orchisasia": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.paradisescans": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106022"
+ },
+ "eu.kanade.tachiyomi.extension.en.paritehaber": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.petrotechsociety": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.porncomix": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104049"
+ },
+ "eu.kanade.tachiyomi.extension.en.qiscans": {
+  "at": 1790437502,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.en.ravenscans": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.en.readchainsawmanmangaonline": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.en.readhorimiyaonline": {
+  "at": 1790437504,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.reimanga": {
+  "at": 1790418769,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.en.revivalscans": {
+  "at": 1790418769,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.rosesquadscans": {
+  "at": 1790418798,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.s2manga": {
+  "at": 1790418798,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.en.sacachispa": {
+  "at": 1790418798,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.en.scansgg": {
+  "at": 1790418798,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.setsuscans": {
+  "at": 1790418811,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.en.spyfakku": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104016"
+ },
+ "eu.kanade.tachiyomi.extension.en.sunshinebutterflyscans": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.tapastic": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.teamshadowi": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.templescan": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106052"
+ },
+ "eu.kanade.tachiyomi.extension.en.theblank": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104058"
+ },
+ "eu.kanade.tachiyomi.extension.en.theduckwebcomics": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.en.todaymanga": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.en.toongod": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.en.toonily": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106071"
+ },
+ "eu.kanade.tachiyomi.extension.en.toonilyme": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.en.toonizy": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.toonz": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.topmanhua": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106062"
+ },
+ "eu.kanade.tachiyomi.extension.en.topmanhuafan": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.topmanhuanet": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.vixenlogic": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.en.vyvymanga": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106043"
+ },
+ "eu.kanade.tachiyomi.extension.en.wearehunger": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.webtoonscan": {
+  "at": 1790418811,
+  "reason": "url:brand-typosquat:webtoons",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.webtoonxyz": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.en.weebcentral": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106025"
+ },
+ "eu.kanade.tachiyomi.extension.en.xlecx": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.xomanga": {
+  "at": 1790418811,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.xyzcomics": {
+  "at": 1790418811,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.en.yakshacomics": {
+  "at": 1790418812,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.en.yaoihot": {
+  "at": 1790418812,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.en.yaoihub": {
+  "at": 1790418812,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.en.yaoiscan": {
+  "at": 1790418812,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.en.zazamanga": {
+  "at": 1790418812,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.en.zinmanga": {
+  "at": 1790418812,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.es.akaya": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.es.anzmanga": {
+  "at": 1790437465,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "104015"
+ },
+ "eu.kanade.tachiyomi.extension.es.apollcomics": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.es.asialotus": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.barmanga": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106066"
+ },
+ "eu.kanade.tachiyomi.extension.es.begatranslation": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.es.bloomscans": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.es.bymichiscan": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.capibaratraductor": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.es.catharsisworld": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104066"
+ },
+ "eu.kanade.tachiyomi.extension.es.catmanhwas": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104053"
+ },
+ "eu.kanade.tachiyomi.extension.es.celestialmoon": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.es.chochox": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.es.codearc": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.es.colorcitoscan": {
+  "at": 1790415729,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.es.darkroomfansub": {
+  "at": 1790437823,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.es.doujinhentai": {
+  "at": 1790416850,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.doujinshell": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.es.dragontranslationorg": {
+  "at": 1790437471,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.es.dynasty": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.es.emperorscan": {
+  "at": 1790437473,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106069"
+ },
+ "eu.kanade.tachiyomi.extension.es.esmi2manga": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.es.eternalmangas": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106029"
+ },
+ "eu.kanade.tachiyomi.extension.es.gistamishouse": {
+  "at": 1790437837,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.es.gremorymangas": {
+  "at": 1790418699,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.es.hadesnofansub": {
+  "at": 1790437837,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.es.haremdekira": {
+  "at": 1790437477,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.es.heavenmanga": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104009"
+ },
+ "eu.kanade.tachiyomi.extension.es.hentaihall": {
+  "at": 1790418703,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.es.hentaimode": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.es.houseofotakus": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.ikigaimangas": {
+  "at": 1790437478,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106040"
+ },
+ "eu.kanade.tachiyomi.extension.es.ikuhentai": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.es.infrafandub": {
+  "at": 1790437480,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.es.inmanga": {
+  "at": 1790437481,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.inmortalscan": {
+  "at": 1790418708,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.es.koinoboriscan": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104040"
+ },
+ "eu.kanade.tachiyomi.extension.es.lectorasteria": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.es.lectorjpg": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106050"
+ },
+ "eu.kanade.tachiyomi.extension.es.lectormangalat": {
+  "at": 1790418710,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104056"
+ },
+ "eu.kanade.tachiyomi.extension.es.lectormonline": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.es.leermangaesp": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.es.leermanhwas": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.lmtoonline": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104054"
+ },
+ "eu.kanade.tachiyomi.extension.es.lolivault": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.es.lunapieces": {
+  "at": 1790437837,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangacrab": {
+  "at": 1790437483,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106024"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangamx": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104019"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangaromance": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangashiina": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangasin": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104022"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangasnosekai": {
+  "at": 1790437484,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106075"
+ },
+ "eu.kanade.tachiyomi.extension.es.mangatv": {
+  "at": 1790418714,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.es.manhuaonline": {
+  "at": 1790418716,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106072"
+ },
+ "eu.kanade.tachiyomi.extension.es.manhwalatino": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106066"
+ },
+ "eu.kanade.tachiyomi.extension.es.manhwaonline": {
+  "at": 1790418717,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.es.manhwaweb": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106013"
+ },
+ "eu.kanade.tachiyomi.extension.es.mantrazscan": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.es.mhscans": {
+  "at": 1790418720,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106069"
+ },
+ "eu.kanade.tachiyomi.extension.es.monopolyscan": {
+  "at": 1790418764,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.mundomanhwa": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.nartag": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104064"
+ },
+ "eu.kanade.tachiyomi.extension.es.nekoscans": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.es.nexusscanlation": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.es.onfmangas": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.es.orckumangas": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.es.platinumlilyscan": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.es.plottwistnofansub": {
+  "at": 1790437840,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104015"
+ },
+ "eu.kanade.tachiyomi.extension.es.ragnarokscanlation": {
+  "at": 1790418767,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.es.shadowmanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.es.spicyscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.es.submanhwa": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.es.taurusfansub": {
+  "at": 1790437842,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106065"
+ },
+ "eu.kanade.tachiyomi.extension.es.templescanesp": {
+  "at": 1790437498,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106068"
+ },
+ "eu.kanade.tachiyomi.extension.es.tenkaiscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104039"
+ },
+ "eu.kanade.tachiyomi.extension.es.tmohentaiunoriginal": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.es.toones": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.topcomicporno": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.topcomicpornonet": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.traduccionesmoonlight": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104047"
+ },
+ "eu.kanade.tachiyomi.extension.es.tumanhwasclub": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.es.uchuujinprojects": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.es.vcpvmp": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.es.vermanhwas": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.es.yupmanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104017"
+ },
+ "eu.kanade.tachiyomi.extension.es.yurionline": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.es.zonatmoorgunoriginal": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.es.zonatmoto": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.fr.bananascan": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.fr.banchanscan": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.fr.epsilonscan": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104056"
+ },
+ "eu.kanade.tachiyomi.extension.fr.hanabook": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.fr.hentaiorigines": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.fr.hentaiscanreader": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.fr.hentaiscantrad": {
+  "at": 1790415729,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.fr.hentaizone": {
+  "at": 1790416836,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.fr.histoiredhentai": {
+  "at": 1790416848,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.fr.lelscanvf": {
+  "at": 1790437474,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.fr.lesporoiniens": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.fr.mangahubfr": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.fr.mangascantrad": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.fr.ono": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.fr.ortegascans": {
+  "at": 1790418705,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.fr.pantheonscan": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.fr.perfscan": {
+  "at": 1790418705,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.fr.pornhwafr": {
+  "at": 1790418707,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.fr.scanhentaimenu": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.fr.scanmanga": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104023"
+ },
+ "eu.kanade.tachiyomi.extension.fr.scanr": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.fr.scansfr": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.fr.solarisscans": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.fr.sushiscan": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106017"
+ },
+ "eu.kanade.tachiyomi.extension.fr.sushiscanfr": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.fr.toonfr": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.fr.yaoiscan": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.Luvyaa": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.id.aarlas": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106017"
+ },
+ "eu.kanade.tachiyomi.extension.id.astralscans": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.id.comicaso": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.id.cosmicscansid": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.crotpedia": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.id.dojingnet": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.doujindesu": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:xxx",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.id.doujinku": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.id.dreamteamsscans": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.hentaicrot": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.id.holotoon": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.hwago": {
+  "at": 1790415729,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.id.kanzenin": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.kiryuu": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.id.komikdewasa": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.id.komikdewasaart": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.id.komikindo": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.id.komikindoid": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.komiknesia": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.id.komiktap": {
+  "at": 1790418702,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.id.komikzoid": {
+  "at": 1790437478,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.id.kumapoi": {
+  "at": 1790418705,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.id.kumopoi": {
+  "at": 1790418705,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.id.lianscans": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.id.maidmanga": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.id.mangacan": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.mangakuri": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106036"
+ },
+ "eu.kanade.tachiyomi.extension.id.mangasusu": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.id.manhwadesu": {
+  "at": 1790418710,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.id.manhwaindo": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.id.manhwalandmom": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.id.mgkomik": {
+  "at": 1790418713,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106079"
+ },
+ "eu.kanade.tachiyomi.extension.id.mihentai": {
+  "at": 1790418713,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.id.mikoroku": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106020"
+ },
+ "eu.kanade.tachiyomi.extension.id.omicaso": {
+  "at": 1790418714,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.id.otascans": {
+  "at": 1790418716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.id.pixhentai": {
+  "at": 1790418717,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.id.pornhwa18": {
+  "at": 1790418717,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104052"
+ },
+ "eu.kanade.tachiyomi.extension.id.pramramadhan": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.id.roseveil": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.ryukomik": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.id.sasangeyou": {
+  "at": 1790418720,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.id.sektedoujin": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.id.sektekomik": {
+  "at": 1790437487,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.id.shirodoujin": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.id.siimanga": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.id.themanga": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106050"
+ },
+ "eu.kanade.tachiyomi.extension.id.tooncubus": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.id.wurmz": {
+  "at": 1790418767,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.id.yubikiri": {
+  "at": 1790437498,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.it.hentaiarchive": {
+  "at": 1790415681,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.it.hentaifantasy": {
+  "at": 1790415681,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.it.mangaworldadult": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.ja.alphapolis": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.amebamanga": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ja.bigcomics": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.bookwalkerjp": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.ciaoplus": {
+  "at": 1790437468,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.cmoa": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicfesta": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicfuz": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicmedu": {
+  "at": 1790416836,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicmeteor": {
+  "at": 1790416848,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comico": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicryu": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.coronaex": {
+  "at": 1790437477,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.cycomi": {
+  "at": 1790418702,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.dmm": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.ja.dokiraw": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106015"
+ },
+ "eu.kanade.tachiyomi.extension.ja.drecomics": {
+  "at": 1790437478,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.ebookjapan": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.fodfuji": {
+  "at": 1790418707,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ja.gorakuweb": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.hachiraw": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.idolgravureprincessdate": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.ja.jmanga": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.ja.jumptoon": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.kadocomi": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.kisslove": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106020"
+ },
+ "eu.kanade.tachiyomi.extension.ja.klraw": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.klto9": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.kumaraw": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.kuragebunch": {
+  "at": 1790418714,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104009"
+ },
+ "eu.kanade.tachiyomi.extension.ja.linemanga": {
+  "at": 1790418714,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.magazinepocket": {
+  "at": 1790437485,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.manga1000": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104013"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangagun": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104021"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangakingdom": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangamura": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangano": {
+  "at": 1790437489,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangaparkpublisher": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangasaison": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangaspa": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mechacomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mokuro": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.momonga": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.namicomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.nicomanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106015"
+ },
+ "eu.kanade.tachiyomi.extension.ja.ohtawebcomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.piacomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.piccoma": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.pixivcomic": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.ja.raw1001": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.raw18": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106020"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawbaka": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawdevartart": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawinu": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104018"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawkuma": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106041"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawlh": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104018"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawotaku": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawuwu": {
+  "at": 1790437498,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.rawxz": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.readerstore": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.senmanga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104008"
+ },
+ "eu.kanade.tachiyomi.extension.ja.sokuyomi": {
+  "at": 1790437498,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.sundaywebevery": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104009"
+ },
+ "eu.kanade.tachiyomi.extension.ja.unext": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.welovemangaone": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104014"
+ },
+ "eu.kanade.tachiyomi.extension.ja.yanmaga": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.ja.ynjn": {
+  "at": 1790437499,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.younganimal": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.youngchampion": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ja.zebrack": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ko.blacktoon": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ko.manatoki": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ko.rawdex": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.ko.toon11": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.ko.toonkor": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.ko.wolfdotcom": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.pt.acervoeremita": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.acervohentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.amuy": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.arthurscan": {
+  "at": 1790437470,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106063"
+ },
+ "eu.kanade.tachiyomi.extension.pt.azuretoons": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.pt.bakai": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104016"
+ },
+ "eu.kanade.tachiyomi.extension.pt.blackoutcomics": {
+  "at": 1790415716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.pt.brasilhentai": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.pt.bryaoi": {
+  "at": 1790415729,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.pt.cafecomyaoi": {
+  "at": 1790416836,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.cerisescans": {
+  "at": 1790416848,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.covenscan": {
+  "at": 1790437471,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.egotoons": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.pt.erosect": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.euphoriascan": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.pt.exhentainetbr": {
+  "at": 1790418698,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.pt.fenixproject": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.fleurblanche": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.pt.flowermanga": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.pt.galaxscanlator": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.pt.geasscomics": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.pt.ghostscan": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hanmokkuscan": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hentaiseason": {
+  "at": 1790418702,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hentaitokyo": {
+  "at": 1790418703,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hipercool": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106063"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hipertoon": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.pt.horahentai": {
+  "at": 1790418705,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.pt.hotcabaretscan": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.huntersscans": {
+  "at": 1790418707,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106066"
+ },
+ "eu.kanade.tachiyomi.extension.pt.inkapk": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.kivaratoons": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.pt.leitordemangas": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.pt.leituramanga": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104006"
+ },
+ "eu.kanade.tachiyomi.extension.pt.littletyrant": {
+  "at": 1790418710,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106067"
+ },
+ "eu.kanade.tachiyomi.extension.pt.maidscan": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104063"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangadash": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangaflix": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangalivreorg": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangalivreto": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.pt.manganyx": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangaonline": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangasbrasuka": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangeek": {
+  "at": 1790418714,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.manhastro": {
+  "at": 1790418716,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mediocretoons": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.minitwoscan": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.montetai": {
+  "at": 1790418719,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mrtenzus": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mugiwarasoficial": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.muitohentai": {
+  "at": 1790418719,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mundohentai": {
+  "at": 1790418720,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.pt.nebulosascan": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.nocturnesummer": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.pt.noindexscan": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.pt.onereader": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.pt.osakascan": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106015"
+ },
+ "eu.kanade.tachiyomi.extension.pt.pinkseaunicorn": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.pt.pizzariascan": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104050"
+ },
+ "eu.kanade.tachiyomi.extension.pt.portalyaoi": {
+  "at": 1790418765,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.remangas": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106054"
+ },
+ "eu.kanade.tachiyomi.extension.pt.revistasequadrinhos": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.roxinha": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.pt.shiraiscans": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.slimereadunoriginal": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.spectralscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104062"
+ },
+ "eu.kanade.tachiyomi.extension.pt.sssscanlator": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.pt.starlightscan": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.taimumangas": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.pt.taiyo": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104011"
+ },
+ "eu.kanade.tachiyomi.extension.pt.tankouhentai": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.pt.taosect": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104022"
+ },
+ "eu.kanade.tachiyomi.extension.pt.temakimangas": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.pt.tiamanhwa": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.pt.tsundokutraducoes": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.pt.universohentai": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104007"
+ },
+ "eu.kanade.tachiyomi.extension.pt.vegitoons": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104012"
+ },
+ "eu.kanade.tachiyomi.extension.pt.verdinha": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104012"
+ },
+ "eu.kanade.tachiyomi.extension.pt.xxxyaoi": {
+  "at": 1790418768,
+  "reason": "url:nsfw-term:xxx",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.pt.yaoifanclub": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106015"
+ },
+ "eu.kanade.tachiyomi.extension.pt.yomumangas": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.pt.yuriverso": {
+  "at": 1790418768,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.pt.zettahq": {
+  "at": 1790418768,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ru.acomics": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.ru.allhentai": {
+  "at": 1790415645,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106069"
+ },
+ "eu.kanade.tachiyomi.extension.ru.desu": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106034"
+ },
+ "eu.kanade.tachiyomi.extension.ru.henchan": {
+  "at": 1790415681,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104047"
+ },
+ "eu.kanade.tachiyomi.extension.ru.hentailib": {
+  "at": 1790415681,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104062"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangabuff": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangachan": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104022"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangahub": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106023"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangalib": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104117"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangapoisk": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mangashi": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106052"
+ },
+ "eu.kanade.tachiyomi.extension.ru.mintmanga": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106090"
+ },
+ "eu.kanade.tachiyomi.extension.ru.nudemoon": {
+  "at": 1790416836,
+  "reason": "url:nsfw-word:[a-z0-9])nude(?![a-z",
+  "verdict": "reject",
+  "versionCode": "106030"
+ },
+ "eu.kanade.tachiyomi.extension.ru.puremanga": {
+  "at": 1790416848,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.ru.seimanga": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106044"
+ },
+ "eu.kanade.tachiyomi.extension.ru.senkognito": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104014"
+ },
+ "eu.kanade.tachiyomi.extension.ru.tomilolib": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.ru.wamanga": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.ru.yaoichan": {
+  "at": 1790418699,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104011"
+ },
+ "eu.kanade.tachiyomi.extension.ru.yaoilib": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104048"
+ },
+ "eu.kanade.tachiyomi.extension.th.cat300": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.th.doujinlc": {
+  "at": 1790415645,
+  "reason": "url:nsfw-word:[a-z0-9])doujin(?![a",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.doujinmoon": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.doujinza": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.ecchidoujin": {
+  "at": 1790415681,
+  "reason": "url:nsfw-word:[a-z0-9])ecchi(?![a-",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.finmanga": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.goddoujin": {
+  "at": 1790415681,
+  "reason": "url:nsfw-word:[a-z0-9])doujin(?![a",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.gomanga": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.makimaaaaa": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.manga168": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.th.mangaisekaithai": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.th.mangakimi": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.th.mangalc": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.mangastep": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.manhuabug": {
+  "at": 1790415729,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.manhuathai": {
+  "at": 1790415730,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.manhwabreakup": {
+  "at": 1790416848,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.th.mikudoujin": {
+  "at": 1790416848,
+  "reason": "url:nsfw-word:[a-z0-9])doujin(?![a",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.th.nekopost": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106015"
+ },
+ "eu.kanade.tachiyomi.extension.th.niceoppai": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104029"
+ },
+ "eu.kanade.tachiyomi.extension.th.ntrmanga": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.th.onemanga": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104033"
+ },
+ "eu.kanade.tachiyomi.extension.th.oremanga": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.th.reapertrans": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.th.slowmanga": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.th.sodsaime": {
+  "at": 1790418698,
+  "reason": "url:punycode-homograph",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.th.speedmanga": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.th.tanukimanga": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.th.toomtammanga": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.tr.amangaplanet": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.tr.arcurafansub": {
+  "at": 1790437823,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.tr.domalfansub": {
+  "at": 1790437823,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.tr.ghosthentai": {
+  "at": 1790415729,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.tr.hattorimanga": {
+  "at": 1790416848,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104044"
+ },
+ "eu.kanade.tachiyomi.extension.tr.holyscans": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104051"
+ },
+ "eu.kanade.tachiyomi.extension.tr.kuroimanga": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106061"
+ },
+ "eu.kanade.tachiyomi.extension.tr.laviniafansub": {
+  "at": 1790437823,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106061"
+ },
+ "eu.kanade.tachiyomi.extension.tr.lunascans": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangadenizi": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangadusleri": {
+  "at": 1790418699,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104033"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangasehrinet": {
+  "at": 1790418703,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangaship": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104004"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangatr": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106024"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mangitto": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.tr.mikrokosmosfansub": {
+  "at": 1790437837,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106016"
+ },
+ "eu.kanade.tachiyomi.extension.tr.milasub": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.tr.monomanga": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.tr.moondaisyscans": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.tr.niverafansub": {
+  "at": 1790437837,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.tr.okutoon": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.tr.opiatoon": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106060"
+ },
+ "eu.kanade.tachiyomi.extension.tr.siyahmelek": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.tr.strayfansub": {
+  "at": 1790437840,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104056"
+ },
+ "eu.kanade.tachiyomi.extension.tr.summertoon": {
+  "at": 1790418717,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106057"
+ },
+ "eu.kanade.tachiyomi.extension.tr.sunsetmanga": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106055"
+ },
+ "eu.kanade.tachiyomi.extension.tr.tonizutoon": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.tr.trmanga": {
+  "at": 1790418720,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.tr.yaoiflix": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106061"
+ },
+ "eu.kanade.tachiyomi.extension.tr.yaoimangaoku": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.uk.comixtopia": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.uk.dgmanga": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.uk.faust": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.uk.honeymanga": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.uk.mangainua": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.uk.pureskill": {
+  "at": 1790437467,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.uk.zenko": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106008"
+ },
+ "eu.kanade.tachiyomi.extension.vi.ariverse": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106054"
+ },
+ "eu.kanade.tachiyomi.extension.vi.cuutruyen": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.vi.cuutruyenmoe": {
+  "at": 1790415645,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.damconuong": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.daomeoden": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.doctruyen3q": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106039"
+ },
+ "eu.kanade.tachiyomi.extension.vi.dualeotruyen": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106029"
+ },
+ "eu.kanade.tachiyomi.extension.vi.gantzvn": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.vi.goctruyentranh": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.hentaicube": {
+  "at": 1790415716,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106094"
+ },
+ "eu.kanade.tachiyomi.extension.vi.hentaivnplus": {
+  "at": 1790415729,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106073"
+ },
+ "eu.kanade.tachiyomi.extension.vi.hentaivnx": {
+  "at": 1790415730,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.vi.hv2tcomics": {
+  "at": 1790416848,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.kamicomic": {
+  "at": 1790416848,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.vi.khomanhwa": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.loppytoon": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.vi.luottruyen": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.luvevaland": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.lxhentai": {
+  "at": 1790418698,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106040"
+ },
+ "eu.kanade.tachiyomi.extension.vi.lxmangaorg": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.vi.medamtruyen": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.vi.mehentai": {
+  "at": 1790418698,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.meosss": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.vi.meosua": {
+  "at": 1790418699,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.vi.metruyen18": {
+  "at": 1790418702,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.vi.mimi": {
+  "at": 1790418702,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.vi.mimihentai": {
+  "at": 1790418703,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.vi.minotruyen": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.vi.moetruyensuicao": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.vi.nettruyens": {
+  "at": 1790418707,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.nhentaiclub": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.vi.otakusic": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.panomic": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.vi.sayhentai": {
+  "at": 1790418708,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106024"
+ },
+ "eu.kanade.tachiyomi.extension.vi.seikowo": {
+  "at": 1790418710,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.sinhsieusao": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.vi.soaicacomic": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.vi.teamlanhlung": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106039"
+ },
+ "eu.kanade.tachiyomi.extension.vi.teletruyen": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.vi.thienthaitruyen": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.vi.thohamngu": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.vi.toptruyen": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106047"
+ },
+ "eu.kanade.tachiyomi.extension.vi.tranh18": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyen18": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyenhentai18": {
+  "at": 1790418713,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyenhentaivn": {
+  "at": 1790418714,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106006"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyenhentaiz": {
+  "at": 1790418714,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyenmm": {
+  "at": 1790418717,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyenqqvn": {
+  "at": 1790418717,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyentini": {
+  "at": 1790418719,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106056"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyentranhdammy": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106058"
+ },
+ "eu.kanade.tachiyomi.extension.vi.truyentvn": {
+  "at": 1790418719,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.vi.tusachxinhxinh": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106004"
+ },
+ "eu.kanade.tachiyomi.extension.vi.umetruyen": {
+  "at": 1790418764,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.vi.vihentai": {
+  "at": 1790418764,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.vi.vinahentai": {
+  "at": 1790418764,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "106017"
+ },
+ "eu.kanade.tachiyomi.extension.vi.yurigarden": {
+  "at": 1790418764,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106012"
+ },
+ "eu.kanade.tachiyomi.extension.vi.yurineko": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.vi.zettruyen": {
+  "at": 1790418765,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106013"
+ },
+ "eu.kanade.tachiyomi.extension.zh.bakamh": {
+  "at": 1790415645,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106065"
+ },
+ "eu.kanade.tachiyomi.extension.zh.bilimanga": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106014"
+ },
+ "eu.kanade.tachiyomi.extension.zh.boylove": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104018"
+ },
+ "eu.kanade.tachiyomi.extension.zh.cartoon18": {
+  "at": 1790415681,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106005"
+ },
+ "eu.kanade.tachiyomi.extension.zh.dm5": {
+  "at": 1790415681,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.eighteenmanhua": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.favcomic": {
+  "at": 1790415716,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hanabimanga": {
+  "at": 1790415729,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hanime1": {
+  "at": 1790415730,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hanman18": {
+  "at": 1790416848,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hcomic": {
+  "at": 1790416848,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106002"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hentaiclub": {
+  "at": 1790416850,
+  "reason": "url:nsfw-term:hentai",
+  "verdict": "reject",
+  "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.hikarinagi": {
+  "at": 1790416850,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.ikmmh": {
+  "at": 1790416850,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.jcomic": {
+  "at": 1790437473,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.zh.jinmantiantang": {
+  "at": 1790418698,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.zh.jiuermanhua": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104015"
+ },
+ "eu.kanade.tachiyomi.extension.zh.komiic": {
+  "at": 1790418698,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106010"
+ },
+ "eu.kanade.tachiyomi.extension.zh.mangaxiaosi": {
+  "at": 1790418699,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.manhuadui": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104032"
+ },
+ "eu.kanade.tachiyomi.extension.zh.manhuagui": {
+  "at": 1790418702,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104028"
+ },
+ "eu.kanade.tachiyomi.extension.zh.manhuashe": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.manwa": {
+  "at": 1790418705,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104014"
+ },
+ "eu.kanade.tachiyomi.extension.zh.mycomic": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.nnhanman": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.noyacg": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106007"
+ },
+ "eu.kanade.tachiyomi.extension.zh.picacomic": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106011"
+ },
+ "eu.kanade.tachiyomi.extension.zh.roumanwu": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106022"
+ },
+ "eu.kanade.tachiyomi.extension.zh.sixmh": {
+  "at": 1790418708,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104016"
+ },
+ "eu.kanade.tachiyomi.extension.zh.tencentcomics": {
+  "at": 1790418708,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104010"
+ },
+ "eu.kanade.tachiyomi.extension.zh.tongli": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104001"
+ },
+ "eu.kanade.tachiyomi.extension.zh.toptoon": {
+  "at": 1790418711,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104002"
+ },
+ "eu.kanade.tachiyomi.extension.zh.wnacg": {
+  "at": 1790418711,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.zh.yidan": {
+  "at": 1790418713,
+  "reason": "contentWarning=NSFW",
+  "verdict": "reject",
+  "versionCode": "104005"
+ },
+ "eu.kanade.tachiyomi.extension.zh.zerobyw": {
+  "at": 1790418713,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "104021"
+ }
+}
