@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+data/guard_state.json
+data/*.tmp
+repo/*.tmp
+*.tmp
