@@ -129,7 +129,9 @@ TIMEZONE = env_str("TIMEZONE", "UTC")
 
 RAW_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}"
 REPO_JSON_URL = f"{RAW_BASE}/repo.json"
-INDEX_PB_URL = f"https://github.com/{GITHUB_REPO}/raw/{GITHUB_BRANCH}/repo/index.pb"
+INDEX_JSON_URL = f"{RAW_BASE}/repo/index.json"
+INDEX_PB_URL = f"{RAW_BASE}/repo/index.pb"
+INDEX_MIN_URL = f"{RAW_BASE}/repo/index.min.json"
 MIHON_DEEP_LINK = f"mihon://extension-store?url={INDEX_PB_URL}"
 
 # ----------------------------------------------------------------- schema constants
@@ -1647,14 +1649,17 @@ def repo_text() -> str:
     return (
         "📦 <b>مستودع {name}</b>\n\n"
         "➕ <b>أضفه في Mihon:</b>\n"
-        "الإعدادات ← المستودعات ← إضافة مستودع، ثم الصق رابط index_v2:\n"
+        "الإعدادات ← المستودعات ← إضافة مستودع، ثم الصق الرابط الخام:\n"
+        "<code>{index_json}</code>\n\n"
+        "<b>أو رابط repo.json (بديل):</b>\n"
         "<code>{repo_json}</code>\n\n"
         "أو اضغط الزر بالأسفل لإضافته مباشرة:\n"
         "<a href=\"{deep}\">➕ إضافة المستودع في Mihon</a>\n\n"
         "📊 الإضافات: <b>{ext}</b> | المصادر: <b>{src}</b> | المعطّل: <b>{bad}</b>\n"
         "🔑 مفتاح التوقيع: <code>{key}</code>\n"
         "🔗 {website}"
-    ).format(name=esc(STORE_NAME), repo_json=esc(REPO_JSON_URL), deep=esc(MIHON_DEEP_LINK),
+    ).format(name=esc(STORE_NAME), index_json=esc(INDEX_JSON_URL),
+             repo_json=esc(REPO_JSON_URL), deep=esc(MIHON_DEEP_LINK),
              ext=stats["extensions"], src=stats["sources"], bad=stats["quarantined"],
              key=esc(SIGNING_KEY[:16] + "…"), website=esc(STORE_WEBSITE))
 
@@ -1662,8 +1667,10 @@ def repo_text() -> str:
 def repo_markup() -> dict:
     return keyboard(
         [{"text": "➕ إضافة في Mihon", "url": MIHON_DEEP_LINK}],
-        [{"text": "📄 repo.json", "url": REPO_JSON_URL},
-         {"text": "📦 index.min.json", "url": f"{RAW_BASE}/repo/index.min.json"}],
+        [{"text": "📄 index.json", "url": INDEX_JSON_URL},
+         {"text": "📋 repo.json", "url": REPO_JSON_URL}],
+        [{"text": "📦 index.pb", "url": INDEX_PB_URL},
+         {"text": "📦 index.min.json", "url": INDEX_MIN_URL}],
         [{"text": "🔗 المستودع", "url": STORE_WEBSITE}],
     )
 
@@ -2315,6 +2322,20 @@ def self_test() -> int:
             check("{}() renders ({})".format(renderer.__name__, exc), False)
     check("repo_markup has deep link",
           repo_markup()["inline_keyboard"][0][0]["url"].startswith("mihon://extension-store?url="))
+    rendered = repo_text()
+    check("/repo quotes the raw index.json url",
+          "https://raw.githubusercontent.com/{}/{}/repo/index.json".format(
+              GITHUB_REPO, GITHUB_BRANCH) in rendered)
+    check("/repo still offers repo.json as an alternative", REPO_JSON_URL in rendered)
+    buttons = {item["url"] for row in repo_markup()["inline_keyboard"] for item in row}
+    check("repo_markup links the raw index.json", INDEX_JSON_URL in buttons)
+    check("repo_markup links the raw index.pb", INDEX_PB_URL in buttons)
+    direct = [url for row in repo_markup()["inline_keyboard"] for item in row
+              for url in [item["url"]] if url.startswith("https://")]
+    check("published index urls are raw, never redirecting",
+          all(url.startswith(RAW_BASE) for url in direct if "index" in url))
+    check("repo.json inside the published index is raw too",
+          json.loads(REPO_JSON.read_text())["index_v2"] == INDEX_PB_URL)
 
     print("\n== state store ==")
     STATE.put_report({"token": "t1", "created_at": time.time(), "user_id": 7, "user_name": "A",
