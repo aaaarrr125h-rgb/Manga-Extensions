@@ -64,11 +64,17 @@ def env_bool(name: str, default: bool) -> bool:
 
 
 def env_set(name: str) -> set:
+    """Parse a set of numeric Telegram ids. Non-numeric entries are rejected loudly:
+    a username such as @someone silently yields an empty set, which looks like
+    "no admin configured" and leaves the bot unable to answer anyone."""
     items = set()
     for chunk in str(os.environ.get(name) or "").replace(";", ",").split(","):
         for part in chunk.split():
             if part.lstrip("-").isdigit():
                 items.add(int(part))
+            elif part:
+                LOG.warning("%s: ignoring non-numeric entry %r — Telegram ids are "
+                            "numbers, get yours from @userinfobot", name, part)
     return items
 
 
@@ -2136,6 +2142,27 @@ def self_test() -> int:
     ):
         verdict, _ = url_verdict(url)
         check("{} -> {}".format(url, expected), verdict == expected)
+
+    print("\n== env parsing ==")
+    import os as _os
+    saved = {key: _os.environ.get(key) for key in ("ADMIN_ID", "ADMIN_IDS", "WATCH_CHATS")}
+    try:
+        for key in saved:
+            _os.environ.pop(key, None)
+        _os.environ["ADMIN_ID"] = "111, 222;333"
+        check("comma and semicolon lists parse", env_set("ADMIN_ID") == {111, 222, 333})
+        _os.environ["ADMIN_ID"] = "@Xmamnj"
+        check("username-only ADMIN_ID yields an empty set", env_set("ADMIN_ID") == set())
+        _os.environ["ADMIN_ID"] = "8154510028, @Xmamnj"
+        check("numeric entries survive a bad neighbour", env_set("ADMIN_ID") == {8154510028})
+        _os.environ["ADMIN_ID"] = ""
+        check("unset id sets are empty", env_set("ADMIN_ID") == set())
+    finally:
+        for key, value in saved.items():
+            if value is None:
+                _os.environ.pop(key, None)
+            else:
+                _os.environ[key] = value
 
     print("\n== self-hosted sources ==")
     for url, expected in (("https://127.0.0.1", "ok"),
