@@ -95,7 +95,7 @@ STORE_NAME = env_str("REPO_NAME", "Shura")
 STORE_BADGE = env_str("BADGE_LABEL", "SHURA")
 SIGNING_KEY = env_str(
     "SIGNING_KEY",
-    "9add655a78e96c4ec7a53ef89dccb557cb5d767489fac5e785d671a5a75d4da2",
+    "",
 )
 STORE_WEBSITE = env_str("REPO_WEBSITE", f"https://github.com/{GITHUB_REPO}")
 STORE_DISCORD = env_str("REPO_DISCORD", "")
