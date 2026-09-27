@@ -330,10 +330,10 @@
   "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.all.mangadna": {
-  "at": 1790418719,
+  "at": 1790533039,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104002"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.all.mangafire": {
   "at": 1790418719,
@@ -424,6 +424,12 @@
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
   "versionCode": "104061"
+ },
+ "eu.kanade.tachiyomi.extension.all.namicomi": {
+  "at": 1790533041,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.all.nhentaicom": {
   "at": 1790418768,
@@ -737,11 +743,17 @@
   "verdict": "reject",
   "versionCode": "106016"
  },
+ "eu.kanade.tachiyomi.extension.ca.fansubscat": {
+  "at": 1790533021,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ca.fansubscathentai": {
-  "at": 1790415645,
+  "at": 1790533021,
   "reason": "url:nsfw-term:hentai",
   "verdict": "reject",
-  "versionCode": "104006"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.cs.evilproduction": {
   "at": 1790415645,
@@ -972,16 +984,16 @@
   "versionCode": "104003"
  },
  "eu.kanade.tachiyomi.extension.en.eighteenporncomic": {
-  "at": 1790418719,
+  "at": 1790533039,
   "reason": "url:nsfw-term:18p",
   "verdict": "reject",
-  "versionCode": "104003"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.en.eightmuses": {
-  "at": 1790418719,
+  "at": 1790533039,
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
-  "versionCode": "104003"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.en.emaqi": {
   "at": 1790418764,
@@ -1002,10 +1014,10 @@
   "versionCode": "106055"
  },
  "eu.kanade.tachiyomi.extension.en.erofus": {
-  "at": 1790418764,
+  "at": 1790533040,
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
-  "versionCode": "104003"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.en.ezmanga": {
   "at": 1790437498,
@@ -1018,6 +1030,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "104034"
+ },
+ "eu.kanade.tachiyomi.extension.en.flamecomics": {
+  "at": 1790533041,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.en.frierenonline": {
   "at": 1790418768,
@@ -2838,10 +2856,10 @@
   "versionCode": "106001"
  },
  "eu.kanade.tachiyomi.extension.id.hentaicrot": {
-  "at": 1790415716,
+  "at": 1790533029,
   "reason": "url:nsfw-term:hentai",
   "verdict": "reject",
-  "versionCode": "104001"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.id.holotoon": {
   "at": 1790415716,
@@ -3000,10 +3018,10 @@
   "versionCode": "106059"
  },
  "eu.kanade.tachiyomi.extension.id.pixhentai": {
-  "at": 1790418717,
+  "at": 1790533037,
   "reason": "url:nsfw-term:hentai",
   "verdict": "reject",
-  "versionCode": "104001"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.id.pornhwa18": {
   "at": 1790418717,
@@ -3095,11 +3113,17 @@
   "verdict": "reject",
   "versionCode": "104007"
  },
+ "eu.kanade.tachiyomi.extension.it.mangaworld": {
+  "at": 1790533024,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.it.mangaworldadult": {
-  "at": 1790415681,
+  "at": 1790533025,
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
-  "versionCode": "104006"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.alphapolis": {
   "at": 1790415645,
@@ -3108,10 +3132,10 @@
   "versionCode": "106003"
  },
  "eu.kanade.tachiyomi.extension.ja.amebamanga": {
-  "at": 1790415645,
+  "at": 1790533021,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104002"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.bigcomics": {
   "at": 1790415645,
@@ -3120,10 +3144,10 @@
   "versionCode": "106001"
  },
  "eu.kanade.tachiyomi.extension.ja.bookwalkerjp": {
-  "at": 1790415681,
+  "at": 1790533022,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "106003"
+  "versionCode": "106004"
  },
  "eu.kanade.tachiyomi.extension.ja.ciaoplus": {
   "at": 1790437468,
@@ -3137,17 +3161,47 @@
   "verdict": "reject",
   "versionCode": "104003"
  },
+ "eu.kanade.tachiyomi.extension.ja.comicboost": {
+  "at": 1790533025,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicborder": {
+  "at": 1790533025,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicdays": {
+  "at": 1790533027,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicearthstar": {
+  "at": 1790533028,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ja.comicfesta": {
-  "at": 1790415716,
+  "at": 1790533028,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104003"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.comicfuz": {
   "at": 1790415716,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicgardo": {
+  "at": 1790533030,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.comicmedu": {
   "at": 1790416836,
@@ -3161,6 +3215,12 @@
   "verdict": "reject",
   "versionCode": "104003"
  },
+ "eu.kanade.tachiyomi.extension.ja.comicnettai": {
+  "at": 1790533030,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ja.comico": {
   "at": 1790416850,
   "reason": "contentWarning=MIXED",
@@ -3172,6 +3232,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.comicyours": {
+  "at": 1790533032,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.coronaex": {
   "at": 1790437477,
@@ -3186,10 +3252,16 @@
   "versionCode": "106001"
  },
  "eu.kanade.tachiyomi.extension.ja.dmm": {
-  "at": 1790418702,
+  "at": 1790533033,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104004"
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ja.docomo": {
+  "at": 1790533033,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.dokiraw": {
   "at": 1790418705,
@@ -3209,6 +3281,12 @@
   "verdict": "reject",
   "versionCode": "106001"
  },
+ "eu.kanade.tachiyomi.extension.ja.firecross": {
+  "at": 1790533034,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ja.fodfuji": {
   "at": 1790418707,
   "reason": "contentWarning=MIXED",
@@ -3226,6 +3304,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "104003"
+ },
+ "eu.kanade.tachiyomi.extension.ja.ichicomi": {
+  "at": 1790533035,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.idolgravureprincessdate": {
   "at": 1790418711,
@@ -3276,10 +3360,10 @@
   "versionCode": "104001"
  },
  "eu.kanade.tachiyomi.extension.ja.kuragebunch": {
-  "at": 1790418714,
+  "at": 1790533035,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104009"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ja.linemanga": {
   "at": 1790418714,
@@ -3293,11 +3377,23 @@
   "verdict": "accept",
   "versionCode": "106001"
  },
+ "eu.kanade.tachiyomi.extension.ja.magcomi": {
+  "at": 1790533037,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ja.manga1000": {
   "at": 1790418717,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "104013"
+ },
+ "eu.kanade.tachiyomi.extension.ja.mangafive": {
+  "at": 1790533039,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106002"
  },
  "eu.kanade.tachiyomi.extension.ja.mangagun": {
   "at": 1790418764,
@@ -3306,10 +3402,10 @@
   "versionCode": "104021"
  },
  "eu.kanade.tachiyomi.extension.ja.mangakingdom": {
-  "at": 1790418764,
+  "at": 1790533039,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104002"
+  "versionCode": "106001"
  },
  "eu.kanade.tachiyomi.extension.ja.mangamura": {
   "at": 1790418765,
@@ -3359,6 +3455,12 @@
   "verdict": "reject",
   "versionCode": "104001"
  },
+ "eu.kanade.tachiyomi.extension.ja.musicbookjp": {
+  "at": 1790533041,
+  "reason": "contentWarning=MIXED",
+  "verdict": "reject",
+  "versionCode": "106001"
+ },
  "eu.kanade.tachiyomi.extension.ja.namicomic": {
   "at": 1790418768,
   "reason": "contentWarning=MIXED",
@@ -3377,6 +3479,12 @@
   "verdict": "reject",
   "versionCode": "104003"
  },
+ "eu.kanade.tachiyomi.extension.ja.pashup": {
+  "at": 1790533042,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.ja.piacomic": {
   "at": 1790418768,
   "reason": "contentWarning=MIXED",
@@ -3390,10 +3498,10 @@
   "versionCode": "106001"
  },
  "eu.kanade.tachiyomi.extension.ja.pixivcomic": {
-  "at": 1790418768,
+  "at": 1790533042,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "106004"
+  "versionCode": "106005"
  },
  "eu.kanade.tachiyomi.extension.ja.raw1001": {
   "at": 1790418768,
@@ -3599,6 +3707,12 @@
   "verdict": "reject",
   "versionCode": "104010"
  },
+ "eu.kanade.tachiyomi.extension.pt.bladetoons": {
+  "at": 1790533029,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
+ },
  "eu.kanade.tachiyomi.extension.pt.brasilhentai": {
   "at": 1790415716,
   "reason": "url:nsfw-term:hentai",
@@ -3696,16 +3810,16 @@
   "versionCode": "106014"
  },
  "eu.kanade.tachiyomi.extension.pt.hentaiseason": {
-  "at": 1790418702,
+  "at": 1790533033,
   "reason": "url:nsfw-term:hentai",
   "verdict": "reject",
-  "versionCode": "104007"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.pt.hentaitokyo": {
-  "at": 1790418703,
+  "at": 1790533033,
   "reason": "url:nsfw-term:hentai",
   "verdict": "reject",
-  "versionCode": "104007"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.pt.hipercool": {
   "at": 1790418705,
@@ -3736,6 +3850,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106066"
+ },
+ "eu.kanade.tachiyomi.extension.pt.imperiodabritannia": {
+  "at": 1790533035,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.pt.inkapk": {
   "at": 1790418708,
@@ -3768,10 +3888,10 @@
   "versionCode": "106067"
  },
  "eu.kanade.tachiyomi.extension.pt.maidscan": {
-  "at": 1790418711,
+  "at": 1790533035,
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
-  "versionCode": "104063"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.pt.mangadash": {
   "at": 1790418711,
@@ -3820,6 +3940,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106001"
+ },
+ "eu.kanade.tachiyomi.extension.pt.mangotoons": {
+  "at": 1790533036,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.pt.manhastro": {
   "at": 1790418716,
@@ -4146,10 +4272,16 @@
   "versionCode": "106044"
  },
  "eu.kanade.tachiyomi.extension.ru.senkognito": {
-  "at": 1790416850,
+  "at": 1790533030,
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
-  "versionCode": "104014"
+  "versionCode": "106000"
+ },
+ "eu.kanade.tachiyomi.extension.ru.senkuro": {
+  "at": 1790533031,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.ru.tomilolib": {
   "at": 1790418698,
@@ -4349,6 +4481,12 @@
   "verdict": "reject",
   "versionCode": "106000"
  },
+ "eu.kanade.tachiyomi.extension.tr.afroditscans": {
+  "at": 1790533021,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106037"
+ },
  "eu.kanade.tachiyomi.extension.tr.amangaplanet": {
   "at": 1790415645,
   "reason": "contentWarning=MIXED",
@@ -4366,6 +4504,18 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106059"
+ },
+ "eu.kanade.tachiyomi.extension.tr.eldermanga": {
+  "at": 1790533026,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106009"
+ },
+ "eu.kanade.tachiyomi.extension.tr.eskimangalar": {
+  "at": 1790533028,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106006"
  },
  "eu.kanade.tachiyomi.extension.tr.ghosthentai": {
   "at": 1790415729,
@@ -4396,6 +4546,12 @@
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
   "versionCode": "106061"
+ },
+ "eu.kanade.tachiyomi.extension.tr.limonmanga": {
+  "at": 1790533033,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106006"
  },
  "eu.kanade.tachiyomi.extension.tr.lunascans": {
   "at": 1790418698,
@@ -4505,6 +4661,12 @@
   "verdict": "reject",
   "versionCode": "106055"
  },
+ "eu.kanade.tachiyomi.extension.tr.tenshimanga": {
+  "at": 1790533039,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106008"
+ },
  "eu.kanade.tachiyomi.extension.tr.tonizutoon": {
   "at": 1790418719,
   "reason": "contentWarning=MIXED",
@@ -4516,6 +4678,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106003"
+ },
+ "eu.kanade.tachiyomi.extension.tr.uzaymanga": {
+  "at": 1790533040,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106048"
  },
  "eu.kanade.tachiyomi.extension.tr.yaoiflix": {
   "at": 1790418764,
@@ -4560,10 +4728,10 @@
   "versionCode": "106012"
  },
  "eu.kanade.tachiyomi.extension.uk.pureskill": {
-  "at": 1790437467,
+  "at": 1790533022,
   "reason": "",
   "verdict": "accept",
-  "versionCode": "106056"
+  "versionCode": "106058"
  },
  "eu.kanade.tachiyomi.extension.uk.zenko": {
   "at": 1790415681,
@@ -4606,6 +4774,12 @@
   "reason": "contentWarning=MIXED",
   "verdict": "reject",
   "versionCode": "106039"
+ },
+ "eu.kanade.tachiyomi.extension.vi.doctruyen5s": {
+  "at": 1790533023,
+  "reason": "",
+  "verdict": "accept",
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.vi.dualeotruyen": {
   "at": 1790415681,
@@ -4980,10 +5154,10 @@
   "versionCode": "104003"
  },
  "eu.kanade.tachiyomi.extension.zh.hanman18": {
-  "at": 1790416848,
+  "at": 1790533030,
   "reason": "contentWarning=NSFW",
   "verdict": "reject",
-  "versionCode": "104003"
+  "versionCode": "106000"
  },
  "eu.kanade.tachiyomi.extension.zh.hcomic": {
   "at": 1790416848,
