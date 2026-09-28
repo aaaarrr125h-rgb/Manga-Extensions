@@ -7,6 +7,7 @@ import argparse
 import ast
 import base64
 import gzip
+import hashlib
 import inspect
 import json
 import logging
@@ -330,6 +331,31 @@ INDEX_JSON_URL = f"{RAW_BASE}/repo/index.json"
 INDEX_PB_URL = f"{RAW_BASE}/repo/index.pb"
 INDEX_MIN_URL = f"{RAW_BASE}/repo/index.min.json"
 MIHON_DEEP_LINK = f"mihon://extension-store?url={INDEX_PB_URL}"
+
+# ----------------------------------------------------------------- shura sync protocol
+#
+# ``shura/`` is the Shura Sync layer: a small, separately versioned contract the
+# Shura app reads, kept out of ``repo/`` so Mihon data and Shura data never mix.
+#
+# The layer is *derived* from the index in the very same build that writes
+# repo/index.json, so the two can never drift. Nothing here widens the publish
+# gate: these files are ordinary build artifacts and are only ever written by a
+# build that already holds a PublishAuthorization.
+#
+# The app never hardcodes a repository location. It fetches shura/manifest.json
+# first, reads ``base`` and the *relative* paths out of it, and only then
+# downloads anything. Moving or renaming the repository is therefore a one-line
+# change here and no change at all in the app.
+
+SHURA_DIR = ROOT / "shura"
+SHURA_MANIFEST = SHURA_DIR / "manifest.json"
+SHURA_DELTA = SHURA_DIR / "delta.json"
+SHURA_SCHEMA = 1
+
+#: Only ever a *proposal*. A client is expected to fall back to the full index
+#: whenever this cannot be satisfied, so it must never be required.
+SHURA_REVISION_LENGTH = 32
+
 
 # ----------------------------------------------------------------- schema constants
 
@@ -916,6 +942,137 @@ LEGACY_INDEX_MIN = [
                      "baseUrl": "https://mihon.app"}],
     },
 ]
+
+# ----------------------------------------------------------------- shura sync layer
+
+
+def shura_revision(index_bytes: bytes) -> str:
+    """Content identity of a rendered index.
+
+    Derived from the exact bytes that go on the wire, so a client can verify a
+    revision against the index it already holds without trusting the server.
+    Truncated because it is an identifier, not a security boundary; the signing
+    key fingerprint is what actually authenticates the index.
+    """
+    return hashlib.sha256(index_bytes).hexdigest()[:SHURA_REVISION_LENGTH]
+
+
+def shura_projection(extension: dict) -> dict:
+    """The exact subset of an extension the Shura app is allowed to see.
+
+    A projection rather than the raw record so the delta can never smuggle
+    anything the full index does not already publish, and so the app has one
+    documented shape to depend on.
+    """
+    resources = extension.get("resources") or {}
+    record = {
+        "packageName": extension.get("packageName"),
+        "name": extension.get("name"),
+        "versionCode": extension.get("versionCode"),
+        "versionName": extension.get("versionName"),
+        "contentWarning": extension.get("contentWarning"),
+        "resources": {"apkUrl": resources.get("apkUrl")},
+    }
+    if resources.get("iconUrl"):
+        record["resources"]["iconUrl"] = resources["iconUrl"]
+    if extension.get("extensionLib"):
+        record["extensionLib"] = extension["extensionLib"]
+    sources = []
+    for source in extension.get("sources") or []:
+        if not isinstance(source, dict):
+            continue
+        # the index spells these language/homeUrl, not lang/baseUrl
+        entry = {"id": source.get("id"), "name": source.get("name"),
+                 "language": source.get("language")}
+        if source.get("homeUrl"):
+            entry["homeUrl"] = source["homeUrl"]
+        if source.get("baseUrl"):
+            entry["baseUrl"] = source["baseUrl"]
+        sources.append(entry)
+    if sources:
+        record["sources"] = sources
+    return record
+
+
+def shura_baseline_index(baseline: Path = None):
+    """Read the published index the delta is measured from.
+
+    A module-level function rather than a method: :meth:`RepoManager.build`
+    already reaches for exactly four attributes, and a new ``self.`` here would
+    widen that surface for every existing caller and test double.
+
+    Unreadable is not fatal. A missing or corrupt baseline yields ``None``,
+    which becomes a delta carrying every extension as ``added`` with a null
+    baseRevision -- a larger delta, never a wrong one, and a client that cannot
+    use it still has the full index.
+    """
+    path = Path(baseline) if baseline else INDEX_JSON
+    try:
+        if not path.is_file():
+            LOG.info("no shura baseline at %s - delta will be a full baseline", path)
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        LOG.warning("shura baseline %s unreadable (%s) - delta will be a full baseline",
+                    path, exc)
+        return None
+
+
+def shura_canonical(record: dict) -> str:
+    """Stable serialisation, so equality never depends on key order."""
+    return json.dumps(record, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
+def shura_diff(previous: list, current: list) -> dict:
+    """Split two extension lists into added / updated / removed.
+
+    ``updated`` carries the full new record, never a patch: a patch would make
+    the client's stored copy authoritative and let a skipped field persist
+    forever. Redundant bytes buy a client that cannot get out of step.
+    """
+    before = {item.get("packageName"): shura_projection(item)
+              for item in (previous or []) if item.get("packageName")}
+    after = {item.get("packageName"): shura_projection(item)
+             for item in (current or []) if item.get("packageName")}
+
+    added = [after[package] for package in sorted(after) if package not in before]
+    updated = [after[package] for package in sorted(after)
+               if package in before and before[package] != after[package]]
+    removed = sorted(package for package in before if package not in after)
+    return {"added": added, "updated": updated, "removed": removed}
+
+
+def shura_delta(base_revision, revision: str, extensions: list, diff: dict) -> dict:
+    """Assemble the delta document.
+
+    ``baseRevision`` is the one field a client must check. It is the revision of
+    the index the delta was computed against, so a client that cannot apply the
+    delta (too old, or the file was never generated) falls back to the full
+    index instead of silently drifting.
+    """
+    return {"schema": SHURA_SCHEMA, "baseRevision": base_revision,
+            "revision": revision, "count": len(extensions),
+            "added": diff["added"], "updated": diff["updated"], "removed": diff["removed"]}
+
+
+def shura_manifest(revision: str, extensions: list) -> dict:
+    """Assemble the manifest: one small, stable document the app always reads.
+
+    Only the *contract* lives here, never the content, so this stays small
+    enough to re-check on every poll and cheap to cache on a conditional
+    request. ``base`` is the single place the repository location is named.
+    """
+    return {"schema": SHURA_SCHEMA, "repo": STORE_NAME, "badgeLabel": STORE_BADGE,
+            "base": RAW_BASE, "revision": revision, "count": len(extensions),
+            "index": {"json": "repo/index.json", "pb": "repo/index.pb"},
+            "delta": "shura/delta.json"}
+
+
+def shura_render(document: dict) -> bytes:
+    """Serialise a shura document. Keys are sorted so the bytes -- and so the
+    revision pinned alongside them -- are reproducible across machines."""
+    return (json.dumps(document, indent=2, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+
 
 # ----------------------------------------------------------------- security checks
 
@@ -1719,13 +1876,17 @@ class RepoManager:
                  len(proposed_quarantine), summary["total"])
         return summary
 
-    def build(self, dest: Path = None) -> dict:
+    def build(self, dest: Path = None, baseline: Path = None) -> dict:
         """Regenerate the index artifacts.
 
         ``dest`` redirects every write into another directory, so tests, the
         dry-run ``--build`` and :meth:`prepare_publish` can run a real build
         without touching repo/. Passing ``dest`` is the only way to build while
         TEST_MODE is on.
+
+        ``baseline`` is the index the shura delta is computed against, and
+        defaults to the currently published repo/index.json. Overriding it is
+        how a test reproduces a client that is behind.
 
         Without ``dest`` this is a *real* write and needs a live
         :class:`PublishAuthorization`; the sandbox form needs none, so a review
@@ -1768,6 +1929,20 @@ class RepoManager:
                         ", ".join(item["packageName"] or "?" for item in dropped[:5]))
 
         proto = encode_index(index)
+        index_bytes = render_index_json(index).encode("utf-8")
+        extensions = index["extensionList"]["extensions"]
+
+        # The shura layer is derived here, from the same index object, in the
+        # same pass that writes it. There is no second code path that could
+        # produce a delta describing a different index than the one published.
+        revision = shura_revision(index_bytes)
+        base_index = shura_baseline_index(baseline)
+        base_extensions = ((base_index or {}).get("extensionList") or {}).get("extensions") or []
+        base_bytes = (render_index_json(base_index).encode("utf-8")
+                      if isinstance(base_index, dict) else None)
+        delta = shura_delta(shura_revision(base_bytes) if base_bytes else None,
+                            revision, extensions, shura_diff(base_extensions, extensions))
+
         repo_json = {"index_v2": INDEX_PB_URL,
                      "meta": {"name": STORE_NAME, "shortName": STORE_BADGE,
                               "website": STORE_WEBSITE,
@@ -1776,10 +1951,12 @@ class RepoManager:
             repo_json["meta"]["discord"] = STORE_DISCORD
 
         artifacts = {
-            "repo/index.json": render_index_json(index).encode("utf-8"),
+            "repo/index.json": index_bytes,
             "repo/index.pb": gzip.compress(proto, mtime=0, compresslevel=9),
             "repo/index.min.json": (json.dumps(LEGACY_INDEX_MIN, indent=2) + "\n").encode("utf-8"),
             "repo.json": (json.dumps(repo_json, indent=2, ensure_ascii=False) + "\n").encode("utf-8"),
+            "shura/manifest.json": shura_render(shura_manifest(revision, extensions)),
+            "shura/delta.json": shura_render(delta),
             "data/quarantine.json": (json.dumps(self.quarantine, ensure_ascii=False, indent=1)
                                      + "\n").encode("utf-8"),
             "data/audit_cache.json": (json.dumps(self.audit_cache, ensure_ascii=False, indent=1,
@@ -1796,14 +1973,18 @@ class RepoManager:
 
         return {"ok": True, "changed": changed, "extensions": len(kept),
                 "dropped": dropped, "proto_bytes": len(proto),
-                "pb_bytes": len(artifacts["repo/index.pb"])}
+                "pb_bytes": len(artifacts["repo/index.pb"]),
+                "revision": revision, "baseRevision": delta["baseRevision"],
+                "delta": {"added": len(delta["added"]), "updated": len(delta["updated"]),
+                          "removed": len(delta["removed"])}}
 
     def push(self, paths=None) -> dict:
         assert_may_push("push to GitHub")
         if not PUSH_ENABLED:
             return {"ok": False, "pushed": [], "skipped": "no GITHUB_TOKEN"}
         targets = paths or ["repo/index.json", "repo/index.pb", "repo/index.min.json",
-                            "repo.json", "data/quarantine.json", "data/audit_cache.json"]
+                            "repo.json", "shura/manifest.json", "shura/delta.json",
+                            "data/quarantine.json", "data/audit_cache.json"]
         session = http_session()
         session.headers.update({
             "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -1895,7 +2076,8 @@ class RepoManager:
         built = self.build(dest=sandbox)
         would_change = [item for item in built.get("changed") or []
                         if item in ("repo/index.json", "repo/index.pb",
-                                    "repo/index.min.json", "repo.json")]
+                                    "repo/index.min.json", "repo.json",
+                                    "shura/manifest.json", "shura/delta.json")]
         accepted = CANDIDATES.by_status(ACCEPTED)
         return {"ok": True, "mode": PUBLISH_MODE, "dryRun": True, "wrote": None,
                 "sandbox": str(sandbox), "would_change": would_change,
