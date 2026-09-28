@@ -17,39 +17,115 @@ No database, no Docker, no build step. Three Python dependencies.
 ## How the pipeline works
 
 ```
-keiyoushi/index.json ──► harvest ──► audit ──► index.json ──► index.pb ──► GitHub ──► Mihon
-                                        │                                     ▲
-                                        └────────── quarantine ◄── health ────┘
+upstream ──► harvest ──► candidate ──► /review ──► /accept ──► ACCEPTED
+               │  (data/ only)      (read-only)   (manual, admin)     │
+               │                                                          ▼
+               └─── health ──► proposals (data/ only)          manual publish phase
+                                                                          │
+                                              repo/index.json ◄──────────┤
+                                              repo/index.pb  ◄───────────┤
+                                              GitHub ──► Mihon ◄──────────┘
 ```
 
-1. **Harvest** (`--harvest`) pulls the upstream index and considers any extension that
-   is new or has a higher `versionCode`.
-2. **Audit** rejects a candidate if it fails any of:
-   - *Schema* — missing name, apk/icon, sources, bad `versionCode`, unknown `contentWarning`.
-   - *NSFW policy* — `contentWarning` of `NSFW` (and `MIXED` while `ALLOW_MIXED=false`),
-     plus keyword/host screening across the name, package and site URLs.
-   - *URL screening* — punycode homographs, `.onion`, url-shorteners, high-risk
-     TLDs, brand typosquats, and (for the distribution URLs) IP-literal hosts,
-     odd ports and embedded credentials.
-   - *Live asset probe* — `HEAD` on the APK and icon; 404/410 or a 5xx rejects.
-   - *Source-code scan* (optional) — fetches the extension's Kotlin files from
-     `keiyoushi/extensions-source` and greps them for ~25 malware signatures
-     (`DexClassLoader`, `Runtime.exec`, `SmsManager`, accessibility abuse, …).
-     Anything at `critical`/`high` severity blocks the extension.
-3. **Health sweep** (`/health`, or every `CRON_HEALTH`) probes a rolling window
-   of `homeUrl`s. After `DEAD_THRESHOLD` consecutive failures an extension is
-   quarantined (and can be restored with `/unquarantine`). Self-hosted extensions
-   (Komga, Kavita, Bakkin…) are skipped — they legitimately point at `127.0.0.1`
-   or a LAN address, which is why `screen()` screens source URLs with
-   `allow_private=True` while keeping distribution URLs strict.
-4. **Publish** rebuilds `repo/index.json`, `repo/index.min.json` and the gzipped
-   protobuf `repo/index.pb`, then pushes the changed files to GitHub through the
-   Contents API. Output is deterministic: identical input produces byte-identical
-   `index.pb`.
+**Nothing reaches the published repository except the manual publish phase.**
+A scrape only ever produces a **candidate** in `data/candidates.json`; a health
+sweep only ever produces **proposals** in `data/`; `--accept` only ever moves a
+state. `repo/index.json` is written in exactly one place in the code base — the
+index build — and that build is unreachable without an explicit publish
+authorisation held by a named actor.
+
+1. **Harvest** (`--harvest`, `/scan`, `CRON_HARVEST`, `BOOTSTRAP_HARVEST`) pulls the
+   upstream index and creates a candidate for any extension that is new or has a
+   higher `versionCode`. The commit it pins and the APK fingerprint are captured
+   at creation time. It never builds, publishes, pushes, or accepts anything.
+2. **The pipeline** runs one gate at a time over the candidate, and the state
+   machine refuses any step that is not backed by passing evidence:
+
+   | State | Requires |
+   |---|---|
+   | `DISCOVERED` | — |
+   | `VALIDATED` | schema complete: name, apk/icon, sources, `versionCode`, `contentWarning` |
+   | `SCREENED` | NSFW policy + URL screening (`/review_links`, `--screen`) |
+   | `SCANNED` | source-code scan **and** APK binary scan |
+   | `BUILT` | offline build/test of the would-be index entry |
+   | `PENDING_REVIEW` | all five gates `PASS` with intact digests |
+   | `ACCEPTED` | re-verified provenance (see below), set by `--accept` only |
+
+   `REJECTED` and `QUARANTINED` are terminal until a new candidate is created.
+   `DISCOVERED → ACCEPTED` is not an edge: the only way in is
+   `PENDING_REVIEW → ACCEPTED`, and only through an admin-authorised accept.
+
+   A candidate stores, at minimum: `packageName`, `name`, `versionCode`,
+   `versionName`, `sourceRepository`, `sourceCommit`, `apkUrl`, `apkSha256`,
+   `apkSize`, `contentWarning`, the five `*Result` fields, `discoveredAt`,
+   `updatedAt` and `status`.
+3. **Health sweep** (`/health`, `CRON_HEALTH`) probes a rolling window of
+   `homeUrl`s and records every result in `data/guard_state.json`. After
+   `DEAD_THRESHOLD` consecutive failures it **stages a proposal** — a quarantine
+   entry and/or a dead-source removal — and applies nothing to the index: a link
+   outage must never silently change what users are offered. Proposals are read
+   with `STATE.staged_proposals()` and acted on in the manual publish phase.
+   Self-hosted extensions (Komga, Kavita, Bakkin…) are skipped — they
+   legitimately point at `127.0.0.1` or a LAN address, which is why `screen()`
+   screens source URLs with `allow_private=True` while keeping distribution URLs
+   strict.
+
+   > **Quarantine is staged, not enforced (by design, for now).**
+   > `health_sweep()` only *creates* proposals. It does not edit
+   > `repo/index.json`, and `build()` does not consult `blocked_packages()`
+   > either, so a staged quarantine entry currently has **no** effect on what
+   > gets built or published. That is deliberate: a link outage must not remove
+   > a working extension on its own. Applying proposals is a separate
+   > *quarantine review* step that is **not implemented yet** — until it lands,
+   > a proposal in `data/quarantine.json` means "a human should look at this",
+   > never "this is already disabled".
+4. **Publish** is a *separate, manual phase* and is currently closed. Two things
+   must both be true before anything is written or pushed:
+
+   - `PUBLISH_MODE=allow` **and** `PUSH_ENABLED` with a real `GITHUB_TOKEN`
+     (configuration only — an operator sets it by hand), **and**
+   - a live `PublishAuthorization`, opened by `run_publish_phase(actor, reason)`
+     for that one call.
+
+   `RepoManager.publish()`, `RepoManager.push()` and a non-sandboxed
+   `RepoManager.build()` all call `assert_may_push()` / `assert_may_write_repo()`,
+   which require the authorisation and raise `PushBlocked` without it. The key is
+   thread-local and is dropped on the way out, so no cron thread, command,
+   callback or CLI flag can inherit it.
+
+   Everything that *looks* like publishing is therefore a dry-run:
+   `/publish` and `CRON_PUBLISH` run `RepoManager.prepare_publish()`, which
+   builds into a throwaway directory and reports what *would* change;
+   `--build` is a sandbox build; `/scan`, `/health` and `--harvest` write to
+   `data/` only. Index output is deterministic: identical input produces a
+   byte-identical `index.pb`.
+
+### Provenance and TOCTOU
+
+A candidate is only reviewable if its provenance is pinned and immutable:
+
+- **`sourceCommit`** must be a full 40/64-hex commit SHA. A branch (`main`) or a
+  tag is resolved to a SHA at discovery; if no SHA can be obtained the candidate
+  is stored as `REJECTED` and can never be accepted. `main` and `master` are not
+  acceptable references on their own.
+- **APK integrity**: the APK is fetched over HTTPS only, and its SHA-256, byte
+  size, URL and verification timestamp are recorded. A candidate without a
+  SHA-256 is never created.
+- Each gate writes a self-describing digest of its own record, and
+  `verifiedProvenance` is a SHA-256 over `packageName`, `versionCode`,
+  `versionName`, `sourceRepository`, `sourceCommit`, `apkUrl`, `apkSha256` and
+  `apkSize`. Any drift in one of those fields, or any hand-edited gate record,
+  is detected.
+- `--accept` re-verifies everything *live* immediately before accepting: the
+  commit is re-resolved, and the APK is downloaded again and compared by digest
+  and size. If anything moved, the accept is refused, all scan evidence is
+  dropped and the candidate returns to `DISCOVERED` for a full re-scan.
 
 Rejections are remembered in `data/audit_cache.json` (keyed by package +
-`versionCode`) so the same dead candidate is never re-audited, and quarantines in
-`data/quarantine.json`.
+`versionCode`) so the same dead candidate is never re-audited, quarantines in
+`data/quarantine.json`, and every decision in `data/audit_log.jsonl`
+(timestamp, action, package, version, commit, APK digest, actor, result, reason)
+with credentials redacted.
 
 ### The `index.pb` writer
 
@@ -101,7 +177,8 @@ On Railway you do not need this — variables are injected by the platform.
 | `GITHUB_TOKEN` | – | Fine-grained token with `Contents: read+write`. |
 | `GITHUB_REPO` | `aaaarrr125h-rgb/Manga-Extensions` | `owner/name`. |
 | `GITHUB_BRANCH` | `main` | Target branch. |
-| `PUSH_ENABLED` | auto | Force-disable publishing entirely. |
+| `PUSH_ENABLED` | auto | Force-disable pushing entirely. |
+| `PUBLISH_MODE` | `disabled` | `disabled` \| `dry-run` \| `allow`. Necessary but **not** sufficient: a publish also needs a live `PublishAuthorization` from `run_publish_phase()`. |
 
 ### Repository identity
 
@@ -138,10 +215,10 @@ On Railway you do not need this — variables are injected by the platform.
 | Variable | Default | Meaning |
 |---|---|---|
 | `HEALTH_SLICE` / `HEALTH_WORKERS` | `60` / `12` | Probes per sweep, and concurrency. |
-| `DEAD_THRESHOLD` | `3` | Consecutive failures before quarantine. |
-| `CRON_HARVEST` | `17 */6 * * *` | Scrape + audit + publish. |
+| `DEAD_THRESHOLD` | `3` | Consecutive failures before a quarantine **proposal** is staged. |
+| `CRON_HARVEST` | `17 */6 * * *` | Scrape + candidate creation (no publish). |
 | `CRON_HEALTH` | `41 */3 * * *` | Source health sweep. |
-| `CRON_PUBLISH` | `23 */2 * * *` | Rebuild and push. |
+| `CRON_PUBLISH` | `23 */2 * * *` | Readiness **report** only (dry-run). It never builds into `repo/`, never pushes, and never accepts. |
 | `CRON_DIGEST` | `53 9 * * *` | Daily digest to admins. |
 | `TIMEZONE` | `UTC` | Timezone the cron expressions use. |
 
@@ -151,16 +228,28 @@ On Railway you do not need this — variables are injected by the platform.
 
 ```bash
 python bot.py                 # full service: Telegram polling + scheduler
-python bot.py --selftest      # 99 offline checks, no network writes
-python bot.py --build         # regenerate the index files only
-python bot.py --harvest       # one scrape + health + publish cycle, then exit
+python bot.py --selftest      # offline checks; never writes repo/, never pushes
+python bot.py --build         # sandbox dry-run build; never writes repo/
+python bot.py --harvest       # one discovery + health cycle, then exit
 python bot.py --no-telegram   # identical to --harvest; kept for clarity
+python bot.py --review <pkg>  # print a candidate report; strictly read-only
+python bot.py --accept <pkg> --admin --actor <who>
+                             # PENDING_REVIEW -> ACCEPTED; no build, publish or push
+python test_review_pipeline.py   # the review/accept test suite (offline, no push)
 ```
 
 `--selftest` is the fastest way to check a change: it covers the protobuf
 round-trip against the real keiyoushi index, the NSFW and URL filters, the
 malware scanner, the group-guard integration (with a fake Telegram client) and a
-full index build.
+full index build. It runs with `TEST_MODE` forced on, builds into a throwaway
+directory and asserts that `repo/index.json` and the candidate store are byte
+identical afterwards, so running it can never publish anything.
+
+`--review` only reads: it prints the candidate, every gate result, the pinned
+`sourceCommit`, the APK SHA-256/size and the current status, and it does not
+build, publish, push or touch the index. `--accept` requires `--admin` (and an
+`--actor` for the audit trail) and means exactly one thing:
+`PENDING_REVIEW → ACCEPTED`.
 
 ### Adding the repository to Mihon
 
@@ -178,9 +267,16 @@ The bot's `/repo` command returns the same URL plus a one-tap deep link.
 
 Available to everyone: `/start`, `/repo`, `/latest`, `/help`, `/id`.
 
-Admins only: `/status`, `/scan`, `/health`, `/publish`, `/quarantine`,
-`/unquarantine <package>`, `/allow <domain>`, `/block <domain>`, `/ban <id>`,
-`/unban <id>`, `/lists`, `/reset`.
+Admins only (by numeric Telegram user id, never by username): `/status`,
+`/scan`, `/review <package>`, `/accept <package>`, `/candidates`, `/health`,
+`/publish`, `/quarantine`, `/unquarantine <package>`, `/allow <domain>`,
+`/block <domain>`, `/ban <id>`, `/unban <id>`, `/lists`, `/reset`.
+
+`/review` is read-only. `/scan` and `/health` are read-only with respect to the
+published repository. `/accept` only moves a candidate to `ACCEPTED` after
+re-verifying it live — acceptance is not publishing. `/publish` publishes
+nothing: it runs a sandboxed dry-run and reports what a manual publish *would*
+change.
 
 Guard behaviour on a group message:
 
@@ -219,10 +315,11 @@ and starts `python bot.py`. No build configuration is required (NIXPACKS detects
    - `GITHUB_BRANCH` = `main`
    - `PUSH_ENABLED` = `true`
 3. **Generate a persistent state.** The container filesystem is ephemeral, so
-   `data/guard_state.json`, `data/quarantine.json` and `data/audit_cache.json`
-   vanish on every redeploy. Add a **volume** mounted at `/app/data` (the default
-   Railway service directory plus `/data`). Without it the bot simply refills its
-   state on the next harvest, but guard bans and allowlists are lost.
+   `data/guard_state.json`, `data/quarantine.json`, `data/audit_cache.json`,
+   `data/candidates.json` and `data/audit_log.jsonl` vanish on every redeploy. Add
+   a **volume** mounted at `/app/data` (the default Railway service directory plus
+   `/data`). Without it the bot simply refills its state on the next harvest, but
+   guard bans, allowlists, pending candidates and the audit trail are lost.
 4. **Deploy**, then check the logs. A healthy start looks like:
    ```
    running as @yourbot (id=…) | admins=[…] | watch=all chats
@@ -241,11 +338,15 @@ To verify the repository itself without deploying anything, run
 
 ```
 bot.py                  the whole service
+review_system.py        candidate schema, state machine, gates, audit log
+test_review_pipeline.py review/accept test suite (offline, never pushes)
 repo.json               repository descriptor Mihon reads (index_v2 URL + key)
 repo/index.pb           gzipped protobuf index, consumed by Mihon
 repo/index.json         human-readable copy of the same data
 repo/index.min.json     legacy minimal index
-data/quarantine.json     extensions disabled by the health sweep
+data/candidates.json    review candidates with their gate evidence (git-ignored)
+data/audit_log.jsonl    append-only decision log (git-ignored)
+data/quarantine.json     quarantine proposals staged by the health sweep (not yet enforced)
 data/audit_cache.json   remembered audit verdicts, keyed by package+version
 data/guard_state.json   guard allow/block lists and user bans (git-ignored)
 data/sources.json       last successful scrape of the upstream index
@@ -261,5 +362,13 @@ overwritten. Change the source of truth (`bot.py`) instead.
   chat, a log, or a screenshot.
 - The GitHub token is only ever used against the Contents API for the configured
   repository.
+- Every privileged Telegram path (commands *and* inline-keyboard callbacks) is
+  authorised by the sender's numeric user id in `ADMIN_ID`. Usernames are never
+  trusted, bots are never admins, and a callback is refused before its report
+  token is even resolved. A non-admin also cannot drive `/review` or `/accept`.
+- `data/audit_log.jsonl` is append-only and every field is passed through a
+  redactor, so `GITHUB_TOKEN`, `TELEGRAM_BOT_TOKEN`, signing keys and anything
+  else that looks like a credential are replaced with `[REDACTED]` before they
+  reach disk.
 - The guard's block/ban state is intentionally simple and file-backed; it is not
   designed to resist a coordinated attack on the bot account itself.

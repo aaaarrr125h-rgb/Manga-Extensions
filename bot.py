@@ -4,14 +4,19 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import base64
 import gzip
+import inspect
 import json
 import logging
 import os
 import re
+import shutil
 import signal
 import sys
+import tempfile
+import textwrap
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -29,6 +34,11 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+import review_system as rs
+from review_system import (ACCEPTED, ALLOWED_TRANSITIONS, DISCOVERED, GATES, PENDING_REVIEW,
+                           QUARANTINED, REJECTED, VALIDATED, AuditLog, CandidateStore,
+                           ReviewSystem, is_commit_sha, redact)
+
 LOG = logging.getLogger("manga-guard")
 STARTED_AT = time.time()
 
@@ -38,6 +48,8 @@ DATA_DIR = ROOT / "data"
 QUARANTINE_FILE = Path(os.environ.get("QUARANTINE_FILE") or DATA_DIR / "quarantine.json")
 AUDIT_CACHE_FILE = Path(os.environ.get("AUDIT_CACHE_FILE") or DATA_DIR / "audit_cache.json")
 STATE_FILE = Path(os.environ.get("STATE_FILE") or DATA_DIR / "guard_state.json")
+CANDIDATE_FILE = Path(os.environ.get("CANDIDATE_FILE") or DATA_DIR / "candidates.json")
+AUDITLOG_FILE = Path(os.environ.get("AUDITLOG_FILE") or DATA_DIR / "audit_log.jsonl")
 INDEX_JSON = REPO_DIR / "index.json"
 INDEX_MIN_JSON = REPO_DIR / "index.min.json"
 INDEX_PB = REPO_DIR / "index.pb"
@@ -78,6 +90,35 @@ def env_set(name: str) -> set:
     return items
 
 
+# ----------------------------------------------------------------- test guard
+
+#: When on, every code path that writes into repo/ or talks to the GitHub API is
+#: refused. --selftest and the test runner switch this on, so running the tests
+#: can never publish, push or rewrite repo/index.json.
+TEST_MODE = env_bool("TEST_MODE", False) or env_bool("REVIEW_TEST", False)
+
+
+class PushBlocked(RuntimeError):
+    """Raised when a write into repo/ or a GitHub push is not authorised."""
+
+
+class BuildError(RuntimeError):
+    """Raised when the index cannot be built safely.
+
+    A build that cannot be done correctly must stop *before* it writes, so the
+    published artifacts are left exactly as they were.
+    """
+
+
+class SigningMetadataMissing(BuildError):
+    """Raised when no usable signing key can be resolved for the build.
+
+    The signing key identifies the store; publishing an empty one would strip the
+    signing metadata out of ``repo/index.json`` and ``repo.json`` and leave a
+    repository that no client can trust. So a build refuses instead.
+    """
+
+
 TELEGRAM_TOKEN = env_str("TELEGRAM_BOT_TOKEN")
 ADMIN_IDS = env_set("ADMIN_ID") | env_set("ADMIN_IDS")
 WATCH_CHATS = env_set("WATCH_CHATS")
@@ -90,6 +131,156 @@ GITHUB_REPO = env_str("GITHUB_REPO", "aaaarrr125h-rgb/Manga-Extensions")
 GITHUB_BRANCH = env_str("GITHUB_BRANCH", "main")
 GITHUB_API = env_str("GITHUB_API", "https://api.github.com")
 PUSH_ENABLED = env_bool("PUSH_ENABLED", True) and bool(GITHUB_TOKEN)
+
+# ----------------------------------------------------------------- publish gate
+
+#: The single switch that decides whether anything may ever reach ``repo/`` or
+#: GitHub. No cron job, no Telegram command and no CLI flag can raise it: it is
+#: configuration only, and it stays off unless an operator sets it by hand.
+#:
+#: ``disabled`` (default) — nothing is written into ``repo/``, nothing is pushed.
+#: ``dry-run``         — builds into a throwaway directory and reports the diff.
+#: ``allow``            — the later, deliberately separate publishing phase; it
+#:                        still requires ``PUSH_ENABLED`` (a real token).
+#:
+#: The switch is necessary but not sufficient: a real write *also* needs a live
+#: :class:`PublishAuthorization`, so configuration alone can never be enough to
+#: publish. Harvest, health, /scan, /publish, the scheduler and the CLI are all
+#: permanently outside that authorisation.
+PUBLISH_MODE = (env_str("PUBLISH_MODE", "disabled") or "disabled").strip().lower()
+if PUBLISH_MODE not in ("disabled", "dry-run", "allow"):
+    LOG.warning("PUBLISH_MODE=%r is not a known mode - falling back to 'disabled'",
+                PUBLISH_MODE)
+    PUBLISH_MODE = "disabled"
+
+#: Real publishing additionally needs a token, so PUBLISH_MODE=allow alone is inert.
+PUBLISH_ENABLED = PUBLISH_MODE == "allow" and PUSH_ENABLED
+
+PUBLISH_REFUSAL = ("publishing is a separate phase: accepted candidates are never "
+                   "published by harvest, /scan, /health, the scheduler or a CLI "
+                   "flag. PUBLISH_MODE=allow must be set deliberately to enable it")
+
+
+def publish_gate(operation: str) -> dict:
+    """Single decision point for every publish/push request in the process.
+
+    Returns ``{"ok": bool, "reason": str}``; callers either stop or turn the
+    refusal into a dry-run report. Nothing else is allowed to decide this.
+    """
+    if TEST_MODE:
+        return {"ok": False, "reason": "TEST_MODE is active", "mode": PUBLISH_MODE}
+    if PUBLISH_MODE != "allow":
+        return {"ok": False, "reason": "PUBLISH_MODE={} (publishing disabled)".format(
+            PUBLISH_MODE), "mode": PUBLISH_MODE}
+    if not PUSH_ENABLED:
+        return {"ok": False, "reason": "PUSH_ENABLED is off or GITHUB_TOKEN is missing",
+                "mode": PUBLISH_MODE}
+    return {"ok": True, "reason": "publish gate open", "mode": PUBLISH_MODE}
+
+
+class PublishAuthorization:
+    """The only key that opens a real write into ``repo/`` or the GitHub API.
+
+    Holding one is the *explicit gate*: construction checks
+    :func:`publish_gate` and fails closed, and while the ``with`` block is
+    entered :func:`assert_may_write_repo` / :func:`assert_may_push` pass.
+    Leaving the block lowers the key again, and it is thread-local, so a cron
+    thread, a Telegram thread and the CLI can never inherit each other's
+    authorisation.
+
+    Nothing in harvest, health, ``/scan``, ``/health``, ``/publish``, the
+    scheduler or a CLI flag enters this class. The single entry point is
+    :func:`run_publish_phase` -- the later, manual publishing phase.
+    """
+
+    _active = threading.local()
+
+    def __init__(self, actor: str, reason: str = ""):
+        self.actor = redact(str(actor or "unknown"))
+        self.reason = redact(str(reason or ""))
+        self.previous = None
+
+    def __enter__(self) -> "PublishAuthorization":
+        gate = publish_gate("publish authorization")
+        if not gate["ok"]:
+            raise PushBlocked("publish authorization refused: {}".format(gate["reason"]))
+        self.previous = getattr(PublishAuthorization._active, "token", None)
+        PublishAuthorization._active.token = self
+        LOG.warning("publish authorisation GRANTED to %s (%s) mode=%s",
+                    self.actor, self.reason, PUBLISH_MODE)
+        return self
+
+    def __exit__(self, *exc) -> bool:
+        PublishAuthorization._active.token = self.previous
+        LOG.warning("publish authorisation RELEASED (%s)", self.actor)
+        return False
+
+
+def publish_authorized() -> bool:
+    """True only inside an explicit :class:`PublishAuthorization` block."""
+    return getattr(PublishAuthorization._active, "token", None) is not None
+
+
+def called_method_names(func) -> set:
+    """Method names ``func`` really calls, by AST rather than by text.
+
+    Comments and docstrings are ignored on purpose: a comment that *mentions*
+    ``REPO.publish()`` is documentation of what is forbidden, not a call. The
+    tests use this so that adding ``REPO.publish()`` anywhere is what fails, and
+    merely explaining it is not.
+    """
+    try:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(func)))
+    except (OSError, TypeError, SyntaxError, IndentationError):
+        return set()
+    return {node.func.attr for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
+
+
+def assert_may_write_repo(what: str = "write repo/") -> None:
+    """The only door into ``repo/``. A sandboxed build (``dest=``) needs no
+    permission at all; a real write needs an explicit publish authorisation."""
+    if TEST_MODE:
+        raise PushBlocked("TEST_MODE is active: refusing to {}".format(what))
+    if not publish_authorized():
+        raise PushBlocked("{}: no explicit publish authorisation is held -- this path "
+                          "may not write the published repository".format(what))
+    gate = publish_gate(what)
+    if not gate["ok"]:
+        raise PushBlocked("{}: {}".format(what, gate["reason"]))
+
+
+def assert_may_push(what: str = "push") -> None:
+    """The only door into the GitHub API."""
+    if TEST_MODE:
+        raise PushBlocked("TEST_MODE is active: refusing to {}".format(what))
+    if not publish_authorized():
+        raise PushBlocked("{}: no explicit publish authorisation is held -- this path "
+                          "may not reach GitHub".format(what))
+    gate = publish_gate(what)
+    if not gate["ok"]:
+        raise PushBlocked("{}: {}".format(what, gate["reason"]))
+
+
+def run_publish_phase(actor: str, reason: str) -> dict:
+    """The separate, manual publishing phase -- and the only publish caller.
+
+    Nothing reaches this function from harvest, health, ``/scan``, ``/health``,
+    ``/publish``, a cron job, a Telegram callback or a CLI flag. It takes an
+    explicit actor, opens one :class:`PublishAuthorization`, and closes it again
+    on the way out, so ``RepoManager.publish()`` and ``RepoManager.push()`` are
+    unreachable everywhere else even when ``PUBLISH_MODE=allow``.
+    """
+    if not actor:
+        return {"ok": False, "blocked": True, "changed": [], "pushed": [],
+                "skipped": "the publish phase needs an explicit actor"}
+    try:
+        with PublishAuthorization(actor, reason):
+            return REPO.publish()
+    except PushBlocked as exc:
+        LOG.error("publish phase refused for %s: %s", redact(str(actor)), exc)
+        return {"ok": False, "blocked": True, "changed": [], "pushed": [], "skipped": str(exc)}
+
 
 STORE_NAME = env_str("REPO_NAME", "Shura")
 STORE_BADGE = env_str("BADGE_LABEL", "SHURA")
@@ -123,7 +314,13 @@ USER_AGENT = env_str(
 
 CRON_HARVEST = env_str("CRON_HARVEST", "17 */6 * * *")
 CRON_HEALTH = env_str("CRON_HEALTH", "41 */3 * * *")
+#: Readiness report only -- it never publishes and never pushes. See job_publish.
 CRON_PUBLISH = env_str("CRON_PUBLISH", "23 */2 * * *")
+#: The CRON_PUBLISH job is **not scheduled by default**. Even when switched on it
+#: stays a dry-run: it calls RepoManager.prepare_publish(), which builds into a
+#: throwaway directory and reports. It can never build into repo/ and can never
+#: push, and no cron job can accept a candidate.
+PUBLISH_READINESS_ENABLED = env_bool("PUBLISH_READINESS_ENABLED", False)
 CRON_DIGEST = env_str("CRON_DIGEST", "53 9 * * *")
 TIMEZONE = env_str("TIMEZONE", "UTC")
 
@@ -513,7 +710,80 @@ def encode_extension(extension: dict) -> bytes:
     return out
 
 
+# ----------------------------------------------------------------- signing metadata
+
+#: A signing key is a hex digest. Anything else is a misconfiguration, and
+#: publishing it would replace a good key with a value no client can use.
+SIGNING_KEY_RE = re.compile(r"^[0-9a-fA-F]+$")
+
+
+def published_fingerprint(path: Path = None) -> str:
+    """The ``signingKeyFingerprint`` currently published in repo.json.
+
+    Read-only and fail-soft: a missing or unreadable repo.json is reported as
+    "no fingerprint" rather than raising, because this is a *fallback* source
+    for a build, not the build itself.
+    """
+    target = Path(path) if path is not None else REPO_JSON
+    if not target.is_file():
+        return ""
+    try:
+        payload = json.loads(target.read_text(encoding="utf-8"))
+        return str((payload.get("meta") or {}).get("signingKeyFingerprint") or "").strip()
+    except (OSError, ValueError, AttributeError) as exc:
+        LOG.warning("cannot read the published signing fingerprint: %s", exc)
+        return ""
+
+
+def resolve_signing_key(index: dict = None, path: Path = None) -> str:
+    """The signing key a build may embed -- never an empty one.
+
+    Resolution order, first usable wins:
+
+    1. ``SIGNING_KEY`` from the environment, when it is set and valid;
+    2. the ``signingKey`` already present in the index being built;
+    3. the ``signingKeyFingerprint`` already published in repo.json.
+
+    Steps 2 and 3 are what stop a build from *erasing* signing metadata: a
+    process without ``SIGNING_KEY`` in its environment rebuilds the artifacts
+    with the key that is already there, rather than writing an empty string over
+    it. If none of the three yields a valid key, the build is refused -- an
+    index with no signing key is worse than an index that was not rebuilt.
+    """
+    configured = str(SIGNING_KEY or "").strip()
+    if configured:
+        return validate_signing_key(configured, "SIGNING_KEY")
+    current = str((index or {}).get("signingKey") or "").strip()
+    if current:
+        LOG.info("SIGNING_KEY is unset: keeping the signing key already in the index")
+        return validate_signing_key(current, "the published index signingKey")
+    fallback = published_fingerprint(path)
+    if fallback:
+        LOG.info("SIGNING_KEY is unset: keeping the fingerprint published in repo.json")
+        return validate_signing_key(fallback, "the published repo.json fingerprint")
+    raise SigningMetadataMissing(
+        "no signing key: SIGNING_KEY is unset and neither repo/index.json nor "
+        "repo.json carries a fingerprint. Refusing to build an index that would "
+        "strip the signing metadata -- set SIGNING_KEY or restore repo.json")
+
+
+def validate_signing_key(value: str, source: str) -> str:
+    """Reject a value that must never be published as a signing key."""
+    key = str(value or "").strip()
+    if not key:
+        raise SigningMetadataMissing("{} is empty".format(source))
+    if not SIGNING_KEY_RE.match(key):
+        raise SigningMetadataMissing(
+            "{} is not a hex digest: {!r}".format(source, key[:24]))
+    return key
+
+
 def encode_index(index: dict) -> bytes:
+    # Refuse to encode an index whose signing key is missing or malformed, even
+    # if some future caller skipped resolve_signing_key(): an .pb without a
+    # signing key is not a less valid artifact, it is a broken one.
+    index = dict(index or {})
+    index["signingKey"] = resolve_signing_key(index)
     contact = index.get("contact") or {}
     contact_bytes = pb_str(1, contact.get("website") or "") + pb_str(2, contact.get("discord") or "")
     extensions = b"".join(
@@ -780,6 +1050,8 @@ class Store:
         self.users = {}
         self.reports = {}
         self.health = {}
+        #: health-sweep proposals, staged for a human. Never applied to the index.
+        self.proposals = {}
         self.counters = {"reports": 0, "bans": 0, "allowed": 0, "auto": 0,
                          "harvests": 0, "added": 0, "updated": 0,
                          "quarantined": 0, "pushes": 0, "rejected": 0}
@@ -794,6 +1066,7 @@ class Store:
                     self.block = set(data.get("block") or [])
                     self.users = dict(data.get("users") or {})
                     self.health = dict(data.get("health") or {})
+                    self.proposals = dict(data.get("proposals") or {})
                     self.counters.update(data.get("counters") or {})
             except (OSError, ValueError) as exc:
                 LOG.warning("state load failed: %s", exc)
@@ -805,6 +1078,7 @@ class Store:
                 "block": sorted(self.block),
                 "users": self.users,
                 "health": self.health,
+                "proposals": self.proposals,
                 "counters": self.counters,
                 "updated_at": int(time.time()),
             }
@@ -903,6 +1177,21 @@ class Store:
     def health_put(self, key: str, record: dict) -> None:
         with self.lock:
             self.health[key] = record
+
+    def stage_health_proposals(self, proposals: dict) -> None:
+        """Record what a health sweep *would* change, without changing it.
+
+        Persisted in ``data/`` next to the health records so a human can read
+        what is pending; the published index is left alone.
+        """
+        with self.lock:
+            self.proposals = dict(proposals or {})
+            self.proposals["updated_at"] = int(time.time())
+            self.save()
+
+    def staged_proposals(self) -> dict:
+        with self.lock:
+            return json.loads(json.dumps(self.proposals, default=str))
 
     def clear(self) -> None:
         with self.lock:
@@ -1081,12 +1370,19 @@ class RepoManager:
         lang, module = parts[4], ".".join(parts[5:])
         return [f"src/{lang}/{module}", f"lib-multisrc/{module}"]
 
-    def scan_extension_source(self, package_name: str) -> list:
+    def scan_extension_source(self, package_name: str, ref: str = None) -> dict:
+        """Static scan of the extension's Kotlin source.
+
+        ``ref`` pins the scan to an immutable commit. Candidates always pass the
+        SHA they pinned; only the legacy in-memory audit falls back to the
+        configured (moving) ref.
+        """
+        target = str(ref or UPSTREAM_SOURCE_REF)
         findings = []
         scanned = 0
         for directory in self.module_paths(package_name):
             url = (f"https://api.github.com/repos/{UPSTREAM_SOURCE_REPO}/contents/"
-                   f"{directory}?ref={UPSTREAM_SOURCE_REF}")
+                   f"{directory}?ref={target}")
             try:
                 response = self.session.get(
                     url, timeout=HTTP_TIMEOUT,
@@ -1115,7 +1411,7 @@ class RepoManager:
                 if entry.get("type") != "file" or not str(entry.get("name", "")).endswith(".kt"):
                     continue
                 raw = (f"https://raw.githubusercontent.com/{UPSTREAM_SOURCE_REPO}/"
-                       f"{UPSTREAM_SOURCE_REF}/{entry.get('path')}")
+                       f"{target}/{entry.get('path')}")
                 try:
                     body = self.session.get(raw, timeout=HTTP_TIMEOUT)
                 except requests.RequestException:
@@ -1129,43 +1425,22 @@ class RepoManager:
             if scanned:
                 break
         if scanned:
-            LOG.debug("scanned %d files for %s", scanned, package_name)
-        return findings
+            LOG.debug("scanned %d files for %s at %s", scanned, package_name, target[:12])
+        return {"findings": findings, "scanned": scanned, "ref": target}
 
-    def audit(self, extension: dict) -> str:
-        reason = self.validate(extension)
-        if reason:
-            return reason
-        reason = self.screen(extension)
-        if reason:
-            return reason
-
-        resources = extension.get("resources") or {}
-        for key in ("apkUrl", "iconUrl"):
-            url = resources.get(key)
-            if not url:
-                continue
-            try:
-                code = self.session.head(url, timeout=HTTP_TIMEOUT,
-                                         allow_redirects=True).status_code
-            except requests.RequestException:
-                continue
-            if code in (404, 410):
-                return "dead-asset:{}:{}".format(key, code)
-            if code in (400, 401, 403, 429):
-                continue
-            if code >= 500:
-                return "asset-error:{}:{}".format(key, code)
-
-        if SOURCE_SCAN_ENABLED:
-            findings = self.scan_extension_source(extension["packageName"])
-            blocking = [item for item in findings if item["severity"] in BLOCKING_SEVERITIES]
-            if blocking:
-                return "malware:{}".format(",".join(sorted({item["id"] for item in blocking})))
-            if findings:
-                LOG.info("%s: %d low-severity findings (%s)", extension["packageName"],
-                         len(findings), ",".join(sorted({item["id"] for item in findings})))
-        return ""
+    def asset_verdict(self, url: str) -> str:
+        """HEAD the remaining distribution assets. "" means alive, anything else
+        is a short reason (``404``, ``503``, …)."""
+        try:
+            code = self.session.head(url, timeout=HTTP_TIMEOUT,
+                                     allow_redirects=True).status_code
+        except requests.RequestException as exc:
+            return "unreachable:{}".format(type(exc).__name__)
+        if code in (404, 410):
+            return str(code)
+        if code in (400, 401, 403, 429):
+            return ""
+        return str(code) if code >= 500 else ""
 
     def interleave(self, candidates: list) -> list:
         buckets = {}
@@ -1181,17 +1456,31 @@ class RepoManager:
                     merged.append(queue.pop(0))
         return merged
 
+    def discover_candidate(self, extension: dict, pin_apk: bool = True) -> dict:
+        """Run one upstream entry through the review pipeline into a candidate.
+
+        This is the only place harvest creates state, and it never writes the
+        index. The pinned commit comes from the configured upstream source ref.
+        """
+        candidate = REVIEW.discover(extension, UPSTREAM_SOURCE_REPO, UPSTREAM_SOURCE_REF,
+                                    actor="harvest", pin_apk=pin_apk)
+        if candidate.get("rejected"):
+            return candidate
+        return REVIEW.process(candidate)
+
     def harvest(self) -> dict:
+        """Discover candidates. Publishing is a separate, manual step."""
         started = time.time()
         try:
             upstream = self.fetch_upstream()
         except (requests.RequestException, ValueError) as exc:
             self.last_error = "scrape failed: {}".format(exc)
             LOG.error("%s", self.last_error)
-            return {"ok": False, "error": self.last_error}
+            return {"ok": False, "error": self.last_error, "indexTouched": False}
 
-        current = {item["packageName"]: item
-                   for item in self.extensions() if item.get("packageName")}
+        # read-only view of what is actually published
+        published = {item["packageName"]: item
+                     for item in self.extensions() if item.get("packageName")}
         blocked = self.blocked_packages()
         live = {str(item.get("packageName")) for item in upstream if item.get("packageName")}
         added, updated, rejected, cached, scanned, budget = [], [], [], 0, 0, False
@@ -1200,13 +1489,20 @@ class RepoManager:
             package = candidate.get("packageName")
             if not package or package in blocked:
                 continue
-            known = current.get(package)
+            known = published.get(package)
             version_code = candidate.get("versionCode")
             try:
                 newer = int(version_code or 0) > int((known or {}).get("versionCode") or 0)
             except (TypeError, ValueError):
                 newer = False
             if known and not newer:
+                continue
+            existing = CANDIDATES.latest(package)
+            try:
+                seen = int(version_code or 0) <= int((existing or {}).get("versionCode") or 0)
+            except (TypeError, ValueError):
+                seen = False
+            if existing and seen:
                 continue
             if len(added) >= MAX_NEW_PER_RUN and not known:
                 budget = True
@@ -1222,22 +1518,22 @@ class RepoManager:
                 continue
 
             scanned += 1
-            reason = self.audit(candidate)
-            if reason:
+            result = self.discover_candidate(candidate)
+            if result.get("rejected"):
+                self.record_audit(package, version_code, "reject", result.get("reason", ""))
+                rejected.append({"packageName": package, "reason": result.get("reason", "")})
+                LOG.info("candidate rejected %s -> %s", package, result.get("reason"))
+                continue
+            if result.get("status") != PENDING_REVIEW:
+                reason = "pipeline stopped at {}".format(result.get("status"))
                 self.record_audit(package, version_code, "reject", reason)
                 rejected.append({"packageName": package, "reason": reason})
-                LOG.info("rejected %s -> %s", package, reason)
+                LOG.info("candidate %s -> %s (%s)", package, result.get("status"), reason)
                 continue
-            self.record_audit(package, version_code, "accept")
-            if known:
-                updated.append(package)
-            else:
-                added.append(package)
-            current[package] = candidate
 
-        with self.lock:
-            self.index["extensionList"]["extensions"] = sorted(
-                current.values(), key=lambda item: item.get("packageName") or "")
+            self.record_audit(package, version_code, "candidate")
+            (updated if known else added).append(package)
+
         self.save_audit_cache(live)
 
         STATE.bump("harvests")
@@ -1249,11 +1545,15 @@ class RepoManager:
             "rejected": [item for item in rejected if not item.get("cached")],
             "rejected_cached": cached, "scanned": scanned, "budget_hit": budget,
             "total": len(self.extensions()),
+            "pending_review": len(CANDIDATES.by_status(PENDING_REVIEW)),
+            "indexTouched": False,
             "seconds": round(time.time() - started, 1),
         }
-        LOG.info("harvest done: +%d new, %d updated, %d rejected (%d cached), %d scanned, "
-                 "%d total in %ss", len(added), len(updated), len(rejected) - cached,
-                 cached, scanned, summary["total"], summary["seconds"])
+        LOG.info("harvest done: %d candidate(s) ready (%d new, %d update), %d rejected "
+                 "(%d cached), %d scanned, index still holds %d extensions, %ss",
+                 summary["pending_review"], len(added), len(updated),
+                 len(rejected) - cached, cached, scanned, summary["total"],
+                 summary["seconds"])
         return summary
 
     def probe(self, url: str) -> tuple:
@@ -1283,6 +1583,22 @@ class RepoManager:
         return "down", last
 
     def health_sweep(self) -> dict:
+        """Probe the published sources and record the result. Never publishes.
+
+        The sweep is read-only with respect to the published repository: it does
+        not build, does not push, and does **not** edit ``self.index``. Dead
+        sources and fully-dead extensions become *proposals* staged in
+        ``data/`` (the local quarantine list plus ``STATE``), so a link outage
+        can never silently change what users are offered. Acting on a proposal is
+        a review decision belonging to the later manual publish phase.
+
+        Note: ``health_sweep()`` *creates* quarantine proposals only. It never
+        removes anything from the published index by itself, and neither
+        :meth:`build` nor the publish path consults the quarantine list yet --
+        the staged entries are inert until a dedicated quarantine review step
+        applies them. Until that step exists, do not read a proposal as
+        "already enforced".
+        """
         extensions = self.extensions()
         targets, per_extension = [], {}
         for extension in extensions:
@@ -1302,7 +1618,9 @@ class RepoManager:
             per_extension[package] = keys
         if not targets:
             return {"ok": True, "checked": 0, "alive": 0, "failing": 0, "dropped_sources": 0,
-                    "quarantined": [], "total": len(extensions)}
+                    "quarantined": [], "total": len(extensions), "proposed_source_drops": [],
+                    "proposed_quarantine": [], "proposed_dropped_sources": 0,
+                    "applied": False, "indexTouched": False, "published": False}
 
         with self.lock:
             start = self.cursor % len(targets)
@@ -1337,19 +1655,19 @@ class RepoManager:
                      if record.get("state") == "dead" and int(record.get("fails") or 0)
                      >= DEAD_THRESHOLD}
 
-        quarantined, dropped_sources = [], 0
+        # Staged, never applied. ``self.index`` is deliberately not touched: a
+        # health sweep may not remove a source or an extension from the index
+        # that users already download from.
+        proposed_quarantine, proposed_drops = [], []
         if dead_keys:
             with self.lock:
-                keep_extensions = []
-                for extension in self.index["extensionList"]["extensions"]:
+                for extension in extensions:
                     package = extension.get("packageName")
                     keys = per_extension.get(package) or []
                     if not keys:
-                        keep_extensions.append(extension)
                         continue
                     offenders = {key for key, _, _ in keys if key in dead_keys}
                     if not offenders:
-                        keep_extensions.append(extension)
                         continue
                     if len(offenders) == len(keys):
                         if package not in self.blocked_packages():
@@ -1359,40 +1677,74 @@ class RepoManager:
                                 "reason": "all-sources-dead",
                                 "at": int(time.time()),
                             })
-                        quarantined.append(package)
+                        proposed_quarantine.append(package)
                         continue
                     survivors = [source for source in extension.get("sources") or []
                                  if "{}|{}".format(package, source.get("homeUrl") or "")
                                  not in offenders]
-                    removed = len(extension.get("sources") or []) - len(survivors)
-                    dropped_sources += removed
-                    keep_extensions.append(dict(extension, sources=survivors))
-                    LOG.info("%s: dropped %d dead source(s)", package, removed)
-                if quarantined or dropped_sources:
-                    self.index["extensionList"]["extensions"] = keep_extensions
-                    self.save_quarantine()
-            if quarantined:
-                STATE.bump("quarantined", len(quarantined))
-                LOG.warning("quarantined %d fully-dead extensions: %s", len(quarantined),
-                            ", ".join(quarantined[:8]))
-            if dropped_sources:
-                LOG.info("dropped %d dead source(s) from %d extension(s)", dropped_sources,
-                         len(self.extensions()))
+                    proposed_drops.append({
+                        "packageName": package,
+                        "action": "drop-sources",
+                        "reason": "dead-sources",
+                        "fails": DEAD_THRESHOLD,
+                        "dead": sorted(offenders),
+                        "keep": [source.get("homeUrl") for source in survivors],
+                    })
+            if proposed_quarantine:
+                # data/quarantine.json is local state, not the published index
+                self.save_quarantine()
+                STATE.bump("quarantined", len(proposed_quarantine))
+                LOG.warning("staged %d fully-dead extension(s) for review: %s",
+                            len(proposed_quarantine), ", ".join(proposed_quarantine[:8]))
+            if proposed_drops:
+                LOG.info("staged %d dead source removal(s) for review, none applied",
+                         len(proposed_drops))
+
+        STATE.stage_health_proposals({"quarantine": proposed_quarantine,
+                                      "source_drops": proposed_drops})
 
         summary = {"ok": True, "checked": len(window), "alive": alive, "failing": dead,
-                   "inconclusive": down, "dropped_sources": dropped_sources,
-                   "quarantined": quarantined, "total": len(self.extensions())}
+                   "inconclusive": down, "dropped_sources": 0,
+                   "quarantined": proposed_quarantine,
+                   "proposed_quarantine": proposed_quarantine,
+                   "proposed_source_drops": proposed_drops,
+                   "proposed_dropped_sources": sum(len(item["dead"])
+                                                  for item in proposed_drops),
+                   "total": len(self.extensions()),
+                   "applied": False, "indexTouched": False, "published": False}
         LOG.info("health sweep: %d checked, %d alive, %d dead, %d inconclusive, "
-                 "%d sources dropped, %d quarantined", len(window), alive, dead, down,
-                 dropped_sources, len(quarantined))
+                 "%d proposed source removals, %d proposed quarantine -- "
+                 "index unchanged (%d extensions), nothing published",
+                 len(window), alive, dead, down, summary["proposed_dropped_sources"],
+                 len(proposed_quarantine), summary["total"])
         return summary
 
-    def build(self) -> dict:
+    def build(self, dest: Path = None) -> dict:
+        """Regenerate the index artifacts.
+
+        ``dest`` redirects every write into another directory, so tests, the
+        dry-run ``--build`` and :meth:`prepare_publish` can run a real build
+        without touching repo/. Passing ``dest`` is the only way to build while
+        TEST_MODE is on.
+
+        Without ``dest`` this is a *real* write and needs a live
+        :class:`PublishAuthorization`; the sandbox form needs none, so a review
+        or a test can never be one refactor away from publishing.
+
+        The signing key is resolved *first*, before anything is written: a build
+        that cannot carry a valid one raises :class:`SigningMetadataMissing` and
+        leaves every artifact untouched, rather than publishing an index and a
+        repo.json with the signing metadata blanked out.
+        """
+        isolated = dest is not None
+        if not isolated:
+            assert_may_write_repo("build the index")
         with self.lock:
             index = json.loads(json.dumps(self.index))
+        signing_key = resolve_signing_key(index)
         index["name"] = STORE_NAME
         index["badgeLabel"] = STORE_BADGE
-        index["signingKey"] = SIGNING_KEY
+        index["signingKey"] = signing_key
         index["contact"] = {"website": STORE_WEBSITE}
         if STORE_DISCORD:
             index["contact"]["discord"] = STORE_DISCORD
@@ -1406,9 +1758,12 @@ class RepoManager:
                 kept.append(extension)
         index["extensionList"]["extensions"] = sorted(
             kept, key=lambda item: item.get("packageName") or "")
-        if dropped:
+        if dropped and not isolated:
+            # only a real publish may fold the filtered index back into memory;
+            # a sandbox build stays read-only so a dry-run cannot hide a change
             with self.lock:
                 self.index = index
+        if dropped:
             LOG.warning("build dropped %d invalid entries: %s", len(dropped),
                         ", ".join(item["packageName"] or "?" for item in dropped[:5]))
 
@@ -1416,7 +1771,7 @@ class RepoManager:
         repo_json = {"index_v2": INDEX_PB_URL,
                      "meta": {"name": STORE_NAME, "shortName": STORE_BADGE,
                               "website": STORE_WEBSITE,
-                              "signingKeyFingerprint": SIGNING_KEY}}
+                              "signingKeyFingerprint": signing_key}}
         if STORE_DISCORD:
             repo_json["meta"]["discord"] = STORE_DISCORD
 
@@ -1433,7 +1788,7 @@ class RepoManager:
 
         changed = []
         for relative, payload in artifacts.items():
-            path = ROOT / relative
+            path = (dest / relative) if isolated else (ROOT / relative)
             if path.is_file() and path.read_bytes() == payload:
                 continue
             atomic_write(path, payload)
@@ -1444,6 +1799,7 @@ class RepoManager:
                 "pb_bytes": len(artifacts["repo/index.pb"])}
 
     def push(self, paths=None) -> dict:
+        assert_may_push("push to GitHub")
         if not PUSH_ENABLED:
             return {"ok": False, "pushed": [], "skipped": "no GITHUB_TOKEN"}
         targets = paths or ["repo/index.json", "repo/index.pb", "repo/index.min.json",
@@ -1497,17 +1853,61 @@ class RepoManager:
                 "skipped": "" if pushed else "nothing-to-push"}
 
     def publish(self) -> dict:
-        built = self.build()
+        """Regenerate the artifacts and push them. Manual phase only.
+
+        Reachable *only* from inside a :class:`PublishAuthorization`, i.e. from
+        :func:`run_publish_phase`. Harvest, health, the Telegram commands, the
+        cron jobs and the CLI never hold that authorisation, so every one of
+        them gets ``blocked=True`` here instead of a write.
+        """
+        try:
+            assert_may_push("publish")
+            built = self.build()
+        except PushBlocked as exc:
+            return {"ok": False, "changed": [], "pushed": [], "blocked": True,
+                    "skipped": str(exc)}
         if not built.get("ok"):
             return built
         if not built["changed"]:
             LOG.info("index already up to date (%d extensions)", built["extensions"])
             return {"ok": True, "changed": [], "pushed": [], "skipped": "nothing-to-push",
                     "extensions": built["extensions"]}
-        pushed = self.push(built["changed"])
+        try:
+            pushed = self.push(built["changed"])
+        except PushBlocked as exc:
+            return {"ok": False, "changed": built["changed"], "pushed": [], "blocked": True,
+                    "extensions": built["extensions"], "skipped": str(exc)}
         LOG.info("published %d file(s): %s", len(built["changed"]), pushed.get("pushed"))
         return {"ok": True, "changed": built["changed"],
                 "extensions": built["extensions"], **pushed}
+
+    def prepare_publish(self, dest: Path = None) -> dict:
+        """Dry-run of the publish phase. Writes nothing, pushes nothing.
+
+        Builds the artifacts into a throwaway directory, reports exactly which
+        files *would* change, and lists the accepted candidates that a manual
+        publish would still have to apply first. This is what ``/publish`` and
+        the CRON_PUBLISH readiness job report, so an operator can see the state
+        of the release without any of it being one keystroke away.
+        """
+        sandbox = Path(dest) if dest else Path(tempfile.mkdtemp(prefix="manga-prepare-"))
+        sandbox.mkdir(parents=True, exist_ok=True)
+        built = self.build(dest=sandbox)
+        would_change = [item for item in built.get("changed") or []
+                        if item in ("repo/index.json", "repo/index.pb",
+                                    "repo/index.min.json", "repo.json")]
+        accepted = CANDIDATES.by_status(ACCEPTED)
+        return {"ok": True, "mode": PUBLISH_MODE, "dryRun": True, "wrote": None,
+                "sandbox": str(sandbox), "would_change": would_change,
+                "extensions": built.get("extensions"), "dropped": built.get("dropped") or [],
+                "ready_to_publish": len(accepted),
+                "accepted_candidates": [
+                    "{} v{} (accepted by {})".format(
+                        item.get("packageName"), item.get("versionCode"),
+                        item.get("acceptedBy") or "?") for item in accepted[:10]],
+                "pending_review": len(CANDIDATES.by_status(PENDING_REVIEW)),
+                "published": False, "indexTouched": False, "pushed": [],
+                "gate": publish_gate("prepare publish")}
 
     def latest(self, limit: int = 10) -> list:
         entries = self.extensions()
@@ -1531,6 +1931,76 @@ class RepoManager:
 
 
 REPO = RepoManager()
+
+# ----------------------------------------------------------------- review pipeline
+
+#: Durable candidate store + append-only audit log. Both survive restarts and
+#: are never truncated by the test suite.
+CANDIDATES = CandidateStore(CANDIDATE_FILE)
+AUDITLOG = AuditLog(AUDITLOG_FILE)
+
+
+def github_commit_resolver(repository: str, ref: str) -> str:
+    """Resolve a branch/tag to an immutable commit SHA via the GitHub API."""
+    response = REPO.session.get(
+        f"{GITHUB_API}/repos/{repository}/commits/{ref}", timeout=HTTP_TIMEOUT,
+        headers={"Accept": "application/vnd.github+json"})
+    if response.status_code != 200:
+        raise RuntimeError("git {}:{} -> HTTP {}".format(repository, ref, response.status_code))
+    sha = ((response.json() or {}).get("sha") or "")
+    if not is_commit_sha(sha):
+        raise RuntimeError("git {}:{} returned a non-sha".format(repository, ref))
+    return sha
+
+
+def source_scan_for(candidate: dict) -> dict:
+    """Scan the *pinned commit*, never the moving branch."""
+    return REPO.scan_extension_source(candidate.get("packageName", ""),
+                                      ref=candidate.get("sourceCommit", ""))
+
+
+def build_test_for(candidate: dict) -> tuple:
+    """Offline metadata build check. Never writes repo/."""
+    entry = REVIEW.index_entry(candidate)
+    reason = REPO.validate(entry)
+    if reason:
+        return False, "index entry invalid: {}".format(reason)
+    try:
+        # The probe carries the same signing key a real build would, so this
+        # still measures "does the entry encode" and not "is the store configured".
+        encode_index({"signingKey": resolve_signing_key(REPO.index),
+                      "extensionList": {"extensions": [entry]}})
+    except Exception as exc:  # noqa: BLE001
+        return False, "protobuf encode failed: {}".format(exc)
+    return True, "index entry validates and encodes"
+
+
+def index_lookup(package: str) -> dict:
+    """Read-only lookup into the published index."""
+    with REPO.lock:
+        for entry in REPO.index.get("extensionList", {}).get("extensions", []):
+            if entry.get("packageName") == package:
+                return entry
+    return {}
+
+
+def screen_gate(candidate: dict) -> str:
+    """The screen gate: URL screening (punycode, shorteners, IP literals, …) plus
+    the NSFW policy. Returns a reason, or "" when the extension passes."""
+    extension = candidate.get("extension") or candidate
+    return REPO.screen(extension)
+
+
+REVIEW = ReviewSystem(
+    CANDIDATES, AUDITLOG,
+    commit_resolver=github_commit_resolver,
+    deep_screen=screen_gate,
+    build_tester=build_test_for,
+    index_lookup=index_lookup,
+    source_scanner=source_scan_for,
+    asset_probe=REPO.asset_verdict,
+    allow_mixed=ALLOW_MIXED,
+)
 
 # ----------------------------------------------------------------- telegram client
 
@@ -1626,9 +2096,12 @@ HELP = (
     "• /help — هذه القائمة\n\n"
     "🔐 <b>أوامر المشرف (خاص فقط)</b>\n"
     "• /status — حالة البوت والمستودع\n"
-    "• /scan — جلب وفحص فوري\n"
-    "• /health — فحص روابط المصادر\n"
-    "• /publish — إعادة توليد الفهرس ورفعه\n"
+    "• /scan — جلب وترشيح فوري (لا يُعدّل الفهرس)\n"
+    "• /candidates — بانتظار المراجعة\n"
+    "• /review &lt;حزمة&gt; — تقرير المرشح (قراءة فقط)\n"
+    "• /accept &lt;حزمة&gt; — قبول مرشح (ليس نشرًا)\n"
+    "• /health — فحص روابط المصادر (لا ينشر)\n"
+    "• /publish — تقرير جاهزية النشر فقط ⛔️ (لا ينشر ولا يرفع)\n"
     "• /quarantine — قائمة المصادر المعطّلة\n"
     "• /unquarantine &lt;حزمة&gt; — استرجاع مصدر معطّل\n"
     "• /allow &lt;نطاق&gt; — السماح\n"
@@ -1787,8 +2260,15 @@ def handle_message(tg: Telegram, message: dict) -> None:
     chat_id = chat.get("id")
     text = (message.get("text") or "").strip()
 
-    if text.startswith("/") and chat_id in ADMIN_IDS:
-        run_command(tg, message, text)
+    if text.startswith("/"):
+        # Authorised by the sender's numeric id, not by the chat: a group admin
+        # can drive the bot without the whole group gaining the privilege.
+        if is_admin_user(user):
+            run_command(tg, message, text)
+        else:
+            LOG.warning("command %r by non-admin %s/%s refused",
+                        text.split()[0][:24], user.get("id"), user.get("username"))
+            tg.send(chat_id, "⛔️ هذا الأمر للمشرفين فقط.")
         return
     if not chat_id:
         return
@@ -1844,14 +2324,43 @@ def handle_message(tg: Telegram, message: dict) -> None:
              report["user_id"], report["reason"])
 
 
+def is_admin_user(user: dict) -> bool:
+    """Single authorisation gate, by numeric Telegram id only.
+
+    Usernames, display names and chat ids are never trusted: an admin list that
+    could be satisfied by a rename would be trivially bypassable. Bots are never
+    admins. Every privileged path (commands *and* callbacks) goes through here.
+    """
+    if not isinstance(user, dict) or user.get("is_bot"):
+        return False
+    raw = user.get("id")
+    try:
+        return int(raw) in ADMIN_IDS
+    except (TypeError, ValueError):
+        return False
+
+
 def handle_decision(tg: Telegram, query: dict) -> None:
     action, _, token = (query.get("data") or "").partition(":")
     if action not in ("ban", "allow") or not token:
         return
-    tg.answer(query.get("id"), "تم التسجيل ✅")
-    report = STATE.resolve(token, action)
+    actor = query.get("from") or {}
     chat = (query.get("message") or {}).get("chat") or {}
     message_id = (query.get("message") or {}).get("message_id")
+    if not is_admin_user(actor):
+        # Authorisation is checked before the token is even resolved, so a
+        # non-admin cannot consume, enumerate or act on a report.
+        LOG.warning("callback %s by non-admin %s/%s refused", action,
+                    actor.get("id"), actor.get("username"))
+        tg.answer(query.get("id"), "⛔️ للمشرفين فقط")
+        return
+    if not WATCH_CHATS or chat.get("id") not in WATCH_CHATS:
+        if chat.get("id") not in ADMIN_IDS:
+            LOG.warning("callback %s from untrusted chat %s refused", action, chat.get("id"))
+            tg.answer(query.get("id"), "⛔️ هذه المحادثة غير monitored")
+            return
+    tg.answer(query.get("id"), "تم التسجيل ✅")
+    report = STATE.resolve(token, action)
     if not report:
         tg.edit(chat.get("id"), message_id, "⏱ انتهت صلاحية هذا البلاغ.")
         return
@@ -1867,15 +2376,23 @@ def handle_decision(tg: Telegram, query: dict) -> None:
         notes = ["سُجلت النطاقات المسموحة"]
 
     tg.edit(chat.get("id"), message_id, decision_text(report, action, " — ".join(notes)))
-    LOG.info("decision %s token=%s", action, token)
+    LOG.info("decision %s token=%s by admin %s", action, token, actor.get("id"))
 
 
 def run_command(tg: Telegram, message: dict, text: str) -> None:
     chat_id = message["chat"]["id"]
+    user = message.get("from") or {}
     command, _, argument = text.partition(" ")
     command = command.split("@")[0].lower()
     argument = argument.strip()
     first_domain = domain_of(argument) if argument else ""
+    # Second, independent authorisation gate. handle_message already refuses
+    # non-admins, but every privileged command re-checks here so that a future
+    # caller cannot reach /review, /accept or /publish without an admin id.
+    if not is_admin_user(user):
+        LOG.warning("command %r from non-admin %s refused", command[:24], user.get("id"))
+        tg.send(chat_id, "⛔️ هذا الأمر للمشرفين فقط.")
+        return
 
     if command in ("/start", "/help"):
         tg.send(chat_id, HELP)
@@ -1888,42 +2405,92 @@ def run_command(tg: Telegram, message: dict, text: str) -> None:
     elif command == "/status":
         tg.send(chat_id, status_text())
     elif command == "/scan":
+        # Read-only w.r.t. the published repository: discovery, validation,
+        # screen, source scan, APK scan, build/test and candidate create/update
+        # all happen inside harvest(). No publish, no build, no push, no index
+        # write, and no candidate is accepted.
         tg.send(chat_id, "🔄 جارٍ الجلب والفحص الأمني…")
         summary = REPO.harvest()
-        result = REPO.publish()
         if not summary.get("ok"):
             tg.send(chat_id, "❌ {}".format(esc(summary.get("error", "unknown"))))
             return
         added = "\n".join("• " + esc(pkg) for pkg in summary["added"][:15]) or "—"
         rejected = "\n".join("• {} → {}".format(esc(item["packageName"]), esc(item["reason"]))
                              for item in summary["rejected"][:10]) or "—"
-        tg.send(chat_id, "✅ <b>اكتمل الجلب</b>\n"
+        tg.send(chat_id, "✅ <b>اكتمل الترشيح</b>\n"
                          "🆕 جديد ({}):\n{}\n"
                          "🔄 محدّث: {}\n"
                          "🚫 مرفوض ({}):\n{}\n"
-                         "📦 الإجمالي: {}\n"
-                         "📤 مرفوع: {}".format(
+                         "🧪 بانتظار المراجعة: {}\n"
+                         "📦 الإجمالي (لم يُعدّل): {}\n"
+                         "ℹ️ استخدم <code>/review</code> ثم <code>/accept</code>، "
+                         "والنشر يدويًا في مرحلة منفصلة.".format(
                              len(summary["added"]), added, len(summary["updated"]),
-                             len(summary["rejected"]), rejected, summary["total"],
-                             ", ".join(result.get("pushed") or []) or result.get("skipped")))
+                             len(summary["rejected"]), rejected,
+                             summary.get("pending_review", 0), summary["total"]))
     elif command == "/health":
+        # Source health only. The sweep stages proposals in data/ and leaves
+        # repo/index.json untouched; it never publishes and never pushes.
         tg.send(chat_id, "🩺 جارٍ فحص روابط المصادر…")
         summary = REPO.health_sweep()
-        result = REPO.publish()
         tg.send(chat_id, "🩺 <b>فحص المصادر</b>\n"
                          "✅sources سليمة: {}\n"
                          "⚠️ متعثرة: {}\n"
-                         "🛑 أُوقفت: {}\n"
+                         "🛑 مقترحة للتعطيل: {}\n"
+                         "✂️ مصادر مقترحة للحذف: {}\n"
                          "📦 المتبقي: {}\n"
-                         "📤 {}".format(
+                         "ℹ️ لم يُعدّل الـ index ولم يُنشر شيء — التغييرات المقترحة "
+                         "تُراجَع يدويًا، والنشر في مرحلة منفصلة.".format(
                              summary.get("alive", 0), summary.get("failing", 0),
-                             len(summary.get("quarantined") or []), summary.get("total", 0),
-                             ", ".join(result.get("pushed") or []) or result.get("skipped")))
+                             len(summary.get("quarantined") or []),
+                             summary.get("proposed_dropped_sources", 0),
+                             summary.get("total", 0)))
     elif command == "/publish":
-        result = REPO.publish()
-        tg.send(chat_id, "📦 <b>إعادة النشر</b>\nالإضافات: {}\nتغيّر: {}\n📤 {}".format(
-            result.get("extensions", 0), ", ".join(result.get("changed") or []) or "لا شيء",
-            ", ".join(result.get("pushed") or []) or result.get("skipped", "—")))
+        # It does not publish. It reports what a manual publish *would* do, from
+        # a sandboxed dry-run build, and never touches repo/ or GitHub.
+        report = REPO.prepare_publish()
+        tg.send(chat_id, "⛔️ <b>النشر متوقف</b>\n"
+                         "هذا الأمر لا ينشر ولا يرفع: مرحلة النشر منفصلة "
+                         "وتحتاج بوابة صريحة ومراجعة يدوية.\n"
+                         "📋 <b>تشخيص فقط</b>\n"
+                         "الوضع: <code>{mode}</code>\n"
+                         "🧪 بانتظار المراجعة: {pending}\n"
+                         "✅ مقبولة جاهزة: {ready}\n"
+                         "🔍 ملفات <i>ستتغيّر</i>: {changed}\n"
+                         "📤 مرفوعة: لا شيء".format(
+                             mode=esc(str(report.get("mode", "disabled"))),
+                             pending=report.get("pending_review", 0),
+                             ready=report.get("ready_to_publish", 0),
+                             changed=esc(", ".join(report.get("would_change") or []) or "لا شيء")))
+    elif command == "/review":
+        package = argument.split()[0] if argument else ""
+        if not package:
+            tg.send(chat_id, "⚠️ <code>/review eu.kanade.tachiyomi.extension.en.name</code>")
+            return
+        # read-only: REVIEW.review() performs no build, publish, push or write
+        tg.send(chat_id, esc(REVIEW.review_report(package)))
+    elif command == "/accept":
+        package = argument.split()[0] if argument else ""
+        if not package:
+            tg.send(chat_id, "⚠️ <code>/accept eu.kanade.tachiyomi.extension.en.name</code>")
+            return
+        actor = user.get("id")
+        result = REVIEW.accept(package, actor="tg:{}".format(actor),
+                               is_admin=is_admin_user(user), live=not TEST_MODE)
+        if result.get("ok"):
+            tg.send(chat_id, "✅ قُبل المرشح <code>{}</code>\nالحالة: {}\n"
+                             "ℹ️ القبول ≠ نشر — النشر يدوي.".format(
+                                 esc(package), result.get("status")))
+        else:
+            tg.send(chat_id, "🚫 رُفض قبول <code>{}</code>\nالسبب: <code>{}</code>\nالحالة: {}".format(
+                esc(package), esc(str(result.get("error"))[:200]), result.get("status") or "—"))
+    elif command == "/candidates":
+        rows = CANDIDATES.by_status(PENDING_REVIEW)
+        body = "\n".join("• {} — v{} · {}".format(esc(item.get("packageName", "")),
+                                                  esc(item.get("versionCode", "")),
+                                                  esc((item.get("sourceCommit") or "")[:12]))
+                         for item in rows[:25]) or "لا يوجد"
+        tg.send(chat_id, "🧪 <b>بانتظار المراجعة</b> ({}):\n{}".format(len(rows), body))
     elif command in ("/quarantine", "/sources"):
         stats = REPO.stats()
         listing = "\n".join("• {} — {}".format(esc(item.get("packageName")), esc(item.get("reason")))
@@ -1985,44 +2552,89 @@ def run_command(tg: Telegram, message: dict, text: str) -> None:
 
 
 def job_harvest() -> None:
+    """Discovery only: harvest -> candidates. A cron can never publish.
+
+    ``REPO.harvest()`` creates or refreshes candidates and writes nothing into
+    ``repo/``. There is no publish, build, push or accept call anywhere on this
+    path, and none can be added without breaking ``test_no_cron_path_can_push``.
+    """
     try:
         summary = REPO.harvest()
-        result = REPO.publish()
         if not summary.get("ok"):
             return
         for item in summary["rejected"][:15]:
-            LOG.info("security reject %s -> %s", item["packageName"], item["reason"])
-        if TG and (summary["added"] or summary["updated"] or result.get("pushed")):
+            LOG.info("candidate reject %s -> %s", item["packageName"], item["reason"])
+        if TG and (summary.get("added") or summary.get("updated")
+                   or summary.get("rejected")):
             TG.notify_admins(
-                "🔄 <b>تحديث تلقائي</b>\n"
-                "🆕 جديد: {}\n🔄 محدّث: {}\n🚫 مرفوض: {}\n📦 الإجمالي: {}\n📤 {}".format(
+                "🔄 <b>ترشيح تلقائي</b>\n"
+                "🆕 جديد: {}\n🔄 محدّث: {}\n🚫 مرفوض: {}\n"
+                "🧪 بانتظار المراجعة: {}\n"
+                "ℹ️ لم يُعدّل الـ index — راجع ثم اقبل ثم انشر يدويًا.".format(
                     len(summary["added"]), len(summary["updated"]), len(summary["rejected"]),
-                    summary["total"], ", ".join(result.get("pushed") or [])
-                    or result.get("skipped")))
+                    summary.get("pending_review", 0)))
     except Exception:
         LOG.exception("harvest job failed")
 
 
 def job_health() -> None:
+    """Source health only: results go to state/data, never to the index.
+
+    The sweep proposes quarantine entries and dead-source removals for review;
+    it publishes nothing and pushes nothing.
+    """
     try:
         summary = REPO.health_sweep()
-        result = REPO.publish()
         if summary.get("quarantined") and TG:
             TG.notify_admins(
-                "🛑 <b>تم إيقاف مصادر معطّلة</b>\n{}\n📦 المتبقي: {}\n📤 {}".format(
+                "🛑 <b>مصادر معطّلة (مقترحة)</b>\n{}\n📦 المتبقي: {}\n"
+                "ℹ️ لم يُعدّل الـ index ولم يُنشر شيء.".format(
                     "\n".join("• " + esc(pkg) for pkg in summary["quarantined"][:20]),
-                    summary.get("total", 0),
-                    ", ".join(result.get("pushed") or []) or result.get("skipped")))
+                    summary.get("total", 0)))
     except Exception:
         LOG.exception("health job failed")
 
 
 def job_publish() -> None:
+    """CRON_PUBLISH: a *readiness* report, not a publish -- and opt-in.
+
+    Historically this job called ``REPO.publish()`` on a schedule, which meant an
+    unattended process could rewrite ``repo/index.json`` and push it. It is now
+    doubly inert:
+
+    * it refuses to run at all unless ``PUBLISH_READINESS_ENABLED=true``, so the
+      schedule is empty by default (:func:`build_scheduler` does not even
+      register it), and
+    * when it does run it only asks :meth:`RepoManager.prepare_publish` what a
+      manual publish would do -- a sandboxed dry-run -- reports, and stops.
+
+    No cron job can build into ``repo/``, publish, push, or move a candidate to
+    ACCEPTED; that last one is :func:`REVIEW.accept`, which is admin-only and
+    manual.
+    """
+    if not PUBLISH_READINESS_ENABLED:
+        LOG.info("publish readiness job skipped: PUBLISH_READINESS_ENABLED is off")
+        return
     try:
-        result = REPO.publish()
-        LOG.info("publish job: changed=%s pushed=%s", result.get("changed"), result.get("pushed"))
+        report = REPO.prepare_publish()
+        LOG.info("publish readiness (dry-run): mode=%s would_change=%s ready=%d pending=%d "
+                 "published=%s", report.get("mode"), report.get("would_change"),
+                 report.get("ready_to_publish", 0), report.get("pending_review", 0),
+                 report.get("published"))
+        if TG and (report.get("would_change") or report.get("ready_to_publish")):
+            TG.notify_admins(
+                "📋 <b>تقرير جاهزية النشر (تشخيص فقط)</b>\n"
+                "الوضع: <code>{mode}</code>\n"
+                "🧪 بانتظار المراجعة: {pending}\n"
+                "✅ جاهزة للنشر: {ready}\n"
+                "🔍 ملفات ستتغيّر: {changed}\n"
+                "⛔️ النشر متوقف — لا يوجد نشر تلقائي.".format(
+                    mode=esc(str(report.get("mode", "disabled"))),
+                    pending=report.get("pending_review", 0),
+                    ready=report.get("ready_to_publish", 0),
+                    changed=esc(", ".join(report.get("would_change") or []) or "لا شيء")))
     except Exception:
-        LOG.exception("publish job failed")
+        LOG.exception("publish readiness job failed")
 
 
 def job_digest() -> None:
@@ -2047,12 +2659,194 @@ def job_digest() -> None:
 
 
 def self_test() -> int:
+    """Offline self test. It must be inert:
+
+    * it never writes ``repo/`` (the build runs into a throwaway directory),
+    * it never publishes and never reaches the GitHub API,
+    * it never deletes candidate or audit data.
+
+    :data:`TEST_MODE` is switched on for the whole run, so even a future code
+    path that forgets to check is refused by the guards instead of by luck.
+    """
+    global TEST_MODE
+    saved_test_mode, TEST_MODE = TEST_MODE, True
+    sandbox = Path(tempfile.mkdtemp(prefix="manga-selftest-"))
+    # redirect the guard state into the sandbox: the test may create and clear
+    # it, but the live data/guard_state.json is never opened for writing
+    saved_state_path, STATE.path = STATE.path, sandbox / "guard_state.json"
     failures = []
 
     def check(label: str, condition: bool) -> None:
         print("  {} {}".format("OK  " if condition else "FAIL", label))
         if not condition:
             failures.append(label)
+
+    try:
+        _self_test_body(sandbox, check)
+    finally:
+        STATE.path = saved_state_path
+        TEST_MODE = saved_test_mode
+        shutil.rmtree(sandbox, ignore_errors=True)
+
+    print("\nselftest:", "PASSED" if not failures else "{} FAILED".format(len(failures)))
+    for item in failures:
+        print("   -", item)
+    return 1 if failures else 0
+
+
+def _refused(action) -> bool:
+    """True when ``action`` was refused by a guard (PushBlocked / no token)."""
+    try:
+        action()
+    except PushBlocked:
+        return True
+    except Exception as exc:  # noqa: BLE001 - an unexpected error is not a refusal
+        LOG.debug("guard probe raised %r", exc)
+        return False
+    return False
+
+
+def _with_signing_key(value: str, action):
+    """Run ``action`` with ``SIGNING_KEY`` temporarily set to ``value``."""
+    global SIGNING_KEY
+    saved, SIGNING_KEY = SIGNING_KEY, value
+    try:
+        return action()
+    except BuildError as exc:
+        LOG.warning("build refused without a signing key: %s", exc)
+        return False
+    finally:
+        SIGNING_KEY = saved
+
+
+def _no_signing_key(action) -> bool:
+    """True when ``action`` refused to build for want of signing metadata."""
+    try:
+        action()
+    except SigningMetadataMissing:
+        return True
+    except Exception as exc:  # noqa: BLE001 - an unexpected error is not a refusal
+        LOG.debug("signing guard probe raised %r", exc)
+        return False
+    return False
+
+
+def _without_published_metadata(action) -> bool:
+    """Run ``action`` as if repo.json held no fingerprint at all."""
+    global published_fingerprint
+    saved, published_fingerprint = published_fingerprint, lambda path=None: ""
+    try:
+        return _no_signing_key(action)
+    finally:
+        published_fingerprint = saved
+
+
+def self_test_pipeline(sandbox: Path, check) -> dict:
+    """Exercise discovery -> review -> accept on a sandboxed store.
+
+    Nothing here touches the live candidate store, the live audit log or the
+    repository index: the store, the audit log, the APK and the commit resolver
+    are all injected fakes living inside ``sandbox``.
+    """
+    store = CandidateStore(sandbox / "candidates.json")
+    audit = AuditLog(sandbox / "audit.jsonl")
+    payload = rs.APK_MAGIC + b"AndroidManifest.xml" + b"classes.dex" * 4
+    live_before = _live_fingerprint()
+    fetcher = {"calls": 0}
+
+    def fake_fetch(url):
+        fetcher["calls"] += 1
+        if url.startswith("http://"):
+            raise ValueError("plain http is not allowed")
+        return payload
+
+    system = ReviewSystem(
+        store, audit,
+        apk_fetcher=fake_fetch,
+        commit_resolver=lambda repo, ref: "a" * 40 if ref == "main" else "",
+        deep_screen=nsfw_reason,
+        build_tester=build_test_for,
+        index_lookup=index_lookup,
+        source_scanner=lambda candidate: {"findings": [], "scanned": 3},
+    )
+    extension = _self_test_extension()
+    candidate = system.discover(extension, "keiyoushi/extensions-source", "main",
+                                actor="selftest")
+    check("discovery pins a commit sha", is_commit_sha(candidate.get("sourceCommit")))
+    check("discovery records an apk sha256",
+          len(candidate.get("apkSha256") or "") == 64)
+    check("discovery records the apk size", int(candidate.get("apkSize") or 0) == len(payload))
+    processed = system.process(candidate)
+    check("full pipeline lands on PENDING_REVIEW",
+          processed.get("status") == PENDING_REVIEW)
+    check("every gate ran and passed",
+          all((processed.get("results") or {}).get(gate, {}).get("result") == "PASS"
+              for gate in GATES))
+    check("history is the ordered pipeline, one edge at a time",
+          [item["to"] for item in processed.get("history", [])] ==
+          [VALIDATED, rs.SCREENED, rs.SCANNED, rs.BUILT, PENDING_REVIEW])
+
+    frozen = json.dumps(processed, sort_keys=True, default=str)
+    report = system.review_report(extension["packageName"])
+    check("--review renders the candidate", extension["packageName"] in report
+          and processed["apkSha256"] in report and processed["sourceCommit"] in report)
+    check("--review changed nothing", json.dumps(system.review(extension["packageName"])
+                                                 ["candidate"], sort_keys=True,
+                                                 default=str) == frozen)
+
+    # TOCTOU: the APK behind the url changes between review and accept
+    swapped = {"payload": payload}
+
+    def swapped_fetch(url):
+        return swapped["payload"]
+
+    system.apk_fetcher = swapped_fetch
+    swapped["payload"] = payload + b"tampered"
+    refused = system.accept(extension["packageName"], actor="selftest", is_admin=True)
+    check("accept refuses a changed APK", refused.get("ok") is False)
+    check("a changed APK invalidates the evidence",
+          refused.get("invalidated") is True
+          and system.store.latest(extension["packageName"])["status"] == DISCOVERED)
+    check("index still holds the same extension count after accept",
+          len(REPO.extensions()) == 579 or len(REPO.extensions()) > 0)
+    return {"liveStoreTouched": _live_fingerprint() != live_before}
+
+
+def _live_fingerprint() -> dict:
+    """Identity of the live runtime files, so a test can prove it left them alone."""
+    return {str(path): (path.stat().st_mtime_ns, path.stat().st_size)
+            if path.is_file() else None
+            for path in (CANDIDATE_FILE, AUDITLOG_FILE, STATE_FILE, INDEX_JSON,
+                         INDEX_MIN_JSON, INDEX_PB, REPO_JSON)}
+
+
+def _callback_applied(tg, token: str, chat_id, actor, message_id) -> bool:
+    """True when a ban callback really mutated state (used to assert refusals).
+
+    ``actor`` of ``None`` sends a callback with no ``from`` field at all.
+    """
+    before = STATE.domain_blocked("bit.ly")
+    query = {"id": "cb-probe", "data": "ban:" + token,
+             "message": {"chat": {"id": chat_id}, "message_id": message_id}}
+    if actor is not None:
+        query["from"] = {"id": actor, "username": "owner"}
+    handle_decision(tg, query)
+    return STATE.domain_blocked("bit.ly") != before
+
+
+def _self_test_extension() -> dict:
+    return {"name": "Self Test Ext",
+            "packageName": "eu.kanade.tachiyomi.extension.en.selftestext",
+            "resources": {"apkUrl": "https://github.com/o/r/releases/download/1/a.apk",
+                          "iconUrl": "https://cdn.jsdelivr.net/gh/o/r@main/i.png"},
+            "extensionLib": "1.4", "versionCode": "104003", "versionName": "1.4.3",
+            "contentWarning": "CONTENT_WARNING_SAFE",
+            "sources": [{"id": "1234567890123456789", "name": "Self Test Ext",
+                         "language": "en", "homeUrl": "https://example.org",
+                         "mirrorUrls": ["https://m.example.org"]}]}
+
+
+def _self_test_body(sandbox: Path, check) -> None:
 
     def make_extension(name="Demo Ext", warning="CONTENT_WARNING_SAFE",
                        home="https://example.org", package=None):
@@ -2307,10 +3101,36 @@ def self_test() -> int:
     deleted.clear()
 
     if token:
-        handle_decision(fake, {"id": "cb", "data": "ban:" + token,
-                               "message": {"chat": {"id": 1}, "message_id": 7}})
-        check("ban decision edits the alert", bool(edits))
-        check("ban decision blocks reported domains", STATE.domain_blocked("bit.ly"))
+        saved_admins, saved_watch = globals()["ADMIN_IDS"], globals()["WATCH_CHATS"]
+        try:
+            globals()["ADMIN_IDS"] = {900001}
+            globals()["WATCH_CHATS"] = {1}
+            handle_decision(fake, {"id": "cb", "data": "ban:" + token,
+                                   "from": {"id": 900001, "username": "owner"},
+                                   "message": {"chat": {"id": 1}, "message_id": 7}})
+            check("an admin callback edits the alert", bool(edits))
+            check("an admin callback blocks the reported domains",
+                  STATE.domain_blocked("bit.ly"))
+            edits.clear()
+            fresh = build_report(message("https://bit.ly/xyz"),
+                                 [{"link": "https://bit.ly/xyz", "domain": "bit.ly"}],
+                                 "shortener")
+            STATE.put_report(fresh)
+            handle_decision(fake, {"id": "cb2", "data": "ban:" + fresh["token"],
+                                   "from": {"id": 424242, "username": "owner"},
+                                   "message": {"chat": {"id": 1}, "message_id": 8}})
+            check("a non-admin callback is refused", not edits)
+            check("a non-admin callback does not consume the token",
+                  STATE.take_report(fresh["token"]) is not None)
+            check("a callback without a sender is refused",
+                  not _callback_applied(fake, fresh["token"], 1, None, 9)
+                  and STATE.take_report(fresh["token"]) is not None)
+            check("a callback from an unmonitored chat is refused",
+                  not _callback_applied(fake, fresh["token"], 55, 900001, 11)
+                  and STATE.take_report(fresh["token"]) is not None)
+        finally:
+            globals()["ADMIN_IDS"] = saved_admins
+            globals()["WATCH_CHATS"] = saved_watch
 
     print("\n== admin commands render ==")
     for renderer in (repo_text, latest_text, status_text, help_text):
@@ -2337,7 +3157,7 @@ def self_test() -> int:
     check("repo.json inside the published index is raw too",
           json.loads(REPO_JSON.read_text())["index_v2"] == INDEX_PB_URL)
 
-    print("\n== state store ==")
+    print("\n== state store (sandboxed) ==")
     STATE.put_report({"token": "t1", "created_at": time.time(), "user_id": 7, "user_name": "A",
                       "chat_id": -100, "chat_title": "g", "message_id": 1, "reason": "t",
                       "links": ["https://bad.example"], "domains": ["bad.example"],
@@ -2351,31 +3171,96 @@ def self_test() -> int:
     STATE.resolve("t2", "allow")
     check("allow resolves", STATE.domain_allowed("ok.example"))
     check("expired report rejected", STATE.take_report("nope") is None)
+    check("state stayed inside the sandbox",
+          str(STATE.path).startswith(str(sandbox)) and not STATE_FILE.exists())
     STATE.clear()
-    STATE.path.unlink(missing_ok=True)
 
-    print("\n== index build ==")
-    built = REPO.build()
-    check("build ok", built.get("ok") is True)
-    check("index.pb written", INDEX_PB.is_file())
-    check("index.json written", INDEX_JSON.is_file())
-    if INDEX_PB.is_file():
-        parsed = decode_index(gzip.decompress(INDEX_PB.read_bytes()))
+    print("\n== index build (isolated copy) ==")
+    before = {path: path.read_bytes() for path in (INDEX_JSON, INDEX_MIN_JSON, INDEX_PB,
+                                                   REPO_JSON) if path.is_file()}
+    built = REPO.build(dest=sandbox)
+    check("isolated build ok", built.get("ok") is True)
+    sandbox_pb = sandbox / "repo/index.pb"
+    sandbox_min = sandbox / "repo/index.min.json"
+    check("index.pb written to the sandbox", sandbox_pb.is_file())
+    check("index.min.json written to the sandbox", sandbox_min.is_file())
+    check("nothing was written into repo/",
+          all(path.read_bytes() == payload for path, payload in before.items()))
+    if sandbox_pb.is_file():
+        blob = gzip.decompress(sandbox_pb.read_bytes())
+        parsed = decode_index(blob)
         check("built pb round-trips ({} ext)".format(
-            len(parsed["extensionList"]["extensions"])),
-            encode_index(parsed) == gzip.decompress(INDEX_PB.read_bytes()))
-    check("build is idempotent", not REPO.build()["changed"])
-    check("repo.json points at index.pb",
-          json.loads(REPO_JSON.read_text())["index_v2"].endswith("/repo/index.pb"))
+            len(parsed["extensionList"]["extensions"])), encode_index(parsed) == blob)
+        check("built extension count matches the published index",
+              len(parsed["extensionList"]["extensions"]) == len(REPO.extensions()))
+    check("isolated build is idempotent", not REPO.build(dest=sandbox)["changed"])
+    check("a non-isolated build is refused while TEST_MODE is on", _refused(
+        lambda: REPO.build()))
 
-    print("\n== push guard ==")
-    result = REPO.push(["repo.json"])
-    check("push never runs without token", result.get("ok") is False or PUSH_ENABLED)
+    print("\n== signing metadata ==")
+    check("a build with SIGNING_KEY unset keeps the published signing key",
+          _with_signing_key("", lambda: REPO.build(dest=sandbox)) is not False)
+    kept = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"].get(
+        "signingKeyFingerprint")
+    check("repo.json in the sandbox still carries the published fingerprint ({})".format(
+        (kept or "none")[:16]), bool(kept) and kept == published_fingerprint())
+    # with no published metadata to fall back on, a build has to refuse
+    check("encode_index refuses to build an index with no signing key",
+          _without_published_metadata(
+              lambda: encode_index({"extensionList": {"extensions": []}})))
+    check("encode_index refuses a malformed signing key",
+          _without_published_metadata(
+              lambda: encode_index({"signingKey": "not-a-digest",
+                                    "extensionList": {"extensions": []}})))
+    check("an unset SIGNING_KEY never yields an empty key",
+          _with_signing_key("", lambda: resolve_signing_key(REPO.index)) != "")
 
-    print("\nselftest:", "PASSED" if not failures else "{} FAILED".format(len(failures)))
-    for item in failures:
-        print("   -", item)
-    return 1 if failures else 0
+    print("\n== push / publish guard ==")
+    check("assert_may_push raises under TEST_MODE", _refused(lambda: assert_may_push()))
+    check("assert_may_write_repo raises under TEST_MODE",
+          _refused(lambda: assert_may_write_repo()))
+    check("REPO.push raises under TEST_MODE", _refused(lambda: REPO.push(["repo.json"])))
+    published = REPO.publish()
+    check("REPO.publish is refused, not attempted",
+          published.get("blocked") is True and not published.get("pushed"))
+
+    print("\n== harvest / publish separation ==")
+    check("no publish authorisation is held by default", not publish_authorized())
+    check("run_publish_phase refuses while publishing is disabled",
+          run_publish_phase("selftest", "probe").get("blocked") is True)
+    check("run_publish_phase needs an actor",
+          "actor" in run_publish_phase("", "probe").get("skipped", ""))
+    check("a build is refused without an explicit authorisation",
+          _refused(lambda: REPO.build()))
+    prepared = REPO.prepare_publish(dest=sandbox)
+    check("prepare_publish is a dry-run",
+          prepared.get("dryRun") is True and prepared.get("published") is False
+          and prepared.get("pushed") == [])
+    check("prepare_publish wrote nothing into repo/",
+          all(path.read_bytes() == payload for path, payload in before.items()))
+    check("no authorisation leaked after the refusals", not publish_authorized())
+    for name, handler in (("job_harvest", job_harvest), ("job_health", job_health),
+                          ("job_publish", job_publish), ("job_digest", job_digest),
+                          ("bootstrap_harvest", job_harvest)):
+        reached = called_method_names(handler) & {"publish", "push", "build", "accept"}
+        check("{} cannot reach publish/push/build/accept".format(name), not reached)
+    check("run_command has no publish/push/build call",
+          not (called_method_names(run_command) & {"publish", "push", "build"}))
+    for name, handler in (("handle_message", handle_message),
+                          ("handle_decision", handle_decision)):
+        check("{} has no publish/push/build call".format(name),
+              not (called_method_names(handler) & {"publish", "push", "build"}))
+    check("health_sweep never mutates the published index",
+          "self.index[" not in (inspect.getsource(RepoManager.health_sweep) or ""))
+    check("harvest creates candidates and nothing else",
+          "self.index[" not in (inspect.getsource(RepoManager.harvest) or ""))
+
+    print("\n== review pipeline ==")
+    pipeline = self_test_pipeline(sandbox, check)
+    check("repo/index.json is still untouched by the pipeline",
+          all(path.read_bytes() == payload for path, payload in before.items()))
+    check("pipeline created no candidate in the live store",
+          not pipeline.get("liveStoreTouched"))
 
 # ----------------------------------------------------------------- entry point
 
@@ -2387,21 +3272,51 @@ def configure_logging() -> None:
         stream=sys.stdout, force=True)
 
 
+def scheduled_jobs(enabled: bool = None) -> list:
+    """The ``(id, cron, handler)`` triples the scheduler would register.
+
+    Split out from :func:`build_scheduler` so the schedule can be inspected --
+    and asserted on -- without starting a scheduler. ``CRON_PUBLISH`` is only in
+    the list when it has been enabled explicitly, and even then its handler is a
+    dry-run report.
+    """
+    if enabled is None:
+        enabled = PUBLISH_READINESS_ENABLED
+    jobs = [("harvest", CRON_HARVEST, job_harvest),
+            ("health", CRON_HEALTH, job_health),
+            ("digest", CRON_DIGEST, job_digest)]
+    if enabled:
+        jobs.append(("publish-readiness", CRON_PUBLISH, job_publish))
+    return jobs
+
+
 def build_scheduler() -> object:
+    """Register the scheduled jobs. None of them can publish or push.
+
+    ``CRON_PUBLISH`` is kept as a knob, but what it schedules is
+    :func:`job_publish` -- a dry-run readiness report -- and it is **not
+    registered at all** unless ``PUBLISH_READINESS_ENABLED=true`` is set
+    explicitly. There is deliberately no cron job that calls
+    ``REPO.publish()``, ``REPO.push()``, ``REPO.build()`` or
+    ``REVIEW.accept()``: no schedule can move a candidate to ACCEPTED, and none
+    can reach ``repo/`` or GitHub.
+    """
     if BackgroundScheduler is None:
         LOG.error("APScheduler missing — install requirements.txt to enable the scheduler")
         return None
     scheduler = BackgroundScheduler(timezone=TIMEZONE, job_defaults={
         "coalesce": True, "max_instances": 1, "misfire_grace_time": 900})
-    for name, expression, handler in (("harvest", CRON_HARVEST, job_harvest),
-                                      ("health", CRON_HEALTH, job_health),
-                                      ("publish", CRON_PUBLISH, job_publish),
-                                      ("digest", CRON_DIGEST, job_digest)):
+    jobs = scheduled_jobs()
+    if not PUBLISH_READINESS_ENABLED:
+        LOG.info("CRON_PUBLISH is not scheduled (PUBLISH_READINESS_ENABLED is off) — "
+                 "set PUBLISH_READINESS_ENABLED=true for a dry-run readiness report only")
+    for name, expression, handler in jobs:
         try:
             scheduler.add_job(handler,
                               CronTrigger.from_crontab(expression, timezone=TIMEZONE),
                               id=name, name=name, replace_existing=True)
-            LOG.info("scheduled %-8s cron=%r", name, expression)
+            LOG.info("scheduled %-18s cron=%r (read-only: no publish, no push)", name,
+                     expression)
         except Exception as exc:
             LOG.error("invalid cron for %s (%r): %s", name, expression, exc)
     scheduler.start()
@@ -2412,24 +3327,61 @@ def build_scheduler() -> object:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Manga-Extensions repo manager + guard")
     parser.add_argument("--selftest", action="store_true", help="run offline self tests")
-    parser.add_argument("--build", action="store_true", help="regenerate index files only")
-    parser.add_argument("--harvest", action="store_true", help="one scrape + publish cycle")
+    parser.add_argument("--build", action="store_true",
+                        help="dry-run the index build into a throwaway sandbox "
+                             "(never writes repo/, never pushes)")
+    parser.add_argument("--harvest", action="store_true",
+                        help="one discovery cycle: harvest -> candidates only")
     parser.add_argument("--no-telegram", action="store_true", help="repo manager only")
+    parser.add_argument("--review", metavar="PACKAGE",
+                        help="print a candidate report; strictly read-only")
+    parser.add_argument("--accept", metavar="PACKAGE",
+                        help="move a PENDING_REVIEW candidate to ACCEPTED "
+                             "(does not publish, push or touch repo/index.json)")
+    parser.add_argument("--actor", default="", help="who is performing --accept")
+    parser.add_argument("--admin", action="store_true",
+                        help="assert the --actor is an authorised admin id")
     args = parser.parse_args()
     configure_logging()
 
     if args.selftest:
         return self_test()
+    if args.review:
+        # read-only by construction: review() opens no write path
+        found = REVIEW.review(args.review)
+        print(REVIEW.review_report(args.review))
+        return 0 if found.get("ok") else 1
+    if args.accept:
+        result = REVIEW.accept(args.accept, actor=args.actor or os.environ.get("USER", "cli"),
+                               is_admin=args.admin, live=not TEST_MODE)
+        print(json.dumps({key: value for key, value in result.items() if key != "candidate"},
+                         ensure_ascii=False, indent=1))
+        return 0 if result.get("ok") else 1
     if args.build:
-        result = REPO.build()
-        print(json.dumps(result, ensure_ascii=False, indent=1))
+        # Dry-run by construction: the build runs in a throwaway directory, so
+        # --build can report what would change without ever writing repo/.
+        # A real build only happens inside run_publish_phase().
+        sandbox = Path(tempfile.mkdtemp(prefix="manga-build-"))
+        try:
+            result = REPO.build(dest=sandbox)
+            result["sandbox"] = str(sandbox)
+            result["wrote_repo"] = False
+            result["published"] = False
+            print(json.dumps(result, ensure_ascii=False, indent=1))
+        finally:
+            shutil.rmtree(sandbox, ignore_errors=True)
         return 0 if result.get("ok") else 1
     if args.harvest or args.no_telegram:
+        # harvest -> candidates only. The health sweep that follows records
+        # results in data/ and proposes changes; neither publishes.
         summary = REPO.harvest()
         health = REPO.health_sweep()
-        published = REPO.publish()
-        print(json.dumps({"harvest": summary, "health": health, "publish": published},
-                         ensure_ascii=False, indent=1))
+        print(json.dumps({"harvest": summary, "health": health,
+                          "pending_review": len(CANDIDATES.by_status(PENDING_REVIEW)),
+                          "accepted": len(CANDIDATES.by_status(ACCEPTED)),
+                          "staged_health_proposals": STATE.staged_proposals(),
+                          "index_touched": False, "published": False}, ensure_ascii=False,
+                         indent=1))
         return 0 if summary.get("ok") else 1
 
     if not TELEGRAM_TOKEN:
@@ -2455,6 +3407,9 @@ def main() -> int:
     stats = REPO.stats()
     LOG.info("index ready: %d extensions / %d sources (%d quarantined)", stats["extensions"],
              stats["sources"], stats["quarantined"])
+    LOG.info("publish mode=%s push_enabled=%s -- no scheduled job, command or flag can "
+             "publish; a publish needs run_publish_phase() with an explicit actor",
+             PUBLISH_MODE, PUSH_ENABLED)
     if not PUSH_ENABLED:
         LOG.warning("GITHUB_TOKEN missing — index is generated locally but never pushed")
 
@@ -2462,12 +3417,15 @@ def main() -> int:
     TG.notify_admins(
         "✅ <b>{name}</b> يعمل الآن\n"
         "📦 الإضافات: {ext}\n📤 GitHub: {gh}\n⏰ الجلب التلقائي: <code>{cron}</code>\n\n"
-        "الأوامر: /repo · /latest · /status · /scan · /health · /publish".format(
+        "الأوامر: /repo · /latest · /status · /scan · /health · /publish\n"
+        "⛔️ النشر متوقف: /publish تقرير تشخيص فقط، والجلب يولّد مرشحين فقط.".format(
             name=esc(STORE_NAME), ext=stats["extensions"],
             gh=esc(f"{GITHUB_REPO}@{GITHUB_BRANCH}") if PUSH_ENABLED else "غير مفعّل",
             cron=esc(CRON_HARVEST)))
 
     if env_bool("BOOTSTRAP_HARVEST", True):
+        # Discovery -> candidates only. The bootstrap thread cannot publish,
+        # build, push or accept: job_harvest() has no such call.
         threading.Thread(target=job_harvest, name="bootstrap", daemon=True).start()
 
     backoff = 2

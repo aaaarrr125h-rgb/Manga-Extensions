@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 .env
 data/guard_state.json
+data/candidates.json
+data/audit_log.jsonl
 data/*.tmp
 repo/*.tmp
 *.tmp
