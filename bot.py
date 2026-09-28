@@ -1055,15 +1055,25 @@ def shura_delta(base_revision, revision: str, extensions: list, diff: dict) -> d
             "added": diff["added"], "updated": diff["updated"], "removed": diff["removed"]}
 
 
-def shura_manifest(revision: str, extensions: list) -> dict:
+def shura_manifest(revision: str, extensions: list, signing_key: str = "") -> dict:
     """Assemble the manifest: one small, stable document the app always reads.
 
     Only the *contract* lives here, never the content, so this stays small
     enough to re-check on every poll and cheap to cache on a conditional
     request. ``base`` is the single place the repository location is named.
+
+    ``signing_key`` is the *same* value the build resolved for repo.json and the
+    index, never a second copy of it: the app would otherwise have two sources
+    of truth for the key it trusts, and they could disagree. It is required --
+    a manifest that omits it is a manifest that cannot be authenticated.
     """
+    if not signing_key:
+        raise SigningMetadataMissing(
+            "shura manifest without a signing key: the app would have no way to "
+            "authenticate the index. Refusing to emit one.")
     return {"schema": SHURA_SCHEMA, "repo": STORE_NAME, "badgeLabel": STORE_BADGE,
             "base": RAW_BASE, "revision": revision, "count": len(extensions),
+            "signingKeyFingerprint": signing_key,
             "index": {"json": "repo/index.json", "pb": "repo/index.pb"},
             "delta": "shura/delta.json"}
 
@@ -1955,7 +1965,8 @@ class RepoManager:
             "repo/index.pb": gzip.compress(proto, mtime=0, compresslevel=9),
             "repo/index.min.json": (json.dumps(LEGACY_INDEX_MIN, indent=2) + "\n").encode("utf-8"),
             "repo.json": (json.dumps(repo_json, indent=2, ensure_ascii=False) + "\n").encode("utf-8"),
-            "shura/manifest.json": shura_render(shura_manifest(revision, extensions)),
+            "shura/manifest.json": shura_render(
+                shura_manifest(revision, extensions, signing_key)),
             "shura/delta.json": shura_render(delta),
             "data/quarantine.json": (json.dumps(self.quarantine, ensure_ascii=False, indent=1)
                                      + "\n").encode("utf-8"),

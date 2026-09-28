@@ -530,6 +530,37 @@ def test_repo_untouched():
     assert not drift, "these changed: {}".format(drift)
 
 
+@case("25 the manifest carries the key the index and repo.json already publish")
+def test_manifest_signing_key_is_the_published_one():
+    """The app must be able to authenticate the index from the manifest alone.
+
+    One source of truth: the value here is the *same* one the build resolved for
+    repo.json and the index, not a second copy that could drift away from it.
+    """
+    extensions = [extension("Alpha", 1), extension("Beta", 2)]
+    sandbox, _ = build(extensions)
+    try:
+        manifest = read(sandbox, "shura/manifest.json")
+        index_key = read(sandbox, "repo/index.json")["signingKey"]
+        repo_json_key = read(sandbox, "repo.json")["meta"]["signingKeyFingerprint"]
+        assert manifest["signingKeyFingerprint"]
+        assert manifest["signingKeyFingerprint"] == index_key
+        assert manifest["signingKeyFingerprint"] == repo_json_key
+        # and it is the key actually published right now, not a fixture's
+        assert manifest["signingKeyFingerprint"] == bot.published_fingerprint()
+    finally:
+        shutil.rmtree(sandbox, ignore_errors=True)
+
+
+@case("26 a manifest without a signing key is refused, not silently emitted")
+def test_manifest_requires_a_signing_key():
+    try:
+        bot.shura_manifest("0" * bot.SHURA_REVISION_LENGTH, [], "")
+    except bot.SigningMetadataMissing:
+        return
+    raise AssertionError("a manifest with no signing key must not be produced")
+
+
 def main() -> int:
     passed = failed = 0
     for number, (title, func) in enumerate(CASES, start=1):
