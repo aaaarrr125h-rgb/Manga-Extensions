@@ -742,13 +742,23 @@ def encode_extension(extension: dict) -> bytes:
 #: publishing it would replace a good key with a value no client can use.
 SIGNING_KEY_RE = re.compile(r"^[0-9a-fA-F]+$")
 
+#: A SHA-256 digest is exactly 64 hex characters, and no public signing key is
+#: that short: an RSA-1024 SubjectPublicKeyInfo in hex is ~216 characters and an
+#: EC P-256 uncompressed point is 128. A 64-character value is therefore a
+#: *fingerprint of* a key, never the key.
+SIGNING_DIGEST_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+SIGNING_KEY_MIN_HEX = 128
+
 
 def published_fingerprint(path: Path = None) -> str:
     """The ``signingKeyFingerprint`` currently published in repo.json.
 
     Read-only and fail-soft: a missing or unreadable repo.json is reported as
-    "no fingerprint" rather than raising, because this is a *fallback* source
-    for a build, not the build itself.
+    "no fingerprint" rather than raising.
+
+    This is a *hash of* a signing key, not the key. It is public, it is safe to
+    publish, and it is **not** a source for :func:`resolve_signing_key` -- see
+    that function for why.
     """
     target = Path(path) if path is not None else REPO_JSON
     if not target.is_file():
@@ -761,20 +771,46 @@ def published_fingerprint(path: Path = None) -> str:
         return ""
 
 
+def signing_key_fingerprint(signing_key: str) -> str:
+    """The SHA-256 fingerprint of a signing key -- derived, never read back.
+
+    Clients compute this from the public key to confirm they were handed the
+    store they expect. It is *derived* here rather than read out of repo.json on
+    purpose: a fingerprint read from a file and trusted afterwards is precisely
+    what let a digest stand in for a key.
+
+    Over the decoded key bytes, not the hex text, so the value matches what a
+    client computes from the key itself.
+    """
+    key = validate_signing_key(signing_key, "the signing key")
+    return hashlib.sha256(bytes.fromhex(key)).hexdigest()
+
+
+# A synthetic, obviously-fake key-shaped value for offline encode probes. It is
+# never published and never reaches a real build; see build_test_for.
+ENCODING_PROBE_KEY = "ab" * 256
+
+
 def resolve_signing_key(index: dict = None, path: Path = None) -> str:
-    """The signing key a build may embed -- never an empty one.
+    """The signing key a build may embed -- never an empty one, never a digest.
 
     Resolution order, first usable wins:
 
     1. ``SIGNING_KEY`` from the environment, when it is set and valid;
-    2. the ``signingKey`` already present in the index being built;
-    3. the ``signingKeyFingerprint`` already published in repo.json.
+    2. the ``signingKey`` already present in the index being built.
 
-    Steps 2 and 3 are what stop a build from *erasing* signing metadata: a
-    process without ``SIGNING_KEY`` in its environment rebuilds the artifacts
-    with the key that is already there, rather than writing an empty string over
-    it. If none of the three yields a valid key, the build is refused -- an
-    index with no signing key is worse than an index that was not rebuilt.
+    Step 2 is what stops a build from *erasing* signing metadata: a process
+    without ``SIGNING_KEY`` in its environment rebuilds the artifacts with the
+    key that is already there, rather than writing an empty string over it.
+
+    There is deliberately **no fallback to repo.json's
+    ``signingKeyFingerprint``.** A fingerprint is a hash of the key; substituting
+    it would publish, in ``signingKey``'s place, a value no client can verify an
+    APK against, and it would do so silently. If neither source yields a real
+    key the build is refused -- an index that refuses to describe its own
+    signature verification is safer than one that describes it wrongly.
+
+    ``path`` is retained for callers that passed repo.json; it is no longer read.
     """
     configured = str(SIGNING_KEY or "").strip()
     if configured:
@@ -783,24 +819,38 @@ def resolve_signing_key(index: dict = None, path: Path = None) -> str:
     if current:
         LOG.info("SIGNING_KEY is unset: keeping the signing key already in the index")
         return validate_signing_key(current, "the published index signingKey")
-    fallback = published_fingerprint(path)
-    if fallback:
-        LOG.info("SIGNING_KEY is unset: keeping the fingerprint published in repo.json")
-        return validate_signing_key(fallback, "the published repo.json fingerprint")
     raise SigningMetadataMissing(
-        "no signing key: SIGNING_KEY is unset and neither repo/index.json nor "
-        "repo.json carries a fingerprint. Refusing to build an index that would "
-        "strip the signing metadata -- set SIGNING_KEY or restore repo.json")
+        "no signing key: SIGNING_KEY is unset and the index carries none. The "
+        "signingKeyFingerprint in repo.json is deliberately not used as a "
+        "fallback -- it is a hash of the key, not the key, and publishing it in "
+        "signingKey's place would leave the store unable to verify any APK "
+        "signature. Set SIGNING_KEY to this repository's public signing key.")
 
 
 def validate_signing_key(value: str, source: str) -> str:
-    """Reject a value that must never be published as a signing key."""
+    """Reject a value that must never be published as a signing key.
+
+    Two distinct failures, kept distinct on purpose so the message says which
+    one happened:
+
+    * not hex at all -- a typo or a truncated paste;
+    * hex, but too short to be a key -- a fingerprint. This is the one that
+      matters: ``signingKeyFingerprint`` is 64 hex characters, and accepting it
+      here is what allowed a hash to be published as a signing key.
+    """
     key = str(value or "").strip()
     if not key:
         raise SigningMetadataMissing("{} is empty".format(source))
     if not SIGNING_KEY_RE.match(key):
+        raise SigningMetadataMissing("{} is not hex: {!r}".format(source, key[:24]))
+    if len(key) < SIGNING_KEY_MIN_HEX or SIGNING_DIGEST_RE.match(key):
         raise SigningMetadataMissing(
-            "{} is not a hex digest: {!r}".format(source, key[:24]))
+            "{} is a {} character fingerprint, not a signing key: {!r}. A public "
+            "signing key is at least {} hex characters. Refusing to publish a "
+            "hash in signingKey's place -- a client that finds one cannot verify "
+            "any extension signature, and would fail closed with no way to say "
+            "why. Provide the real public signing key.".format(
+                source, len(key), key[:24], SIGNING_KEY_MIN_HEX))
     return key
 
 
@@ -1055,25 +1105,29 @@ def shura_delta(base_revision, revision: str, extensions: list, diff: dict) -> d
             "added": diff["added"], "updated": diff["updated"], "removed": diff["removed"]}
 
 
-def shura_manifest(revision: str, extensions: list, signing_key: str = "") -> dict:
+def shura_manifest(revision: str, extensions: list, fingerprint: str = "") -> dict:
     """Assemble the manifest: one small, stable document the app always reads.
 
     Only the *contract* lives here, never the content, so this stays small
     enough to re-check on every poll and cheap to cache on a conditional
     request. ``base`` is the single place the repository location is named.
 
-    ``signing_key`` is the *same* value the build resolved for repo.json and the
-    index, never a second copy of it: the app would otherwise have two sources
-    of truth for the key it trusts, and they could disagree. It is required --
-    a manifest that omits it is a manifest that cannot be authenticated.
+    ``fingerprint`` is the derived SHA-256 of the signing key (see
+    :func:`signing_key_fingerprint`), and it is checked to *be* a digest. The
+    app compares this against the key it trusts, so the manifest carries a hash
+    and never a key -- and passing a full key in here is refused rather than
+    published, so the two can never be confused at this boundary either.
     """
-    if not signing_key:
+    digest = str(fingerprint or "").strip()
+    if not SIGNING_DIGEST_RE.match(digest):
         raise SigningMetadataMissing(
-            "shura manifest without a signing key: the app would have no way to "
-            "authenticate the index. Refusing to emit one.")
+            "shura manifest needs a 64 character SHA-256 fingerprint, got {!r}. "
+            "Derive it with signing_key_fingerprint(signing_key) -- the app "
+            "matches it against the key it already trusts, and a signing key "
+            "must never be published in the manifest.".format(digest[:24]))
     return {"schema": SHURA_SCHEMA, "repo": STORE_NAME, "badgeLabel": STORE_BADGE,
             "base": RAW_BASE, "revision": revision, "count": len(extensions),
-            "signingKeyFingerprint": signing_key,
+            "signingKeyFingerprint": digest.lower(),
             "index": {"json": "repo/index.json", "pb": "repo/index.pb"},
             "delta": "shura/delta.json"}
 
@@ -1913,6 +1967,9 @@ class RepoManager:
         with self.lock:
             index = json.loads(json.dumps(self.index))
         signing_key = resolve_signing_key(index)
+        # Derived once, from the key, and then used everywhere a *fingerprint* is
+        # expected. Never the key itself, and never read back from a file.
+        fingerprint = signing_key_fingerprint(signing_key)
         index["name"] = STORE_NAME
         index["badgeLabel"] = STORE_BADGE
         index["signingKey"] = signing_key
@@ -1956,7 +2013,7 @@ class RepoManager:
         repo_json = {"index_v2": INDEX_PB_URL,
                      "meta": {"name": STORE_NAME, "shortName": STORE_BADGE,
                               "website": STORE_WEBSITE,
-                              "signingKeyFingerprint": signing_key}}
+                              "signingKeyFingerprint": fingerprint}}
         if STORE_DISCORD:
             repo_json["meta"]["discord"] = STORE_DISCORD
 
@@ -1966,7 +2023,7 @@ class RepoManager:
             "repo/index.min.json": (json.dumps(LEGACY_INDEX_MIN, indent=2) + "\n").encode("utf-8"),
             "repo.json": (json.dumps(repo_json, indent=2, ensure_ascii=False) + "\n").encode("utf-8"),
             "shura/manifest.json": shura_render(
-                shura_manifest(revision, extensions, signing_key)),
+                shura_manifest(revision, extensions, fingerprint)),
             "shura/delta.json": shura_render(delta),
             "data/quarantine.json": (json.dumps(self.quarantine, ensure_ascii=False, indent=1)
                                      + "\n").encode("utf-8"),
@@ -2161,7 +2218,14 @@ def build_test_for(candidate: dict) -> tuple:
     try:
         # The probe carries the same signing key a real build would, so this
         # still measures "does the entry encode" and not "is the store configured".
-        encode_index({"signingKey": resolve_signing_key(REPO.index),
+        # When no real key is configured the probe uses a synthetic key-shaped
+        # value: its encoding is discarded here and nothing is ever published
+        # from it, so it measures the encoder without weakening the build guard.
+        try:
+            probe_key = resolve_signing_key(REPO.index)
+        except SigningMetadataMissing:
+            probe_key = ENCODING_PROBE_KEY
+        encode_index({"signingKey": probe_key,
                       "extensionList": {"extensions": [entry]}})
     except Exception as exc:  # noqa: BLE001
         return False, "protobuf encode failed: {}".format(exc)
@@ -2863,6 +2927,11 @@ def self_test() -> int:
     """
     global TEST_MODE
     saved_test_mode, TEST_MODE = TEST_MODE, True
+    # The signing section probes the configured and unconfigured cases itself, so
+    # whatever SIGNING_KEY the environment happens to carry must not decide which
+    # branch runs or which value the encoder resolves.
+    global SIGNING_KEY
+    saved_signing_key, SIGNING_KEY = SIGNING_KEY, ""
     sandbox = Path(tempfile.mkdtemp(prefix="manga-selftest-"))
     # redirect the guard state into the sandbox: the test may create and clear
     # it, but the live data/guard_state.json is never opened for writing
@@ -2878,6 +2947,7 @@ def self_test() -> int:
         _self_test_body(sandbox, check)
     finally:
         STATE.path = saved_state_path
+        SIGNING_KEY = saved_signing_key
         TEST_MODE = saved_test_mode
         shutil.rmtree(sandbox, ignore_errors=True)
 
@@ -3040,7 +3110,6 @@ def _self_test_extension() -> dict:
 
 
 def _self_test_body(sandbox: Path, check) -> None:
-
     def make_extension(name="Demo Ext", warning="CONTENT_WARNING_SAFE",
                        home="https://example.org", package=None):
         return {"name": name,
@@ -3056,7 +3125,7 @@ def _self_test_body(sandbox: Path, check) -> None:
                             {"id": "2", "name": name + " AR", "language": "ar"}]}
 
     print("\n== protobuf codec ==")
-    sample = {"name": "Demo", "badgeLabel": "DM", "signingKey": "ab" * 32,
+    sample = {"name": "Demo", "badgeLabel": "DM", "signingKey": "ab" * 256,
               "contact": {"website": "https://example.org",
                           "discord": "https://discord.gg/x"},
               "extensionList": {"extensions": [make_extension()]}}
@@ -3371,7 +3440,9 @@ def _self_test_body(sandbox: Path, check) -> None:
     print("\n== index build (isolated copy) ==")
     before = {path: path.read_bytes() for path in (INDEX_JSON, INDEX_MIN_JSON, INDEX_PB,
                                                    REPO_JSON) if path.is_file()}
-    built = REPO.build(dest=sandbox)
+    # the published index holds a fingerprint, not a key, so the build machinery is
+    # exercised with a real key; the refusal against the live index is asserted below
+    built = _with_signing_key("cd" * 200, lambda: REPO.build(dest=sandbox))
     check("isolated build ok", built.get("ok") is True)
     sandbox_pb = sandbox / "repo/index.pb"
     sandbox_min = sandbox / "repo/index.min.json"
@@ -3383,30 +3454,55 @@ def _self_test_body(sandbox: Path, check) -> None:
         blob = gzip.decompress(sandbox_pb.read_bytes())
         parsed = decode_index(blob)
         check("built pb round-trips ({} ext)".format(
-            len(parsed["extensionList"]["extensions"])), encode_index(parsed) == blob)
+            len(parsed["extensionList"]["extensions"])),
+            _with_signing_key("cd" * 200, lambda: encode_index(parsed) == blob))
         check("built extension count matches the published index",
               len(parsed["extensionList"]["extensions"]) == len(REPO.extensions()))
-    check("isolated build is idempotent", not REPO.build(dest=sandbox)["changed"])
+        check("the built index carries the key it was built with",
+              parsed.get("signingKey") == "cd" * 200)
+    check("isolated build is idempotent",
+          _with_signing_key("cd" * 200, lambda: not REPO.build(dest=sandbox)["changed"]))
     check("a non-isolated build is refused while TEST_MODE is on", _refused(
         lambda: REPO.build()))
 
     print("\n== signing metadata ==")
-    check("a build with SIGNING_KEY unset keeps the published signing key",
-          _with_signing_key("", lambda: REPO.build(dest=sandbox)) is not False)
-    kept = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"].get(
+    # The signing key is authoritative and the fingerprint is derived from it.
+    # The published index carries a 64 character digest, not a key, so a build
+    # against it has to refuse rather than republish that digest as a key.
+    live_key = REPO.index.get("signingKey")
+    live_is_digest = bool(live_key) and bool(SIGNING_DIGEST_RE.match(str(live_key)))
+    if live_is_digest:
+        check("a build with SIGNING_KEY unset refuses a published fingerprint as a key",
+              _no_signing_key(lambda: REPO.build(dest=sandbox)))
+        check("a build with a real key succeeds",
+              _with_signing_key("cd" * 200, lambda: REPO.build(dest=sandbox)) is not False)
+    else:
+        check("a build with SIGNING_KEY unset keeps the signing key in the index",
+              not _no_signing_key(lambda: REPO.build(dest=sandbox)))
+    built_fp = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"].get(
         "signingKeyFingerprint")
-    check("repo.json in the sandbox still carries the published fingerprint ({})".format(
-        (kept or "none")[:16]), bool(kept) and kept == published_fingerprint())
-    # with no published metadata to fall back on, a build has to refuse
+    check("repo.json carries the fingerprint derived from the signing key ({})".format(
+        (built_fp or "none")[:16]),
+        bool(built_fp) and built_fp == signing_key_fingerprint("cd" * 200))
+    check("a published fingerprint is never used as a signing key",
+          _with_signing_key("", lambda: _no_signing_key(
+              lambda: encode_index({"signingKey": published_fingerprint(),
+                                    "extensionList": {"extensions": []}}))))
+    # with no key anywhere, a build has to refuse
     check("encode_index refuses to build an index with no signing key",
           _without_published_metadata(
               lambda: encode_index({"extensionList": {"extensions": []}})))
     check("encode_index refuses a malformed signing key",
-          _without_published_metadata(
+          _with_signing_key("", lambda: _no_signing_key(
               lambda: encode_index({"signingKey": "not-a-digest",
-                                    "extensionList": {"extensions": []}})))
+                                    "extensionList": {"extensions": []}}))))
+    check("encode_index refuses a fingerprint in signingKey's place",
+          _with_signing_key("", lambda: _no_signing_key(
+              lambda: encode_index({"signingKey": "ab" * 32,
+                                    "extensionList": {"extensions": []}}))))
     check("an unset SIGNING_KEY never yields an empty key",
-          _with_signing_key("", lambda: resolve_signing_key(REPO.index)) != "")
+          _with_signing_key("", lambda: resolve_signing_key(REPO.index)) is not False
+          or live_is_digest)
 
     print("\n== push / publish guard ==")
     check("assert_may_push raises under TEST_MODE", _refused(lambda: assert_may_push()))
@@ -3425,7 +3521,7 @@ def _self_test_body(sandbox: Path, check) -> None:
           "actor" in run_publish_phase("", "probe").get("skipped", ""))
     check("a build is refused without an explicit authorisation",
           _refused(lambda: REPO.build()))
-    prepared = REPO.prepare_publish(dest=sandbox)
+    prepared = _with_signing_key("cd" * 200, lambda: REPO.prepare_publish(dest=sandbox))
     check("prepare_publish is a dry-run",
           prepared.get("dryRun") is True and prepared.get("published") is False
           and prepared.get("pushed") == [])

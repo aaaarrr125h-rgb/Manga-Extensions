@@ -20,6 +20,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -29,6 +30,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
+
+# A synthetic, obviously-fake *public* signing key: the build refuses to treat
+# the published 64 character fingerprint as a key, so the fixtures need a real
+# key-shaped value. The matching fingerprint is derived from the key's bytes,
+# exactly as bot.signing_key_fingerprint does -- never hand-written.
+VALID_PUBLIC_KEY = "ab" * 256
+VALID_FINGERPRINT = hashlib.sha256(bytes.fromhex(VALID_PUBLIC_KEY)).hexdigest()
+os.environ.setdefault("SIGNING_KEY", VALID_PUBLIC_KEY)
 
 import bot  # noqa: E402
 
@@ -530,12 +539,13 @@ def test_repo_untouched():
     assert not drift, "these changed: {}".format(drift)
 
 
-@case("25 the manifest carries the key the index and repo.json already publish")
-def test_manifest_signing_key_is_the_published_one():
+@case("25 the manifest carries the fingerprint derived from the published key")
+def test_manifest_signing_fingerprint_is_derived_from_the_key():
     """The app must be able to authenticate the index from the manifest alone.
 
-    One source of truth: the value here is the *same* one the build resolved for
-    repo.json and the index, not a second copy that could drift away from it.
+    One source of truth: the fingerprint is *derived* from the signing key the
+    build resolved for repo.json and the index, not read back from either of
+    them and not a second copy that could drift away.
     """
     extensions = [extension("Alpha", 1), extension("Beta", 2)]
     sandbox, _ = build(extensions)
@@ -544,21 +554,30 @@ def test_manifest_signing_key_is_the_published_one():
         index_key = read(sandbox, "repo/index.json")["signingKey"]
         repo_json_key = read(sandbox, "repo.json")["meta"]["signingKeyFingerprint"]
         assert manifest["signingKeyFingerprint"]
-        assert manifest["signingKeyFingerprint"] == index_key
         assert manifest["signingKeyFingerprint"] == repo_json_key
-        # and it is the key actually published right now, not a fixture's
-        assert manifest["signingKeyFingerprint"] == bot.published_fingerprint()
+        # it is the fingerprint *of the key the index carries*, not the key itself
+        assert manifest["signingKeyFingerprint"] == bot.signing_key_fingerprint(index_key)
+        assert manifest["signingKeyFingerprint"] != index_key
+        assert len(manifest["signingKeyFingerprint"]) == 64
+        # the key the fixtures build with is the public key, not the live one
+        assert index_key == VALID_PUBLIC_KEY
+        assert manifest["signingKeyFingerprint"] == VALID_FINGERPRINT
     finally:
         shutil.rmtree(sandbox, ignore_errors=True)
 
 
-@case("26 a manifest without a signing key is refused, not silently emitted")
+@case("26 a manifest without a usable fingerprint is refused, not silently emitted")
 def test_manifest_requires_a_signing_key():
-    try:
-        bot.shura_manifest("0" * bot.SHURA_REVISION_LENGTH, [], "")
-    except bot.SigningMetadataMissing:
-        return
-    raise AssertionError("a manifest with no signing key must not be produced")
+    for bad in ("", None, "zz" * 32, "ab" * 16, bot.ENCODING_PROBE_KEY):
+        try:
+            bot.shura_manifest("0" * bot.SHURA_REVISION_LENGTH, [], bad)
+        except bot.SigningMetadataMissing:
+            continue
+        raise AssertionError("a manifest with {!r} must not be produced".format(bad))
+    # ... while a real 64 character digest is accepted
+    assert bot.shura_manifest(
+        "0" * bot.SHURA_REVISION_LENGTH, [], VALID_FINGERPRINT
+    )["signingKeyFingerprint"] == VALID_FINGERPRINT
 
 
 def main() -> int:
