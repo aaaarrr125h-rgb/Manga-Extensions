@@ -21,6 +21,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Record build identity
+        # The APK shows these on screen, so they have to come from the checked-out commit and from
+        # the moment of this build. A rebuild of the same commit therefore shares the SHA but not
+        # the timestamp, which is exactly the distinction needed when telling two APKs apart.
+        id: identity
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "build_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Build identity"
+            echo "| field | value |"
+            echo "| --- | --- |"
+            echo "| commit | \`$(git rev-parse HEAD)\` |"
+            echo "| built | \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\` |"
+            echo "| run | \`$GITHUB_RUN_ID\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -42,8 +60,8 @@ jobs:
 
       - name: Install SDK packages
         # compileSdk/targetSdk 34 in app/build.gradle.kts pins the platform; build-tools 34.0.0 is
-      # the default for AGP 8.7.3. platform-tools is not strictly needed to assemble, but it is
-      # what AGP expects to find and it keeps the SDK complete.
+        # the default for AGP 8.7.3. platform-tools is not strictly needed to assemble, but it is
+        # what AGP expects to find and it keeps the SDK complete.
         run: |
           sdkmanager --install \
             "platform-tools" \
@@ -55,20 +73,89 @@ jobs:
           echo "ANDROID_HOME=${ANDROID_HOME}"
           sdkmanager --list_installed
 
+      - name: Restore stable debug keystore
+        # Each GitHub runner is a fresh machine, so the automatic debug key is regenerated per run
+        # and every APK gets a different certificate. Android then refuses to replace the previous
+        # install (INSTALL_FAILED_UPDATE_INCOMPATIBLE), the old app keeps running, and the build
+        # just fixed never appears on the device. Restoring one key from the cache is what makes
+        # consecutive APKs installable over each other.
+        #
+        # Nothing private enters the repository: the key is generated here and kept in the Actions
+        # cache. It is a debug key only and never signs a release.
+        id: keystore
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/shura-ci.keystore
+          key: shura-ci-debug-keystore-v1
+
+      - name: Create stable debug keystore
+        # Runs on the first build and after any cache eviction, then the cache above restores it.
+        if: steps.keystore.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.android
+          keytool -genkeypair \
+            -keystore ~/.android/shura-ci.keystore \
+            -storepass shura-ci -keypass shura-ci \
+            -alias shura-ci \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Shura CI Debug, O=Shura, C=US"
+
       - name: Assemble debug APK
         working-directory: android
-        run: ./gradlew --no-daemon :app:assembleDebug
-
-      - name: Verify APK exists
+        # `clean` first, so nothing left in build/ can reach the APK. A stale output directory is
+        # the other way an old screen survives a fixed build.
         run: |
-          APK=android/app/build/outputs/apk/debug/app-debug.apk
-          test -f "$APK" || { echo "::error::APK not found at $APK"; exit 1; }
-          ls -l "$APK"
-          du -h "$APK"
+          ./gradlew --no-daemon clean :app:assembleDebug \
+            -PshuraGitSha=${{ steps.identity.outputs.sha }} \
+            -PshuraBuildTime=${{ steps.identity.outputs.build_time }}
+
+      - name: Verify the APK
+        # Exactly one APK, and it must be the one just built. Anything else means a stale output
+        # directory or a variant that was not cleaned.
+        id: apk
+        run: |
+          mapfile -t APKS < <(find android/app/build/outputs -name '*.apk' | sort)
+          printf 'APKs produced: %d\n' "${#APKS[@]}"
+          printf '  %s\n' "${APKS[@]:-<none>}"
+          if [ "${#APKS[@]}" -ne 1 ]; then
+            echo "::error::expected exactly one APK, found ${#APKS[@]}"
+            exit 1
+          fi
+          APK="${APKS[0]}"
+          SHA="$(sha256sum "$APK" | cut -d' ' -f1)"
+          CERT="$(apksigner verify --print-certs "$APK" \
+            | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')"
+          test -n "$CERT" || { echo "::error::could not read the signing certificate"; exit 1; }
+          echo "path=$APK"  >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA"   >> "$GITHUB_OUTPUT"
+          echo "cert=$CERT" >> "$GITHUB_OUTPUT"
+          echo "size=$(stat -c %s "$APK")" >> "$GITHUB_OUTPUT"
+          {
+            echo "| size | $(stat -c %s "$APK") bytes |"
+            echo "| sha256 | \`$SHA\` |"
+            echo "| signing certificate | \`$CERT\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the APK carries this build's identity
+        # The app prints its commit and build time on screen. Reading it back out of the dex proves
+        # the shipped APK, not just the Gradle invocation, is the build being claimed.
+        run: |
+          APK="${{ steps.apk.outputs.path }}"
+          DEXES="$(unzip -Z1 "$APK" | grep -c '^classes[0-9]*\.dex$')"
+          echo "dex files: $DEXES"
+          for TEXT in "${{ steps.identity.outputs.sha }}" "${{ steps.identity.outputs.build_time }}"; do
+            if unzip -p "$APK" 'classes*.dex' | strings | grep -qF "$TEXT"; then
+              echo "ok: $TEXT is present in the dex"
+            else
+              echo "::error::$TEXT is missing from the dex"
+              exit 1
+            fi
+          done
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: shura-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          # Named after the commit, so an artifact list says which build each file is.
+          name: shura-debug-${{ steps.identity.outputs.short_sha }}
+          path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error

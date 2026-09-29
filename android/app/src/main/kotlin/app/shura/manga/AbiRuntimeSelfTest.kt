@@ -4,6 +4,8 @@ import android.content.Context
 import app.shura.source.api.ExtensionAbi
 import app.shura.source.host.AbiRegistry
 import java.io.File
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.util.zip.ZipFile
 
 /** One line of the self test report, and whether it counts as a pass. */
@@ -224,8 +226,18 @@ class AbiRuntimeSelfTest(private val context: Context) {
         return "${type.name} from $owner"
     }
 
-    private fun Throwable.describe(): String =
-        "$javaClass.simpleName: ${message?.lines()?.firstOrNull()?.take(160).orEmpty()}"
+    /**
+     * The whole stack trace, not its first line.
+     *
+     * This report is the only diagnosis available on a device with no debugger attached, and the
+     * useful part of a classloading failure is always further down: which loader refused the class,
+     * and what it said about the dex it was reading.
+     */
+    private fun Throwable.describe(): String {
+        val buffer = StringWriter()
+        PrintWriter(buffer).use { printStackTrace(it) }
+        return buffer.toString().trimEnd()
+    }
 
     private fun render(): String = buildString {
         appendLine("Shura ABI self test")
@@ -233,7 +245,7 @@ class AbiRuntimeSelfTest(private val context: Context) {
         appendLine("-".repeat(36))
         report.forEach { line ->
             appendLine("${if (line.passed) "PASS" else "FAIL"}  ${line.label}")
-            appendLine("      ${line.detail}")
+            line.detail.lineSequence().forEach { appendLine("      $it") }
         }
         appendLine("-".repeat(36))
         appendLine("${report.count(Report::passed)}/${report.size} passed")

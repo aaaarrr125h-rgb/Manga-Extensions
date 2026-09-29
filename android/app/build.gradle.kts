@@ -9,9 +9,56 @@ plugins {
 val shuraCompileSdk = 34
 val shuraMinSdk = 26
 
+// Build identity. The device screen must be able to name the exact commit it is running, so the
+// launcher activity can never be confused with a stale install. Both values are supplied by CI as
+// Gradle properties; a local build without them says "unknown" rather than lying about a commit.
+val shuraGitSha: String = (project.findProperty("shuraGitSha") as String?)
+    ?: System.getenv("SHURA_GIT_SHA")
+    ?: "unknown"
+
+val shuraBuildTime: String = (project.findProperty("shuraBuildTime") as String?)
+    ?: System.getenv("SHURA_BUILD_TIME")
+    ?: "unknown"
+
+// A fixed debug key, so a newer APK can actually replace an older one on a device.
+//
+// Android signs a debug build with a throwaway key generated on the machine doing the build. On CI
+// that means a *new* key per run, so every run's APK carries a different certificate. Installing
+// the new APK over the old one then fails with INSTALL_FAILED_UPDATE_INCOMPATIBLE, the previous
+// version stays installed, and the build that was just fixed never reaches the screen. Caching one
+// key across runs is what makes updates install.
+//
+// No private key is committed: CI generates this keystore once into the Actions cache and restores
+// it afterwards. Locally it is simply absent, and the default debug key is used. A real key can be
+// supplied with -PshuraKeystore / -PshuraKeystorePassword or the matching environment variables.
+val shuraKeystore: File = (project.findProperty("shuraKeystore") as String?)
+    ?.let(::File)
+    ?: File(System.getProperty("user.home"), ".android/shura-ci.keystore")
+
+val shuraKeystorePassword: String = (project.findProperty("shuraKeystorePassword") as String?)
+    ?: System.getenv("SHURA_KEYSTORE_PASSWORD")
+    ?: "shura-ci"
+
+val shuraUseCiKey = shuraKeystore.isFile
+
 android {
     namespace = "app.shura.manga"
     compileSdk = shuraCompileSdk
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    signingConfigs {
+        if (shuraUseCiKey) {
+            create("ci") {
+                storeFile = shuraKeystore
+                storePassword = shuraKeystorePassword
+                keyAlias = "shura-ci"
+                keyPassword = shuraKeystorePassword
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "app.shura.manga"
@@ -20,6 +67,9 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GIT_SHA", "\"$shuraGitSha\"")
+        buildConfigField("String", "BUILD_TIME", "\"$shuraBuildTime\"")
     }
 
     compileOptions {
@@ -32,6 +82,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            if (shuraUseCiKey) {
+                signingConfig = signingConfigs.getByName("ci")
+            }
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
