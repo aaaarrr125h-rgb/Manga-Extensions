@@ -24,6 +24,17 @@ class AbiRuntimeSelfTest(private val context: Context) {
 
     private val report = mutableListOf<Report>()
 
+    /**
+     * The parent every ABI loader delegates to.
+     *
+     * It supplies `app.shura.source.api`, RxJava and kotlinx-serialization, and must supply no
+     * `eu.kanade.*`. `Class.classLoader` is nullable on Android, so the null case is settled once
+     * here rather than as a `!!` at each use.
+     */
+    private val hostLoader: ClassLoader =
+        AbiRuntimeSelfTest::class.java.classLoader
+            ?: error("The app classloader cannot be null")
+
     fun run(): String {
         report.clear()
         val registry = runInstaller() ?: return render()
@@ -69,7 +80,7 @@ class AbiRuntimeSelfTest(private val context: Context) {
      * extension takes, not a shortcut that reads straight out of `assets`.
      */
     private fun stageFixtures() {
-        FIXTURES.forEach { (name) ->
+        FIXTURES.values.forEach { name ->
             val target = File(fixtureDirectory, name)
             if (target.isFile && target.length() > 0) return@forEach
             runCatching {
@@ -113,7 +124,7 @@ class AbiRuntimeSelfTest(private val context: Context) {
             abi to AndroidAbiClassLoader(
                 dexJars = listOf(fixture, apiJar),
                 optimizedDirectory = optimized,
-                parent = AbiRuntimeSelfTest::class.java.classLoader,
+                parent = hostLoader,
             )
         }.getOrElse {
             report += Report("DexClassLoader ABI ${abi.version}", "THREW ${it.describe()}", false)
@@ -173,9 +184,8 @@ class AbiRuntimeSelfTest(private val context: Context) {
             )
             else -> report += Report(
                 "isolation $firstAbi vs $secondAbi",
-                "$COLLISION_PROBE is a distinct Class per level " +
-                    "(${first.classLoader.hashCode().toString(16)} vs " +
-                    "${second.classLoader.hashCode().toString(16)})",
+                "$COLLISION_PROBE is a distinct Class per level, loaded by " +
+                    "${describe(first)} and ${describe(second)}",
                 true,
             )
         }
@@ -188,18 +198,31 @@ class AbiRuntimeSelfTest(private val context: Context) {
      * with the loaders merely re-finding it there. This is the check that would catch that.
      */
     private fun reportNoHostLeak() {
-        val host = AbiRuntimeSelfTest::class.java.classLoader
-        val leaked = runCatching { host.loadClass(COLLISION_PROBE) }.getOrNull()
+        val leaked = runCatching { hostLoader.loadClass(COLLISION_PROBE) }.getOrNull()
         report += Report(
             "no eu.kanade.* on host",
             if (leaked == null) "host cannot resolve $COLLISION_PROBE"
-            else "LEAK: host resolved it via ${leaked.classLoader}",
+            else "LEAK: host resolved ${describe(leaked)}",
             leaked == null,
         )
     }
 
     private fun hasClassesDex(jar: File): Boolean =
         runCatching { ZipFile(jar).use { it.getEntry("classes.dex") != null } }.getOrDefault(false)
+
+    /**
+     * Names the loader that actually defined [type], which is the whole point of the isolation
+     * check: a class name can look right while coming from the wrong loader.
+     */
+    private fun describe(type: Class<*>): String {
+        val loader = type.classLoader
+        val owner = when (loader) {
+            null -> "the bootstrap loader"
+            is AndroidAbiClassLoader -> "DexClassLoader ${loader.hashCode().toString(16)}"
+            else -> "${loader.javaClass.simpleName} ${loader.hashCode().toString(16)}"
+        }
+        return "${type.name} from $owner"
+    }
 
     private fun Throwable.describe(): String =
         "$javaClass.simpleName: ${message?.lines()?.firstOrNull()?.take(160).orEmpty()}"

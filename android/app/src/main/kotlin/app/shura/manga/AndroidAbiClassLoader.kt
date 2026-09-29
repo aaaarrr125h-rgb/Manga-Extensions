@@ -3,6 +3,7 @@ package app.shura.manga
 import app.shura.source.host.ExtensionClassLoader
 import dalvik.system.DexClassLoader
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * The Android counterpart of [ExtensionClassLoader].
@@ -31,8 +32,18 @@ class AndroidAbiClassLoader(
 
     private val childFirst: List<String> = childFirstPackages
 
+    /**
+     * One lock per class name, standing in for `getClassLoadingLock`.
+     *
+     * `ClassLoader.getClassLoadingLock` is a JVM addition; Android's `ClassLoader` has no such
+     * method, so a per name lock is kept here instead. The intent is the same as the host's: two
+     * threads loading different classes must not block each other, and two threads loading the
+     * same class must not both define it.
+     */
+    private val loadingLocks = ConcurrentHashMap<String, Any>()
+
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
-        synchronized(getClassLoadingLock(name)) {
+        synchronized(loadingLocks.computeIfAbsent(name) { Any() }) {
             findLoadedClass(name)?.let { alreadyLoaded ->
                 if (resolve) resolveClass(alreadyLoaded)
                 return alreadyLoaded
