@@ -1,0 +1,6 @@
+# Machine-specific SDK location (contains an absolute path, and is regenerated per machine).
+local.properties
+
+# Gradle
+.gradle/
+build/
