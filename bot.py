@@ -127,6 +127,42 @@ AUTO_DELETE = env_bool("AUTO_DELETE", True)
 AUTO_BAN = env_bool("AUTO_BAN", True)
 REPORT_UNKNOWN = env_bool("REPORT_UNKNOWN", False)
 
+# ---------------------------------------------------------------------------
+# POST_BETA feature flags (temporary, reversible).
+#
+# Each flag defaults to True, so an unset environment reproduces the previous
+# behaviour exactly. Set one to a falsey value ("0", "false", "no", "off") to
+# defer that feature for the Beta; set it back to "1"/"true" to re-enable it.
+# Nothing behind a flag is deleted -- every function, table and test stays in
+# the tree, only the call site is short-circuited, so re-enabling is a
+# one-variable change and never a rebuild.
+#
+# The repo pipeline is deliberately NOT behind any of these: crawling, source
+# fetching, extraction, validation, malware/security screening, signing and
+# integrity verification, the index build and the gated publish phase all stay
+# unconditional. A flag may only gate a feature that is separable from them.
+# ---------------------------------------------------------------------------
+
+# Group guard: the Telegram group moderator half of this bot. When off, the
+# message handler still serves /help, /review, /accept and every other admin
+# command; only the group-link moderation branch returns early. The screening
+# helpers it shares with the repo pipeline (url_verdict, nsfw_hit, scan_code
+# and the signature tables) stay active -- screen_gate() and asset_verdict()
+# call them, and they are BETA_CORE security code.
+GROUP_GUARD_ENABLED = env_bool("GROUP_GUARD_ENABLED", True)
+
+# Shura sync: the Shura-app sidecar contract (shura/manifest.json and
+# shura/delta.json). When off, build() simply omits those two keys from the
+# artifacts it writes, so nothing is published and no file is created. The
+# shura_* functions and test_shura_sync.py are untouched and keep passing.
+# repo/index.json, repo/index.pb and repo.json are always written unchanged.
+SHURA_SYNC_ENABLED = env_bool("SHURA_SYNC_ENABLED", True)
+
+# Daily stats digest pushed to admins. When off, scheduled_jobs() omits the
+# "digest" entry only; job_digest() itself and Store.counters (shared with
+# harvest, health and the group guard) are both left in place.
+DIGEST_ENABLED = env_bool("DIGEST_ENABLED", True)
+
 GITHUB_TOKEN = env_str("GITHUB_TOKEN") or env_str("GH_TOKEN")
 GITHUB_REPO = env_str("GITHUB_REPO", "aaaarrr125h-rgb/Manga-Extensions")
 GITHUB_BRANCH = env_str("GITHUB_BRANCH", "main")
@@ -2030,14 +2066,24 @@ class RepoManager:
             "repo/index.pb": gzip.compress(proto, mtime=0, compresslevel=9),
             "repo/index.min.json": (json.dumps(LEGACY_INDEX_MIN, indent=2) + "\n").encode("utf-8"),
             "repo.json": (json.dumps(repo_json, indent=2, ensure_ascii=False) + "\n").encode("utf-8"),
-            "shura/manifest.json": shura_render(
-                shura_manifest(revision, extensions, fingerprint)),
-            "shura/delta.json": shura_render(delta),
+        }
+        # POST_BETA gate: the Shura-app sidecar contract is separable, so with
+        # SHURA_SYNC_ENABLED=false these two keys are never added and no
+        # shura/manifest.json or shura/delta.json is written. The shura_*
+        # functions are untouched and test_shura_sync.py keeps passing against
+        # them. Everything listed here and below -- the index, index.pb, the
+        # legacy minified index, repo.json with its signing fingerprint, the
+        # quarantine and the audit cache -- is unconditional BETA_CORE.
+        if SHURA_SYNC_ENABLED:
+            artifacts["shura/manifest.json"] = shura_render(
+                shura_manifest(revision, extensions, fingerprint))
+            artifacts["shura/delta.json"] = shura_render(delta)
+        artifacts.update({
             "data/quarantine.json": (json.dumps(self.quarantine, ensure_ascii=False, indent=1)
                                      + "\n").encode("utf-8"),
             "data/audit_cache.json": (json.dumps(self.audit_cache, ensure_ascii=False, indent=1,
                                                  sort_keys=True) + "\n").encode("utf-8"),
-        }
+        })
 
         changed = []
         for relative, payload in artifacts.items():
@@ -2532,6 +2578,12 @@ def handle_message(tg: Telegram, message: dict) -> None:
         return
     if user.get("is_bot") or user.get("id") in ADMIN_IDS:
         return
+    # POST_BETA gate: everything below is the group-link moderator. Commands
+    # above already returned, so /review and /accept are unaffected. Set
+    # GROUP_GUARD_ENABLED=false to defer the moderator and re-enable it with
+    # GROUP_GUARD_ENABLED=true.
+    if not GROUP_GUARD_ENABLED:
+        return
     if WATCH_CHATS and chat_id not in WATCH_CHATS:
         return
 
@@ -2599,6 +2651,11 @@ def is_admin_user(user: dict) -> bool:
 
 
 def handle_decision(tg: Telegram, query: dict) -> None:
+    # POST_BETA gate: the approve/deny buttons only exist for group-guard
+    # reports, so with the moderator deferred no callback can be produced.
+    # Returning early keeps the button path consistent with handle_message.
+    if not GROUP_GUARD_ENABLED:
+        return
     action, _, token = (query.get("data") or "").partition(":")
     if action not in ("ban", "allow") or not token:
         return
@@ -3563,9 +3620,13 @@ def scheduled_jobs(enabled: bool = None) -> list:
     """
     if enabled is None:
         enabled = PUBLISH_READINESS_ENABLED
+    # POST_BETA gate: harvest and health are BETA_CORE (crawling and
+    # validation) and are always registered. Only the non-core daily stats
+    # digest is deferrable; job_digest() itself stays defined either way.
     jobs = [("harvest", CRON_HARVEST, job_harvest),
-            ("health", CRON_HEALTH, job_health),
-            ("digest", CRON_DIGEST, job_digest)]
+            ("health", CRON_HEALTH, job_health)]
+    if DIGEST_ENABLED:
+        jobs.append(("digest", CRON_DIGEST, job_digest))
     if enabled:
         jobs.append(("publish-readiness", CRON_PUBLISH, job_publish))
     return jobs

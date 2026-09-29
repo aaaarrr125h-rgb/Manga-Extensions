@@ -222,6 +222,28 @@ On Railway you do not need this — variables are injected by the platform.
 | `CRON_DIGEST` | `53 9 * * *` | Daily digest to admins. |
 | `TIMEZONE` | `UTC` | Timezone the cron expressions use. |
 
+### POST_BETA feature flags (temporary)
+
+Three features are separable and can be deferred for the Beta with a single
+environment variable. **Every flag defaults to `true`**, so an unset environment
+reproduces the previous behaviour exactly. Set one to `false` to defer that
+feature, and back to `true` to re-enable it.
+
+Nothing behind a flag is deleted. Every function, table and test stays in the
+tree; only the call site is short-circuited, so re-enabling a feature is a
+one-variable change and never a rebuild.
+
+| Variable | Default | When false |
+|---|---|---|
+| `GROUP_GUARD_ENABLED` | `true` | The Telegram group moderator stops acting on group messages. `/help`, `/review`, `/accept` and every other admin command still work, and the screening helpers the repo pipeline shares with it (`url_verdict`, `nsfw_hit`, `scan_code`, `screen_gate`, `asset_verdict`) stay active. |
+| `SHURA_SYNC_ENABLED` | `true` | The build stops writing `shura/manifest.json` and `shura/delta.json`, so nothing is published for the Shura app. `repo/index.json`, `repo/index.pb`, `repo/index.min.json` and `repo.json` are still written unchanged. The `shura_*` functions and `test_shura_sync.py` are untouched. |
+| `DIGEST_ENABLED` | `true` | The daily stats digest is not registered with the scheduler. `job_digest()` and the shared `Store.counters` remain, as do `CRON_HARVEST` and `CRON_HEALTH`. |
+
+The repo pipeline is deliberately behind **none** of these: crawling, source
+fetching, extraction, validation, malware and security screening, signing and
+integrity verification, the index build and the gated publish phase are all
+unconditional.
+
 ---
 
 ## Running

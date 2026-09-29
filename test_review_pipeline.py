@@ -2304,6 +2304,242 @@ def test_apk_https_redirect_allowed():
     assert pending["apkSize"] == len(CLEAN_APK)
 
 
+# ------------------------------------------- POST_BETA feature-flag separation
+#
+# GROUP_GUARD_ENABLED, SHURA_SYNC_ENABLED and DIGEST_ENABLED defer three
+# features for the Beta without deleting anything. Each defaults to True, so an
+# unset environment reproduces the previous behaviour exactly. These cases pin
+# both halves of that promise: the defaults change nothing, and turning a flag
+# off removes *only* its own feature -- the BETA_CORE pipeline, the security
+# screeners and the signing metadata stay exactly where they were.
+
+POST_BETA_FLAGS = ("GROUP_GUARD_ENABLED", "SHURA_SYNC_ENABLED", "DIGEST_ENABLED")
+BETA_CORE_ARTIFACTS = ("repo/index.json", "repo/index.pb", "repo/index.min.json",
+                       "repo.json", "data/quarantine.json", "data/audit_cache.json")
+SHURA_ARTIFACTS = ("shura/manifest.json", "shura/delta.json")
+
+
+def _built_paths(sandbox):
+    """Every file a sandboxed build actually wrote, relative and sorted."""
+    return sorted(str(path.relative_to(sandbox)) for path in sandbox.rglob("*") if path.is_file())
+
+
+@case("61 the three POST_BETA flags default to on and change nothing")
+def test_post_beta_flags_default_on():
+    import bot
+    for name in POST_BETA_FLAGS:
+        assert getattr(bot, name) is True, name
+        assert name not in os.environ or os.environ[name].strip().lower() in {
+            "1", "true", "yes", "on", "y"}, name
+
+    # the default schedule is the pre-separation one, digest included
+    ids = [job[0] for job in _scheduled_jobs(bot, False)]
+    assert ids == ["harvest", "health", "digest"], ids
+
+    # and a default build still writes the full artifact set, Shura included
+    sandbox = Path(tempfile.mkdtemp(prefix="manga-flags-default-"))
+    try:
+        with sandbox_state(), patched(bot, SIGNING_KEY=VALID_SIGNING_KEY, TEST_MODE=True):
+            built = _BareRepo(bot, VALID_SIGNING_KEY).build(dest=sandbox)
+        assert built["ok"] is True, built
+        assert _built_paths(sandbox) == sorted(BETA_CORE_ARTIFACTS + SHURA_ARTIFACTS), \
+            _built_paths(sandbox)
+    finally:
+        shutil.rmtree(sandbox, ignore_errors=True)
+
+    # every deferred function is still defined -- nothing was deleted
+    for name in ("job_digest", "shura_manifest", "shura_delta", "shura_render",
+                 "shura_diff", "shura_projection", "handle_message", "handle_decision"):
+        assert callable(getattr(bot, name)), name
+
+
+@case("62 GROUP_GUARD_ENABLED=false silences the moderator and nothing else")
+def test_group_guard_flag_off():
+    import bot
+    sandbox = Path(tempfile.mkdtemp(prefix="manga-state-"))
+    sent, calls = [], []
+    saved = (bot.STATE.path, bot.ADMIN_IDS, bot.WATCH_CHATS, bot.REVIEW.review,
+             bot.REVIEW.review_report)
+    bot.STATE.path, bot.ADMIN_IDS, bot.WATCH_CHATS = sandbox / "state.json", {900001}, {-1001}
+    bot.REVIEW.review = lambda *a, **k: calls.append("review") or {"ok": True}
+    bot.REVIEW.review_report = lambda *a, **k: calls.append("report") or "report"
+    # an IP-literal apk url: looks_like_domain() accepts it, extract_links()
+    # returns it, and url_verdict() blocks it -- so the moderator really runs
+    # its auto-delete/ban branch here. (A ".test" host would never be reached:
+    # that TLD is reserved, so the link is dropped before screening.)
+    link_message = telegram_message("look at https://1.2.3.4/a.apk", 424242)
+
+    class Tg:
+        def send(self, chat_id, text, markup=None):
+            sent.append((chat_id, text))
+            return {"message_id": len(sent)}
+
+        def notify_admins(self, text, markup=None):
+            sent.append((0, text))
+            return 1
+
+        def edit(self, chat_id, message_id, text, markup=None):
+            sent.append(("edit", message_id))
+            return True
+
+        def ban(self, chat_id, user_id):
+            sent.append(("ban", user_id))
+            return True
+
+        def delete(self, chat_id, message_id):
+            sent.append(("delete", message_id))
+            return True
+
+        def answer(self, callback_id, text=""):
+            return True
+
+    def attempts():
+        sent.clear()
+        bot.STATE.path = sandbox / "state.json"
+        bot.STATE.reports.clear()
+        bot.STATE.bump("auto")
+        bot.STATE.counters.pop("auto", None)
+        bot.handle_message(Tg(), link_message)
+        bot.handle_decision(Tg(), {"id": "cb", "data": "ban:tok", "from": {"id": 900001},
+                                   "message": {"chat": {"id": -1001}, "message_id": 9}})
+        return list(sent)
+
+    try:
+        # on: the moderator acts exactly as before
+        with patched(bot, GROUP_GUARD_ENABLED=True):
+            assert attempts(), "the group guard did nothing with the flag on"
+
+        # off: the same message produces no action at all
+        with patched(bot, GROUP_GUARD_ENABLED=False):
+            assert attempts() == [], attempts()
+
+        # ...while /review still reaches the review pipeline, admin or not
+        with patched(bot, GROUP_GUARD_ENABLED=False):
+            calls.clear()
+            bot.handle_message(Tg(), telegram_message("/review " + PACKAGE, user_id=900001))
+            assert calls == ["report"], calls
+            calls.clear()
+            bot.handle_message(Tg(), telegram_message("/review " + PACKAGE, user_id=424242))
+            assert calls == [], "a non-admin reached the pipeline: " + repr(calls)
+    finally:
+        bot.STATE.path, bot.ADMIN_IDS, bot.WATCH_CHATS = saved[0], saved[1], saved[2]
+        bot.REVIEW.review, bot.REVIEW.review_report = saved[3], saved[4]
+        shutil.rmtree(sandbox, ignore_errors=True)
+
+    # the shared security screeners are untouched by the flag
+    for name in ("url_verdict", "nsfw_hit", "scan_code", "review_links", "screen_gate"):
+        assert callable(getattr(bot, name)), name
+    verdict, _reason = bot.url_verdict("https://1.2.3.4/a.apk")
+    assert verdict == "blocked", verdict
+    # and the flag is consulted nowhere inside the screeners themselves
+    with patched(bot, GROUP_GUARD_ENABLED=False):
+        assert bot.url_verdict("https://1.2.3.4/a.apk")[0] == "blocked"
+        # screen_gate is the repo pipeline's own consumer of that screener, and
+        # it reads resources.apkUrl -- it must still refuse the same apk url
+        reason = bot.screen_gate({"packageName": PACKAGE, "name": "Demo Ext",
+                                  "resources": {"apkUrl": "https://1.2.3.4/a.apk"}})
+        assert reason == "url:ip-literal-host", reason
+
+
+@case("63 SHURA_SYNC_ENABLED=false omits only the two shura artifacts")
+def test_shura_sync_flag_off():
+    import bot
+    on_sandbox = Path(tempfile.mkdtemp(prefix="manga-shura-on-"))
+    off_sandbox = Path(tempfile.mkdtemp(prefix="manga-shura-off-"))
+    try:
+        with sandbox_state(), patched(bot, SIGNING_KEY=VALID_SIGNING_KEY, TEST_MODE=True,
+                                      SHURA_SYNC_ENABLED=True):
+            on_built = _BareRepo(bot, VALID_SIGNING_KEY).build(dest=on_sandbox)
+        with sandbox_state(), patched(bot, SIGNING_KEY=VALID_SIGNING_KEY, TEST_MODE=True,
+                                      SHURA_SYNC_ENABLED=False):
+            off_built = _BareRepo(bot, VALID_SIGNING_KEY).build(dest=off_sandbox)
+
+        assert on_built["ok"] is True and off_built["ok"] is True
+        assert _built_paths(on_sandbox) == sorted(BETA_CORE_ARTIFACTS + SHURA_ARTIFACTS)
+        assert _built_paths(off_sandbox) == sorted(BETA_CORE_ARTIFACTS), _built_paths(off_sandbox)
+        for name in SHURA_ARTIFACTS:
+            assert not (off_sandbox / name).exists(), name
+
+        # every BETA_CORE artifact is byte-identical with the flag on and off
+        for name in BETA_CORE_ARTIFACTS:
+            if name == "repo/index.pb":
+                continue  # gzip output, compared decoded below
+            assert (on_sandbox / name).read_bytes() == (off_sandbox / name).read_bytes(), name
+        assert (gzip.decompress((on_sandbox / "repo/index.pb").read_bytes())
+                == gzip.decompress((off_sandbox / "repo/index.pb").read_bytes()))
+
+        # signing and integrity are untouched: the key is still published three ways
+        rendered = json.loads((off_sandbox / "repo/index.json").read_text(encoding="utf-8"))
+        meta = json.loads((off_sandbox / "repo.json").read_text(encoding="utf-8"))["meta"]
+        decoded = bot.decode_index(gzip.decompress((off_sandbox / "repo/index.pb").read_bytes()))
+        assert rendered["signingKey"] == VALID_SIGNING_KEY
+        assert decoded["signingKey"] == VALID_SIGNING_KEY
+        assert meta["signingKeyFingerprint"] == VALID_SIGNING_KEY
+    finally:
+        shutil.rmtree(on_sandbox, ignore_errors=True)
+        shutil.rmtree(off_sandbox, ignore_errors=True)
+
+    # the shura layer itself is intact and still produces a valid contract
+    manifest = bot.shura_manifest("a" * bot.SHURA_REVISION_LENGTH, [], VALID_SIGNING_KEY)
+    assert manifest["schema"] == bot.SHURA_SCHEMA and manifest["count"] == 0
+    assert bot.shura_render(manifest)
+
+
+@case("64 DIGEST_ENABLED=false unregisters the digest job and only that one")
+def test_digest_flag_off():
+    import bot
+    with patched(bot, DIGEST_ENABLED=False):
+        assert [job[0] for job in _scheduled_jobs(bot, False)] == ["harvest", "health"]
+        # harvest and health -- the BETA_CORE crawlers -- are still registered,
+        # and the opt-in publish-readiness report is unaffected too
+        assert [job[0] for job in _scheduled_jobs(bot, True)] == \
+            ["harvest", "health", "publish-readiness"]
+    with patched(bot, DIGEST_ENABLED=True):
+        assert [job[0] for job in _scheduled_jobs(bot, False)] == ["harvest", "health", "digest"]
+
+    # the handler and the shared counters are all still there
+    assert callable(bot.job_digest) and isinstance(bot.STATE.counters, dict)
+    for key in ("harvests", "added", "updated", "quarantined", "pushes"):
+        assert key in bot.STATE.counters, key
+
+
+@case("65 no POST_BETA flag can reach the publish gate or the index writer")
+def test_post_beta_flags_cannot_publish():
+    """A deferral flag must never be a way in, and never a way out of the gate."""
+    import bot
+    source = (ROOT / "bot.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    calls = module_call_map(ROOT / "bot.py")
+    publishers = {"publish", "push", "run_publish_phase", "prepare_publish"}
+
+    for name in POST_BETA_FLAGS:
+        holders = [node for node in ast.walk(tree)
+                   if isinstance(node, ast.Assign)
+                   and any(isinstance(t, ast.Name) and t.id == name for t in node.targets)]
+        assert len(holders) == 1, (name, len(holders))
+        # the flag is a plain env read, nothing more
+        assert "env_bool" in ast.unparse(holders[0]), name
+        assert "os.environ" not in ast.unparse(holders[0]), name
+
+    # neither build(), scheduled_jobs() nor the two handlers calls a publisher
+    for func in ("build", "scheduled_jobs", "handle_message", "handle_decision"):
+        assert not (calls.get(func, set()) & publishers), (func, calls.get(func))
+
+    # and the closed gate still refuses every publish route with all flags off
+    with patched(bot, TEST_MODE=True, PUSH_ENABLED=False, PUBLISH_MODE="disabled",
+                 GROUP_GUARD_ENABLED=False, SHURA_SYNC_ENABLED=False, DIGEST_ENABLED=False):
+        assert bot.publish_gate("push")["ok"] is False
+        try:
+            bot.assert_may_push("t")
+        except bot.PushBlocked:
+            pass
+        else:
+            raise AssertionError("assert_may_push passed with every flag off")
+        # run_publish_phase reports the refusal rather than raising
+        blocked = bot.run_publish_phase("tester", "t")
+        assert blocked["ok"] is False and blocked["blocked"] is True, blocked
+
+
 def _live_state() -> dict:
     paths = [ROOT / "repo/index.json", ROOT / "repo/index.min.json", ROOT / "repo/index.pb",
              ROOT / "repo.json", ROOT / "data/quarantine.json", ROOT / "data/audit_cache.json",
