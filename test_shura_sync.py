@@ -31,13 +31,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-# A synthetic, obviously-fake *public* signing key: the build refuses to treat
-# the published 64 character fingerprint as a key, so the fixtures need a real
-# key-shaped value. The matching fingerprint is derived from the key's bytes,
-# exactly as bot.signing_key_fingerprint does -- never hand-written.
-VALID_PUBLIC_KEY = "ab" * 256
-VALID_FINGERPRINT = hashlib.sha256(bytes.fromhex(VALID_PUBLIC_KEY)).hexdigest()
-os.environ.setdefault("SIGNING_KEY", VALID_PUBLIC_KEY)
+# A store's signing key in the format the Tachiyomi/Mihon clients define it:
+# 64 hex characters -- the SHA-256 digest of the certificate the extension APKs
+# are signed with. Clients hash the certificate out of the APK and compare the
+# result against index.json's ``signingKey``, so this is the value that has to
+# be published, and the same value repo.json republishes as
+# ``signingKeyFingerprint``. It is public, not a credential.
+VALID_SIGNING_KEY = "ab" * 32
+os.environ.setdefault("SIGNING_KEY", VALID_SIGNING_KEY)
 
 import bot  # noqa: E402
 
@@ -539,13 +540,14 @@ def test_repo_untouched():
     assert not drift, "these changed: {}".format(drift)
 
 
-@case("25 the manifest carries the fingerprint derived from the published key")
-def test_manifest_signing_fingerprint_is_derived_from_the_key():
+@case("25 the manifest carries the same signing key the index publishes")
+def test_manifest_signing_fingerprint_matches_the_index():
     """The app must be able to authenticate the index from the manifest alone.
 
-    One source of truth: the fingerprint is *derived* from the signing key the
-    build resolved for repo.json and the index, not read back from either of
-    them and not a second copy that could drift away.
+    One source of truth: the value here is the *same* one the build resolved for
+    repo.json and the index, not a second copy that could drift away, and not a
+    hash of it -- clients compare against ``sha256(apk certificate)``, so a
+    re-hashed value would match nothing at all.
     """
     extensions = [extension("Alpha", 1), extension("Beta", 2)]
     sandbox, _ = build(extensions)
@@ -554,30 +556,32 @@ def test_manifest_signing_fingerprint_is_derived_from_the_key():
         index_key = read(sandbox, "repo/index.json")["signingKey"]
         repo_json_key = read(sandbox, "repo.json")["meta"]["signingKeyFingerprint"]
         assert manifest["signingKeyFingerprint"]
+        assert manifest["signingKeyFingerprint"] == index_key
         assert manifest["signingKeyFingerprint"] == repo_json_key
-        # it is the fingerprint *of the key the index carries*, not the key itself
-        assert manifest["signingKeyFingerprint"] == bot.signing_key_fingerprint(index_key)
-        assert manifest["signingKeyFingerprint"] != index_key
+        # exactly the value the fixtures build with, verbatim: not a hash of it
+        assert index_key == VALID_SIGNING_KEY
+        assert manifest["signingKeyFingerprint"] == VALID_SIGNING_KEY
+        assert manifest["signingKeyFingerprint"] != hashlib.sha256(
+            bytes.fromhex(VALID_SIGNING_KEY)).hexdigest()
         assert len(manifest["signingKeyFingerprint"]) == 64
-        # the key the fixtures build with is the public key, not the live one
-        assert index_key == VALID_PUBLIC_KEY
-        assert manifest["signingKeyFingerprint"] == VALID_FINGERPRINT
     finally:
         shutil.rmtree(sandbox, ignore_errors=True)
 
 
-@case("26 a manifest without a usable fingerprint is refused, not silently emitted")
+@case("26 a manifest without the signing key is refused, not silently emitted")
 def test_manifest_requires_a_signing_key():
-    for bad in ("", None, "zz" * 32, "ab" * 16, bot.ENCODING_PROBE_KEY):
+    # the manifest only accepts the 64 character certificate digest clients
+    # compare against -- not a public key, not a hash of one, not nothing
+    for bad in ("", None, "zz" * 32, "ab" * 256, "0" * 63, "0" * 65):
         try:
             bot.shura_manifest("0" * bot.SHURA_REVISION_LENGTH, [], bad)
         except bot.SigningMetadataMissing:
             continue
         raise AssertionError("a manifest with {!r} must not be produced".format(bad))
-    # ... while a real 64 character digest is accepted
+    # ... while the correctly shaped value is accepted
     assert bot.shura_manifest(
-        "0" * bot.SHURA_REVISION_LENGTH, [], VALID_FINGERPRINT
-    )["signingKeyFingerprint"] == VALID_FINGERPRINT
+        "0" * bot.SHURA_REVISION_LENGTH, [], VALID_SIGNING_KEY
+    )["signingKeyFingerprint"] == VALID_SIGNING_KEY
 
 
 def main() -> int:

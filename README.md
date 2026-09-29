@@ -188,7 +188,7 @@ On Railway you do not need this — variables are injected by the platform.
 | `BADGE_LABEL` | `SHURA` | Short label on the repo card. |
 | `REPO_WEBSITE` | repo URL | Shown as the repo contact. |
 | `REPO_DISCORD` | – | Optional Discord invite. |
-| `SIGNING_KEY` | see `.env.example` | Extension signing key; the fingerprint is published in `repo.json`. |
+| `SIGNING_KEY` | see `.env.example` | The store's signing key: the 64 character SHA-256 digest of the certificate the extension APKs are signed with. Clients hash that certificate out of the APK and compare it against this value, so the same value is republished in `repo.json` and `shura/manifest.json`. |
 
 ### Upstream scraping
 

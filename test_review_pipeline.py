@@ -45,18 +45,21 @@ from review_system import (ACCEPTED, ALLOWED_TRANSITIONS, BUILT, DISCOVERED,  # 
                            SCREENED, VALIDATED, AuditLog, CandidateStore, ReviewSystem,
                            is_commit_sha, is_sha256_digest)
 
-#: A synthetic, *public* signing key, key-shaped: 512 hex characters, the length
-#: of an RSA-2048 SubjectPublicKeyInfo in hex. It is not a real key and it is
-#: not secret -- a public signing key is public by definition, and the private
-#: key that signs APKs has no business in this repository at all.
+#: A store's signing key in the format the Tachiyomi/Mihon clients define it:
+#: 64 hex characters -- the SHA-256 digest of the certificate the extension APKs
+#: are signed with. Clients hash the certificate out of the APK and compare that
+#: against index.json's ``signingKey``, so this is the value that must be
+#: published, and the same value repo.json republishes as
+#: ``signingKeyFingerprint``.
 #:
-#: Set before ``bot`` is ever imported (it is imported lazily, inside tests) so
-#: that a build has a usable key. The suite must not depend on whatever the
-#: published repo/index.json happens to carry: that value is a 64 character
-#: fingerprint, which :func:`bot.validate_signing_key` now refuses.
-VALID_PUBLIC_KEY = "ab" * 256
-VALID_FINGERPRINT = hashlib.sha256(bytes.fromhex(VALID_PUBLIC_KEY)).hexdigest()
-os.environ.setdefault("SIGNING_KEY", VALID_PUBLIC_KEY)
+#: It is a *public* certificate digest, not a credential. The private key that
+#: signs the APKs has no business in this repository at all.
+#:
+#: Set before ``bot`` is ever imported (it is imported lazily, inside tests) so a
+#: build has a usable key, and so the suite does not depend on whatever the
+#: published repo/index.json happens to carry.
+VALID_SIGNING_KEY = "ab" * 32
+os.environ.setdefault("SIGNING_KEY", VALID_SIGNING_KEY)
 
 COMMIT = "1" * 40
 OTHER_COMMIT = "2" * 40
@@ -1728,19 +1731,22 @@ def test_build_without_signing_key_preserves_existing_metadata():
     try:
         with sandbox_state(), patched(bot, SIGNING_KEY="", TEST_MODE=True):
             assert bot.SIGNING_KEY == ""
-            # the key lives in the index being built -- a real, key-shaped one
-            built = _BareRepo(bot, VALID_PUBLIC_KEY).build(dest=sandbox)
+            # the key lives in the index being built -- a real, correctly-shaped one
+            built = _BareRepo(bot, VALID_SIGNING_KEY).build(dest=sandbox)
         assert built["ok"] is True, built
 
         rendered = json.loads((sandbox / "repo/index.json").read_text(encoding="utf-8"))
         meta = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"]
+        manifest = json.loads((sandbox / "shura/manifest.json").read_text(encoding="utf-8"))
         decoded = bot.decode_index(gzip.decompress((sandbox / "repo/index.pb").read_bytes()))
 
-        assert rendered["signingKey"] == VALID_PUBLIC_KEY, rendered["signingKey"]
-        assert decoded["signingKey"] == VALID_PUBLIC_KEY, decoded["signingKey"]
-        # repo.json carries the *fingerprint*, derived from the key -- never the key
-        assert meta["signingKeyFingerprint"] == VALID_FINGERPRINT, meta
-        assert meta["signingKeyFingerprint"] != VALID_PUBLIC_KEY, "key leaked into repo.json"
+        assert rendered["signingKey"] == VALID_SIGNING_KEY, rendered["signingKey"]
+        assert decoded["signingKey"] == VALID_SIGNING_KEY, decoded["signingKey"]
+        # repo.json and the manifest republish the *same* value -- the store's key
+        # already is the 64 character certificate digest, so re-hashing it would
+        # publish a value no client could ever match
+        assert meta["signingKeyFingerprint"] == VALID_SIGNING_KEY, meta
+        assert manifest["signingKeyFingerprint"] == VALID_SIGNING_KEY, manifest
         # and the real repository is untouched
         assert all(path.read_bytes() == blob for path, blob in before.items())
     finally:
@@ -1751,11 +1757,12 @@ def test_build_without_signing_key_preserves_existing_metadata():
 
 @case("52 a build with no signing key at all is refused")
 def test_build_without_signing_key_without_existing_metadata_fails():
-    """Nothing anywhere to take a key from, so the build must stop.
+    """Nothing to take a key from, so the build must stop.
 
-    Crucially a *published fingerprint* is not a key: repo.json can carry a
-    perfectly valid fingerprint and the build still has to refuse, because a
-    fingerprint cannot verify a signature.
+    repo.json is a sidecar, not the thing being built: a perfectly valid
+    fingerprint sitting in it is still not a source, because a build that
+    silently adopts the store's identity from a file nobody asked it to is how
+    the published value and the built index drift apart.
     """
     import bot
     before = _published_files(bot)
@@ -1774,15 +1781,14 @@ def test_build_without_signing_key_without_existing_metadata_fails():
             assert sorted(item.name for item in sandbox.iterdir()) == [], list(
                 sandbox.iterdir())
 
-            # (b) a valid *fingerprint* published in repo.json is still not a key.
-            #     This is the regression that made a digest stand in for one.
-            with _sandbox_repo_json(VALID_FINGERPRINT):
-                assert bot.published_fingerprint() == VALID_FINGERPRINT
+            # (b) a valid fingerprint in repo.json is never borrowed as the key
+            with _sandbox_repo_json(VALID_SIGNING_KEY):
+                assert bot.published_fingerprint() == VALID_SIGNING_KEY
                 try:
                     bare.build(dest=sandbox)
-                    raise AssertionError("a published fingerprint was used as a signing key")
+                    raise AssertionError("a published fingerprint was borrowed as a key")
                 except bot.SigningMetadataMissing as exc:
-                    assert "fingerprint" in str(exc).lower(), exc
+                    assert "SIGNING_KEY" in str(exc), exc
             assert sorted(item.name for item in sandbox.iterdir()) == [], list(
                 sandbox.iterdir())
         assert all(path.read_bytes() == blob for path, blob in before.items())
@@ -1808,25 +1814,25 @@ def test_empty_signing_key_never_writes_empty_metadata():
                         pass
             # a missing key is a refusal, never a silent borrow from repo.json
             for probe in ({"signingKey": ""}, {}, {"signingKey": None}):
-                with _sandbox_repo_json(VALID_FINGERPRINT):
+                with _sandbox_repo_json(VALID_SIGNING_KEY):
                     try:
                         bot.resolve_signing_key(probe)
                         raise AssertionError("resolve borrowed a key from {0}".format(probe))
                     except bot.SigningMetadataMissing:
                         pass
             # and a full build never emits an empty value in any artifact
-            built = _BareRepo(bot, VALID_PUBLIC_KEY).build(dest=sandbox)
+            built = _BareRepo(bot, VALID_SIGNING_KEY).build(dest=sandbox)
             rendered = json.loads((sandbox / "repo/index.json").read_text(encoding="utf-8"))
             decoded = bot.decode_index(gzip.decompress(
                 (sandbox / "repo/index.pb").read_bytes()))
-            assert rendered["signingKey"] == VALID_PUBLIC_KEY, rendered["signingKey"]
-            assert decoded["signingKey"] == VALID_PUBLIC_KEY, decoded["signingKey"]
+            assert rendered["signingKey"] == VALID_SIGNING_KEY, rendered["signingKey"]
+            assert decoded["signingKey"] == VALID_SIGNING_KEY, decoded["signingKey"]
             for relative in ("repo/index.json", "repo.json", "shura/manifest.json"):
                 text = (sandbox / relative).read_text(encoding="utf-8")
                 assert '"signingKey": ""' not in text, relative
                 assert '"signingKeyFingerprint": ""' not in text, relative
             meta = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"]
-            assert meta["signingKeyFingerprint"] == VALID_FINGERPRINT, meta
+            assert meta["signingKeyFingerprint"] == VALID_SIGNING_KEY, meta
         assert all(path.read_bytes() == blob for path, blob in before.items())
     finally:
         shutil.rmtree(sandbox, ignore_errors=True)
@@ -1834,13 +1840,15 @@ def test_empty_signing_key_never_writes_empty_metadata():
     assert index_count() == 579
 
 
-@case("54 a published fingerprint never overrides the real signing key")
+@case("54 the key is republished verbatim, never re-hashed or overridden")
 def test_existing_signing_fingerprint_never_gets_wiped():
-    """The fingerprint is derived from the key; the key is what is authoritative.
+    """repo.json and the manifest must carry the key the index carries.
 
-    Even when repo.json already publishes a fingerprint -- even a *different*
-    one -- a build reports the fingerprint of the key it is actually publishing.
-    Otherwise the store would verify extensions against a key nobody signs with.
+    Even when repo.json already publishes a *different* value, the build reports
+    the key it is actually publishing. Otherwise the store would verify
+    extensions against a certificate nobody signs with -- and hashing the key a
+    second time would be just as broken, since clients compare against
+    ``sha256(apk certificate)`` and not against a hash of that.
     """
     import bot
     before = _published_files(bot)
@@ -1849,26 +1857,29 @@ def test_existing_signing_fingerprint_never_gets_wiped():
     try:
         with sandbox_state(), patched(bot, SIGNING_KEY="", TEST_MODE=True):
             # the fingerprint on disk disagrees with the key in the index
-            bare = _BareRepo(bot, VALID_PUBLIC_KEY)
+            bare = _BareRepo(bot, VALID_SIGNING_KEY)
             with _sandbox_repo_json(stale):
                 built = bare.build(dest=sandbox)
             assert built["ok"] is True, built
             meta = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"]
             rendered = json.loads((sandbox / "repo/index.json").read_text(encoding="utf-8"))
             manifest = json.loads((sandbox / "shura/manifest.json").read_text(encoding="utf-8"))
-            assert meta["signingKeyFingerprint"] == VALID_FINGERPRINT, meta
-            assert manifest["signingKeyFingerprint"] == VALID_FINGERPRINT, manifest
-            assert rendered["signingKey"] == VALID_PUBLIC_KEY
+            assert rendered["signingKey"] == VALID_SIGNING_KEY
+            assert meta["signingKeyFingerprint"] == VALID_SIGNING_KEY, meta
+            assert manifest["signingKeyFingerprint"] == VALID_SIGNING_KEY, manifest
+            # in particular: not the stale value, and not a hash of the key
+            assert meta["signingKeyFingerprint"] != stale
+            assert meta["signingKeyFingerprint"] != hashlib.sha256(
+                bytes.fromhex(VALID_SIGNING_KEY)).hexdigest()
 
             # a configured key still wins over the published fingerprint
             shutil.rmtree(sandbox, ignore_errors=True)
             sandbox = Path(tempfile.mkdtemp(prefix="manga-signing-"))
-            fresh = "cd" * 256
+            fresh = "cd" * 32
             with _sandbox_repo_json(stale), patched(bot, SIGNING_KEY=fresh):
                 _BareRepo(bot, "").build(dest=sandbox)
             meta = json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"]
-            assert meta["signingKeyFingerprint"] == hashlib.sha256(
-                bytes.fromhex(fresh)).hexdigest(), meta
+            assert meta["signingKeyFingerprint"] == fresh, meta
 
             # and a published fingerprint is never read back as empty
             assert bot.published_fingerprint() == FINGERPRINT_AT_IMPORT
@@ -1886,17 +1897,25 @@ def test_failed_signing_validation_does_not_modify_repo():
     import bot
     before = _published_files(bot)
     sandbox = Path(tempfile.mkdtemp(prefix="manga-signing-"))
+    # each bad value with the reason its own refusal must give: a non-hex paste
+    # and a hex value of the wrong length are different mistakes
+    cases = [("not-a-digest", "hex"), ("zz" * 32, "hex"), ("0" * 63 + "g", "hex"),
+             ("ab" * 256, "64 character"), ("ab" * 31, "64 character"),
+             ("0" * 63, "64 character"), ("0" * 65, "64 character"),
+             # an unset or empty env is not a key: it must stop the build, not
+             # become an empty one
+             ("", "no signing key"), (None, "no signing key")]
     try:
         with sandbox_state(), patched(bot, TEST_MODE=True):
-            for bad in ("not-a-digest", "zz" * 32, "0" * 63 + "g"):
-                with _sandbox_repo_json(VALID_FINGERPRINT):
+            for bad, reason in cases:
+                with _sandbox_repo_json(VALID_SIGNING_KEY):
                     with patched(bot, SIGNING_KEY=bad):
                         try:
                             _BareRepo(bot, "").build(dest=sandbox)
                             raise AssertionError("a malformed key was published: "
                                                  "{!r}".format(bad))
                         except bot.SigningMetadataMissing as exc:
-                            assert "hex" in str(exc) or "empty" in str(exc), exc
+                            assert reason in str(exc), (bad, exc)
                     # the index copy is validated too, not just the env value
                     with patched(bot, SIGNING_KEY=""):
                         try:
@@ -1923,102 +1942,105 @@ def test_failed_signing_validation_does_not_modify_repo():
     assert index_count() == 579
 
 
-@case("57 a fingerprint can never be published as a signing key")
-def test_fingerprint_is_refused_as_a_signing_key():
-    """The whole point of the fix, stated as one test.
+@case("57 the 64 character certificate digest is the accepted signing key")
+def test_certificate_digest_is_the_signing_key():
+    """The store's key format, stated as one test.
 
-    A 64 character SHA-256 is what repo.json publishes as
-    ``signingKeyFingerprint`` and what the live index currently carries in
-    ``signingKey``. It must be refused everywhere a key is expected.
+    Clients read the signing certificate out of the APK, hash it
+    (``Hash.sha256(cert)`` in Mihon's ExtensionLoader) and compare the result
+    against index.json's ``signingKey``. That comparison can only ever succeed
+    for the 64 character digest itself -- so that, and only that, is accepted.
     """
     import bot
     digest = FINGERPRINT_AT_IMPORT
-    assert len(digest) == 64 and bot.SIGNING_DIGEST_RE.match(digest)
+    assert len(digest) == 64 and bot.SIGNING_FINGERPRINT_RE.match(digest)
+
+    # the live published value is accepted, verbatim
+    assert bot.validate_signing_key(digest, "probe") == digest
 
     # as the environment value
     with patched(bot, SIGNING_KEY=digest):
-        try:
-            bot.resolve_signing_key({})
-            raise AssertionError("a fingerprint was accepted as SIGNING_KEY")
-        except bot.SigningMetadataMissing as exc:
-            assert "fingerprint" in str(exc), exc
+        assert bot.resolve_signing_key({}) == digest
 
-    # as the value in the index
+    # as the value in the index, which is where a build without SIGNING_KEY reads
     with patched(bot, SIGNING_KEY=""):
-        try:
-            bot.resolve_signing_key({"signingKey": digest})
-            raise AssertionError("a fingerprint was accepted as the index signingKey")
-        except bot.SigningMetadataMissing as exc:
-            assert "fingerprint" in str(exc), exc
+        assert bot.resolve_signing_key({"signingKey": digest}) == digest
 
-    # through the encoder, and therefore through every artifact. The env is
-    # cleared so the index's digest is the only candidate.
+    # through the encoder, and therefore through every artifact
     with patched(bot, SIGNING_KEY=""):
-        try:
-            bot.encode_index({"signingKey": digest, "extensionList": {"extensions": []}})
-            raise AssertionError("encode_index published a fingerprint as a signing key")
-        except bot.SigningMetadataMissing:
-            pass
+        blob = bot.encode_index({"signingKey": digest, "extensionList": {"extensions": []}})
+        assert bot.decode_index(blob)["signingKey"] == digest
 
-    # a full build carrying one is refused, and writes nothing
+    # a full build carrying it succeeds and republishes it unchanged
     sandbox = Path(tempfile.mkdtemp(prefix="manga-digest-"))
     try:
         with sandbox_state(), patched(bot, SIGNING_KEY=""):
-            try:
-                _BareRepo(bot, digest).build(dest=sandbox)
-                raise AssertionError("a build published a fingerprint as a signing key")
-            except bot.SigningMetadataMissing:
-                pass
-        assert sorted(item.name for item in sandbox.iterdir()) == [], list(
-            sandbox.iterdir())
+            built = _BareRepo(bot, digest).build(dest=sandbox)
+        assert built["ok"] is True, built
+        assert json.loads(
+            (sandbox / "repo/index.json").read_text(encoding="utf-8"))["signingKey"] == digest
+        assert json.loads((sandbox / "repo.json").read_text(encoding="utf-8"))["meta"][
+            "signingKeyFingerprint"] == digest
+        assert json.loads((sandbox / "shura/manifest.json").read_text(encoding="utf-8"))[
+            "signingKeyFingerprint"] == digest
     finally:
         shutil.rmtree(sandbox, ignore_errors=True)
 
 
-@case("58 the published fingerprint is derived from the key, never read back")
-def test_fingerprint_is_derived_not_read_back():
+@case("58 a wrong-shaped key is refused, and the key is never re-hashed")
+def test_wrong_shaped_keys_are_refused_and_never_rehashed():
     import bot
-    # derived from the key's bytes, not from its hex text, and not from a file
-    assert bot.signing_key_fingerprint(VALID_PUBLIC_KEY) == VALID_FINGERPRINT
-    assert bot.signing_key_fingerprint(VALID_PUBLIC_KEY) == \
-        hashlib.sha256(bytes.fromhex(VALID_PUBLIC_KEY)).hexdigest()
-    # a fingerprint, a too-short value and a non-hex value are all refused
-    for wrong in (FINGERPRINT_AT_IMPORT, "ab" * 32, "ab" * 50, "", None, "zz" * 32):
+    # the published value is republished verbatim, not hashed a second time --
+    # a hash of the digest is a value no client could ever match
+    assert bot.signing_key_fingerprint(VALID_SIGNING_KEY) == VALID_SIGNING_KEY
+    assert bot.signing_key_fingerprint(VALID_SIGNING_KEY) != hashlib.sha256(
+        bytes.fromhex(VALID_SIGNING_KEY)).hexdigest()
+    # normalising is the only transformation: the same certificate cannot be
+    # published under two identities by changing case
+    assert bot.signing_key_fingerprint(VALID_SIGNING_KEY.upper()) == VALID_SIGNING_KEY
+
+    # anything that is not 64 hex characters is refused: empty, non-hex, a
+    # public key, a truncated paste, one character too many
+    for wrong in ("", "   ", None, "zz" * 32, "0" * 63 + "g", "ab" * 256, "ab" * 31,
+                  "0" * 63, "0" * 65):
         try:
             bot.validate_signing_key(wrong, "probe")
             raise AssertionError("validate accepted {!r}".format(wrong))
         except bot.SigningMetadataMissing:
             pass
-    # ... while a key-shaped value of any length above the floor is accepted
-    for good in (VALID_PUBLIC_KEY, "ab" * bot.SIGNING_KEY_MIN_HEX, "cd" * 100):
-        assert bot.validate_signing_key(good, "probe") == good
-    # the shura manifest refuses a key, an empty value and a non-digest
-    for wrong in (VALID_PUBLIC_KEY, "", "zz" * 32, "ab" * 16, None):
+    # ... while the correctly shaped digest is accepted
+    for good in (VALID_SIGNING_KEY, VALID_SIGNING_KEY.upper(), FINGERPRINT_AT_IMPORT):
+        assert bot.validate_signing_key(good, "probe") == good.lower()
+
+    # the shura manifest refuses every wrong shape too
+    for wrong in ("", None, "zz" * 32, "ab" * 256, "0" * 63):
         try:
             bot.shura_manifest("0" * bot.SHURA_REVISION_LENGTH, [], wrong)
             raise AssertionError("shura_manifest accepted {!r} as a fingerprint".format(wrong))
         except bot.SigningMetadataMissing:
             pass
-    # ... but any real 64-character digest is a valid fingerprint
+    # ... but a real 64-character digest is accepted
     assert bot.shura_manifest(
-        "0" * bot.SHURA_REVISION_LENGTH, [], VALID_FINGERPRINT
-    )["signingKeyFingerprint"] == VALID_FINGERPRINT
+        "0" * bot.SHURA_REVISION_LENGTH, [], VALID_SIGNING_KEY
+    )["signingKeyFingerprint"] == VALID_SIGNING_KEY
 
 
 @case("59 no private signing key exists anywhere in the repository")
 def test_no_private_key_material_in_the_repo():
-    """A public signing key is public. A private one must never be committed.
+    """The published signing key is a public certificate digest.
 
-    Looks for key *material* -- a PEM block -- not for the words "private key",
-    because the secret scanner in review_system.py legitimately contains those
-    words in a regex that detects exactly this.
+    What ships here is ``sha256(apk certificate)`` -- public, and useless for
+    signing anything. The *private* key that signs the APKs must never be
+    committed, so this looks for key *material* (a PEM block) rather than for
+    the words "private key", which the secret scanner in review_system.py
+    legitimately contains in a regex that detects exactly this.
     """
     import bot
     pem = re.compile(r"-----BEGIN [A-Z ]*(PRIVATE|ENCRYPTED)[A-Z ]*KEY-----"
                      r".*?-----END [A-Z ]*(PRIVATE|ENCRYPTED)[A-Z ]*KEY-----", re.S)
     files = ("bot.py", "review_system.py", "test_review_pipeline.py",
              "test_shura_sync.py", "shura/README.md", "repo.json", "repo/index.json",
-             "repo/index.min.json")
+             "repo/index.min.json", ".env.example")
     checked = 0
     for name in files:
         path = ROOT / name
@@ -2029,17 +2051,18 @@ def test_no_private_key_material_in_the_repo():
         assert not pem.search(text), "{} contains a PEM private key block".format(name)
     assert checked == len(files), checked
 
-    # what the repository *does* publish is a fingerprint: a public digest,
-    # and specifically not a key-shaped value
-    fingerprint = json.loads((ROOT / "repo.json").read_text(encoding="utf-8"))["meta"][
+    # what the repository *does* publish is the 64 character certificate digest
+    published = json.loads((ROOT / "repo.json").read_text(encoding="utf-8"))["meta"][
         "signingKeyFingerprint"]
-    assert len(fingerprint) == 64 and bot.SIGNING_DIGEST_RE.match(fingerprint)
-    assert len(fingerprint) < bot.SIGNING_KEY_MIN_HEX, "repo.json should not hold a key"
+    assert len(published) == 64 and bot.SIGNING_FINGERPRINT_RE.match(published)
+    # and the same value is in the index -- one identity, not two
+    assert json.loads((ROOT / "repo/index.json").read_text(encoding="utf-8"))[
+        "signingKey"] == published
 
-    # the key the tests use is synthetic, obviously fake, and public
-    assert VALID_PUBLIC_KEY == "ab" * 256
-    assert len(VALID_PUBLIC_KEY) >= bot.SIGNING_KEY_MIN_HEX
-    assert not pem.search(VALID_PUBLIC_KEY)
+    # the key the tests use is synthetic, obviously fake, and correctly shaped
+    assert VALID_SIGNING_KEY == "ab" * 32
+    assert bot.validate_signing_key(VALID_SIGNING_KEY, "probe") == VALID_SIGNING_KEY
+    assert not pem.search(VALID_SIGNING_KEY)
 
 
 @case("56 accept() without an admin proof is denied by default")
