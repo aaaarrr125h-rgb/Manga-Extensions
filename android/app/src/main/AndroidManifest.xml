@@ -8,6 +8,22 @@
         android:allowBackup="false"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Shura" />
+        android:theme="@style/Theme.Shura">
+
+        <!--
+          Without a MAIN/LAUNCHER activity the APK installs but has nothing to launch, and the
+          package installer greys out "Open".
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
 
 </manifest>

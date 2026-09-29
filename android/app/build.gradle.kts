@@ -52,6 +52,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.androidx.core.ktx)
+    // ComponentActivity for the launcher Activity.
+    implementation(libs.androidx.activity)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotlin.test.junit5)

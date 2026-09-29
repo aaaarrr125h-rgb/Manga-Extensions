@@ -11,6 +11,9 @@ junit = "5.11.4"
 agp = "8.7.3"
 androidx-core = "1.13.1"
 androidx-preference = "1.2.1"
+# ComponentActivity lives in androidx.activity. Without it :app has no Activity type to subclass,
+# and an APK with no launcher Activity installs but cannot be opened.
+androidx-activity = "1.9.3"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -22,6 +25,7 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "androidx-preference" }
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
