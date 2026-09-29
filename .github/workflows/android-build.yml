@@ -67,6 +67,8 @@ jobs:
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
+          # apksigner and zipalign live here and are needed to inspect the signed APK.
+          echo "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/build-tools/34.0.0" >> "$GITHUB_PATH"
 
       - name: Show SDK layout
         run: |
@@ -144,7 +146,7 @@ jobs:
           DEXES="$(unzip -Z1 "$APK" | grep -c '^classes[0-9]*\.dex$')"
           echo "dex files: $DEXES"
           for TEXT in "${{ steps.identity.outputs.sha }}" "${{ steps.identity.outputs.build_time }}"; do
-            if unzip -p "$APK" 'classes*.dex' | strings | grep -qF "$TEXT"; then
+            if unzip -p "$APK" 'classes*.dex' | grep -aF -q "$TEXT"; then
               echo "ok: $TEXT is present in the dex"
             else
               echo "::error::$TEXT is missing from the dex"
