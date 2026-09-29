@@ -28,7 +28,17 @@ jobs:
           java-version: '17'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        # The ubuntu-24.04 image already ships cmdline-tools, so this step only has to locate it
+        # and accept licenses. android-actions/setup-android@v3 is deliberately not used: it runs
+        # `sdkmanager tools`, and Google removed that legacy package, so the action always exits 1.
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -n "$SDKMANAGER" || { echo "::error::no sdkmanager found under $SDK_ROOT/cmdline-tools"; exit 1; }
+          echo "SDK root   : $SDK_ROOT"
+          echo "sdkmanager : $SDKMANAGER"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
 
       - name: Install SDK packages
         # compileSdk/targetSdk 34 in app/build.gradle.kts pins the platform; build-tools 34.0.0 is
