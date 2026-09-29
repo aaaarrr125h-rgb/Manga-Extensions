@@ -1,16 +1,22 @@
+import org.gradle.jvm.tasks.Jar
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
 }
 
+val shuraCompileSdk = 34
+val shuraMinSdk = 26
+
 android {
     namespace = "app.shura.manga"
-    compileSdk = 34
+    compileSdk = shuraCompileSdk
 
     defaultConfig {
         applicationId = "app.shura.manga"
-        minSdk = 26
-        targetSdk = 34
+        minSdk = shuraMinSdk
+        targetSdk = shuraCompileSdk
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -60,16 +66,150 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
-// The ABI jars are copied into the APK's assets by the `shuraAbiAssets` task below, rather than
+/**
+ * The SDK, resolved exactly the way `settings.gradle.kts` resolves it to decide whether this
+ * module is in the build at all. d8 and android.jar both live inside it.
+ */
+val shuraSdkDir: File = sequenceOf("ANDROID_HOME", "ANDROID_SDK_ROOT")
+    .mapNotNull(System::getenv)
+    .map(::File)
+    .firstOrNull { it.isDirectory }
+    ?: rootProject.file("local.properties")
+        .takeIf { it.isFile }
+        ?.let { propertiesFile ->
+            Properties().apply { propertiesFile.inputStream().use { load(it) } }
+                .getProperty("sdk.dir")
+        }
+        ?.let { File(it) }
+        ?.takeIf { it.isDirectory }
+    ?: error("No Android SDK found; :app cannot dex its ABI assets.")
+
+/** The class library every jar is dexed against, so android.* references resolve at build time. */
+val shuraAndroidJar: File = File(shuraSdkDir, "platforms/android-$shuraCompileSdk/android.jar")
+    .also { check(it.isFile) { "Missing platform android-$shuraCompileSdk: $it" } }
+
+/**
+ * d8, taken from the newest build-tools that ships one.
+ *
+ * The version is discovered rather than pinned so the same build works against whichever
+ * build-tools the machine has; build-tools is a tool provider here, not a compatibility target.
+ */
+val shuraD8: File = File(shuraSdkDir, "build-tools")
+    .listFiles { directory: File -> directory.resolve("d8").isFile }
+    .orEmpty()
+    .filter { it.name.substringAfterLast('.').toIntOrNull() != null }
+    .maxByOrNull { it.name.substringAfterLast('.').toInt() }
+    ?.resolve("d8")
+    ?.takeIf { it.isFile }
+    ?: error("No d8 found under ${File(shuraSdkDir, "build-tools")}")
+
+/**
+ * The jars that get dexed, reached through `evaluationDependsOn`.
+ *
+ * Gradle configures `:app` before `:shura-abi:*` and `:shura-extensions:*` (alphabetical by
+ * path), so their `jar` tasks do not exist yet when this file is first evaluated. Depending on
+ * those projects explicitly is what makes the lookup below legal, and it says so in one place
+ * rather than as a side effect of task ordering.
+ */
+val shuraAbi14Project = project(":shura-abi:shura-abi-1.4")
+val shuraAbi16Project = project(":shura-abi:shura-abi-1.6")
+val shuraFixture14Project = project(":shura-extensions:shura-ext-tachiyomix-abi14")
+val shuraFixture16Project = project(":shura-extensions:shura-ext-tachiyomix-abi16")
+listOf(shuraAbi14Project, shuraAbi16Project, shuraFixture14Project, shuraFixture16Project)
+    .forEach { evaluationDependsOn(it.path) }
+
+val shuraAbi14Jar: TaskProvider<Jar> = shuraAbi14Project.tasks.named<Jar>("jar")
+val shuraAbi16Jar: TaskProvider<Jar> = shuraAbi16Project.tasks.named<Jar>("jar")
+val shuraFixture14Jar: TaskProvider<Jar> = shuraFixture14Project.tasks.named<Jar>("jar")
+val shuraFixture16Jar: TaskProvider<Jar> = shuraFixture16Project.tasks.named<Jar>("jar")
+
+/**
+ * Registers a task that dexes one jar into the APK assets.
+ *
+ * The `jar` tasks produce `.class` bytecode, which is what a JVM reads and what Android cannot:
+ * `DexClassLoader` only reads `classes.dex`. Shipping the raw jar would install cleanly and then
+ * fail every load on the device, so the jars are dexed here, at build time, and d8 is never run
+ * on the device. The output keeps the `.jar` name because that is the name
+ * `AbiRegistry.fromDirectory` looks for once the installer has unpacked it.
+ */
+fun registerDexAsset(
+    taskName: String,
+    jarTask: TaskProvider<Jar>,
+    assetPath: String,
+): TaskProvider<Exec> = tasks.register<Exec>(taskName) {
+    group = "build"
+    description = "Dexes $assetPath; a DexClassLoader cannot read .class bytecode."
+
+    val jarFile = jarTask.flatMap { it.archiveFile }
+    val outputFile = layout.buildDirectory.file("generated/shura-dex/$assetPath")
+    dependsOn(jarTask)
+
+    inputs.file(jarFile)
+    inputs.file(shuraAndroidJar)
+    inputs.property("d8", shuraD8.absolutePath)
+    outputs.file(outputFile)
+
+    doFirst {
+        val destination = outputFile.get().asFile
+        destination.parentFile.mkdirs()
+        // d8 refuses to overwrite, and a stale jar from a previous run would otherwise survive a
+        // failed dexing and be staged as if it were current.
+        destination.delete()
+    }
+
+    commandLine(
+        shuraD8.absolutePath,
+        "--min-api", "$shuraMinSdk",
+        "--lib", shuraAndroidJar.absolutePath,
+        "--output", outputFile.get().asFile.absolutePath,
+        jarFile.get().asFile.absolutePath,
+    )
+    // d8 is a shell wrapper that ends in `exec java ...`, so it resolves `java` from PATH and
+    // ignores JAVA_HOME. The Gradle JVM is already the JDK that compiled the input, so its `bin`
+    // is put in front of PATH rather than trusting whatever `java` the machine happens to expose
+    // first: a container with several JDKs installed can easily have a different one as default,
+    // and d8 then fails for reasons that have nothing to do with this build.
+    val gradleJavaBin = File(System.getProperty("java.home"), "bin")
+    environment("PATH", listOf(gradleJavaBin.absolutePath, System.getenv("PATH")).joinToString(File.pathSeparator))
+    environment("JAVA_HOME", System.getProperty("java.home"))
+}
+
+val shuraAbi14Dex = registerDexAsset(
+    taskName = "dexShuraAbi14",
+    jarTask = shuraAbi14Jar,
+    assetPath = "shura-abi/shura-abi-1.4.jar",
+)
+val shuraAbi16Dex = registerDexAsset(
+    taskName = "dexShuraAbi16",
+    jarTask = shuraAbi16Jar,
+    assetPath = "shura-abi/shura-abi-1.6.jar",
+)
+val shuraFixture14Dex = registerDexAsset(
+    taskName = "dexShuraFixture14",
+    jarTask = shuraFixture14Jar,
+    assetPath = "shura-test-fixtures/tachiyomix-abi14.jar",
+)
+val shuraFixture16Dex = registerDexAsset(
+    taskName = "dexShuraFixture16",
+    jarTask = shuraFixture16Jar,
+    assetPath = "shura-test-fixtures/tachiyomix-abi16.jar",
+)
+
+// The dexed jars are copied into the APK's assets by the `shuraAbiAssets` task below, rather than
 // being consumed as project dependencies. They must reach the device as opaque files that the
 // first-run unpacker writes to disk, exactly like a downloaded extension jar.
+//
+// The fixtures go alongside the ABI jars so the on-device self test has something real to load;
+// they are test inputs, not part of the shipped library.
 val shuraAbiAssets by tasks.registering(Sync::class) {
     group = "build"
-    description = "Stages the ABI jars as assets, and the repository index next to them."
+    description = "Stages the dexed ABI jars and the dexed test fixtures as assets."
 
-    from(project(":shura-abi:shura-abi-1.4").tasks.named("jar")) { rename { "shura-abi-1.4.jar" } }
-    from(project(":shura-abi:shura-abi-1.6").tasks.named("jar")) { rename { "shura-abi-1.6.jar" } }
-    into(layout.buildDirectory.dir("generated/shura-assets/shura-abi"))
+    from(shuraAbi14Dex) { into("shura-abi") }
+    from(shuraAbi16Dex) { into("shura-abi") }
+    from(shuraFixture14Dex) { into("shura-test-fixtures") }
+    from(shuraFixture16Dex) { into("shura-test-fixtures") }
+    into(layout.buildDirectory.dir("generated/shura-assets"))
 }
 
 tasks.named("preBuild") { dependsOn(shuraAbiAssets) }

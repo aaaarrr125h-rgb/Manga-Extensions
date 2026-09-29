@@ -25,7 +25,8 @@ class AbiAssetsInstaller(
      */
     fun install(): AbiRegistry {
         val expected = ExtensionAbi.entries.map { abi ->
-            AbiAsset(name = "shura-abi-${abi.version}.jar", abi = abi)
+            val name = "shura-abi-${abi.version}.jar"
+            AbiAsset(assetPath = "$ASSET_DIRECTORY/$name", name = name, abi = abi)
         }
 
         val staged = installDirectory.takeIf { it.isDirectory }
@@ -52,7 +53,7 @@ class AbiAssetsInstaller(
         if (!target.isFile) return false
         val installed = runCatching { target.length() }.getOrDefault(-1L)
         val shipped = runCatching {
-            context.assets.openFd(asset.name).use { it.length }
+            context.assets.openFd(asset.assetPath).use { it.length }
         }.getOrDefault(-1L)
         // Sizes differ only if the APK was tampered with, which the install signature check
         // elsewhere is responsible for; comparing size is enough to skip the copy on every start.
@@ -63,7 +64,7 @@ class AbiAssetsInstaller(
         // Written beside the target and renamed, so a process killed mid copy cannot leave a
         // truncated jar that would then look "up to date" on the next start.
         val partial = File(target.parentFile, "${asset.name}.partial")
-        context.assets.open(asset.name).use { input ->
+        context.assets.open(asset.assetPath).use { input ->
             partial.outputStream().use { output -> input.copyTo(output) }
         }
         if (target.exists() && !target.delete()) {
@@ -75,7 +76,18 @@ class AbiAssetsInstaller(
         }
     }
 
-    private data class AbiAsset(val name: String, @Suppress("unused") val abi: ExtensionAbi)
+    private data class AbiAsset(
+        /** Where the jar sits inside the APK's assets. */
+        val assetPath: String,
+        /** The name it takes once unpacked, which is also the name [AbiRegistry.fromDirectory] reads. */
+        val name: String,
+        @Suppress("unused") val abi: ExtensionAbi,
+    )
+
+    private companion object {
+        /** Must match the directory the `shuraAbiAssets` staging task writes into. */
+        const val ASSET_DIRECTORY = "shura-abi"
+    }
 }
 
 class AbiRegistryStartupException(message: String) : IllegalStateException(message)

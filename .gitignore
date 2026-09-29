@@ -7,3 +7,4 @@ data/audit_log.jsonl
 data/*.tmp
 repo/*.tmp
 *.tmp
+.and-code/
