@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
     private fun startSelfTest() {
         output.text = colorise("running self test...")
         worker.execute {
-            val report = runCatching { AbiRuntimeSelfTest(this).run() }
+            val abiReport = runCatching { AbiRuntimeSelfTest(this).run() }
                 .fold(
                     onSuccess = { it },
                     onFailure = { "FAIL  self test crashed\n${it.stackTraceText()}" },
@@ -86,10 +86,27 @@ class MainActivity : ComponentActivity() {
             val screen = buildString {
                 appendLine(buildIdentity())
                 appendLine()
-                append(report)
+                append(abiReport)
             }
             Log.i(LOG_TAG, "\n$screen")
             runOnUiThread { output.text = colorise(screen) }
+
+            // The extension test goes second and publishes itself when it lands, because it can
+            // take noticeably longer: it loads two classloaders and makes real catalogue calls.
+            // The ABI report above stays on screen while it runs rather than being replaced by
+            // "running", so a slow extension test never looks like a lost first one.
+            val extensionReport = runCatching { ExtensionRuntimeSelfTest(this).run() }
+                .fold(
+                    onSuccess = { it },
+                    onFailure = { "FAIL  extension test crashed\n${it.stackTraceText()}" },
+                )
+            val finished = buildString {
+                append(screen)
+                appendLine()
+                append(extensionReport)
+            }
+            Log.i(LOG_TAG, "\n$finished")
+            runOnUiThread { output.text = colorise(finished) }
         }
     }
 
