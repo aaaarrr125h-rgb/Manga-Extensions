@@ -99,6 +99,13 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // The release is signed with the same stable key as the debug build, cached by CI and
+            // never committed. No new keystore is created for release: one key per app is what
+            // makes a release installable over a debug build and over the previous release. With
+            // no key present (a local build) this stays unsigned.
+            if (shuraUseCiKey) {
+                signingConfig = signingConfigs.getByName("ci")
+            }
         }
     }
 
