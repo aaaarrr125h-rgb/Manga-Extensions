@@ -2,7 +2,7 @@
 
 This is the checklist for validating a Shura APK on a real Android device. Everything that can be
 checked without a device already runs in CI (assemble + dex identity check) and in the host unit
-tests (146 tests, `:shura-source-host:test`). This document covers only what those cannot: the
+tests (150 tests, `:shura-source-host:test`). This document covers only what those cannot: the
 Android runtime, the device's network, and real extensions.
 
 An emulator works for most of it. Use a real device for the storage and update cases, because the
@@ -42,7 +42,7 @@ repository, downloads and diagnostics all live under **Settings**.
 
 **Settings → Advanced → Self Test**, then tap the report to re-run it.
 
-- [ ] The report starts with `BUILD: <sha>`, `VERSION: 0.2.0 (2)`, `APK BUILD TIME: ...`.
+- [ ] The report starts with `BUILD: <sha>`, `VERSION: 0.2.1 (3)`, `APK BUILD TIME: ...`.
 - [ ] The ABI report ends with `N/N passed`.
 - [ ] The extension report ends with `N/N passed`.
 - [ ] No `FAIL` line, and no stack trace.
@@ -65,12 +65,22 @@ lines of its detail.
 **Settings → Sources → Extensions**.
 
 - [ ] The list fills with extension names (this fetches the index again).
-- [ ] Tap a row's **Install**; the status line ends as `<name> · installed` (or `· updated`).
+- [ ] Tap a row's **Install**; the status line ends as `<name> · installed` (or `· updated`), and the
+      row now shows `Installed <version>` with **Reinstall** (or **Update** when the index is newer).
+- [ ] If the download lands but cannot start, the status shows
+      `Downloaded, but could not start. Tap to retry.` and the row shows **Needs repair**; tapping the
+      status retries.
 - [ ] A failure shows `Error: ...` on the status line; tap **Install** again to retry.
 
 This is the signed-install path: the APK's certificate is checked against the repository
 `signingKey` before it is moved into the store. A `refused:` label means that check stopped the
 install and is the expected result for anything tampered with.
+
+After a successful install the extension is loaded through a `DexClassLoader`, not the host's
+`URLClassLoader`, because a downloaded APK's code is `classes.dex`. If **Sources** stays empty after
+a row reads `Installed`, check **Settings → Diagnostics**: an entry ending in `NEEDS REPAIR` means
+the registered file did not load, and the `installed extensions` / `loadable sources` counts are the
+two halves to compare.
 
 ### 4. Sources
 

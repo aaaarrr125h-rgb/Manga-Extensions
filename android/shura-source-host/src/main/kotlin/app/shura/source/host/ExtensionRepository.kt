@@ -214,6 +214,18 @@ class ExtensionRepository(
 
     fun installedVersion(packageName: String): Long? = store.installedVersion(packageName)?.versionCode
 
+    /**
+     * True when the registered version of [packageName], if any, is still on disk and really loads.
+     *
+     * This is the difference between "registered" and "working". A file that was truncated, signed
+     * by the wrong key, or built for a level this host no longer ships stays in the registry but
+     * fails to open, and the UI has to be able to say so rather than treating it as installed.
+     */
+    suspend fun isLoadable(packageName: String): Boolean {
+        val record = store.installedVersion(packageName) ?: return false
+        return runCatching { open(record).close() }.isSuccess
+    }
+
     private fun signingFingerprint(): String = cached?.signingFingerprint
         ?: throw RepositoryIntegrityException(
             client.indexUrl,

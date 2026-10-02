@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import java.io.Closeable
 import java.io.File
+import java.net.URL
 import java.util.Properties
 import java.util.jar.JarFile
 
@@ -22,9 +23,10 @@ class ExtensionLoader(
     private val abiRegistry: AbiRegistry,
     private val parent: ClassLoader = ExtensionClassLoader::class.java.classLoader,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val classLoaderFactory: ExtensionClassLoaderFactory = JvmExtensionClassLoaderFactory,
 ) : Closeable {
 
-    private val openLoaders = mutableListOf<ExtensionClassLoader>()
+    private val openLoaders = mutableListOf<ClassLoader>()
 
     /**
      * Loads the extension packaged in [extensionJar].
@@ -37,10 +39,10 @@ class ExtensionLoader(
         require(extensionJar.isFile) { "Extension file does not exist: $extensionJar" }
 
         val artifact = abiRegistry.require(manifest.abi)
-        val loader = ExtensionClassLoader(
-            urls = arrayOf(extensionJar.toURI().toURL(), artifact.apiJar.toURI().toURL()),
-            parent = parent,
-        )
+        // The strategy is injected because the container differs by platform: a jar of `.class`
+        // files on the JVM, an APK of `classes.dex` on Android. The host keeps the delegation and
+        // the lifecycle; only the loader that reads the bytes changes.
+        val loader = classLoaderFactory.create(listOf(extensionJar, artifact.apiJar), parent)
         synchronized(openLoaders) { openLoaders += loader }
 
         try {
@@ -59,7 +61,7 @@ class ExtensionLoader(
             )
         } catch (failure: Throwable) {
             synchronized(openLoaders) { openLoaders -= loader }
-            loader.close()
+            runCatching { (loader as? Closeable)?.close() }
             throw failure
         }
     }
@@ -73,7 +75,7 @@ class ExtensionLoader(
     }
 
     private fun instantiateProviders(
-        loader: ExtensionClassLoader,
+        loader: ClassLoader,
         artifact: AbiArtifact,
         manifest: ExtensionManifest,
     ): List<SourceProvider> {
@@ -185,7 +187,10 @@ class ExtensionLoader(
         val loaders = synchronized(openLoaders) {
             openLoaders.toList().also { openLoaders.clear() }
         }
-        loaders.forEach { runCatching { it.close() } }
+        // Android's DexClassLoader is not Closeable; the platform reclaims it. A loader that is
+        // closeable (the JVM one) is closed so a replaced extension cannot keep serving classes
+        // out of the jar it was replaced from.
+        loaders.forEach { loader -> runCatching { (loader as? Closeable)?.close() } }
     }
 
     companion object {
@@ -205,3 +210,28 @@ class ExtensionLoader(
 }
 
 class ExtensionLoadException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
+
+/**
+ * Builds the classloader one extension is loaded into.
+ *
+ * The host cannot hard code this: a JVM reads a jar's `.class` files through [ExtensionClassLoader],
+ * but Android can only read `classes.dex` through a `DexClassLoader`. The ABI jars are dexed at
+ * build time and downloaded extensions arrive as APKs, so the Android host must inject a loader
+ * that understands dex. Keeping the choice behind this seam is what lets the host tests keep
+ * exercising the real JVM loader while the app wires the real Android one.
+ *
+ * [classpath] is the extension artifact first, then the ABI jar for its level. The order is
+ * significant and is preserved by the factory.
+ */
+fun interface ExtensionClassLoaderFactory {
+    fun create(classpath: List<File>, parent: ClassLoader): ClassLoader
+}
+
+/** The JVM strategy: a URL classloader over the jars' `.class` entries. */
+object JvmExtensionClassLoaderFactory : ExtensionClassLoaderFactory {
+    override fun create(classpath: List<File>, parent: ClassLoader): ClassLoader =
+        ExtensionClassLoader(
+            urls = Array<URL>(classpath.size) { index -> classpath[index].toURI().toURL() },
+            parent = parent,
+        )
+}

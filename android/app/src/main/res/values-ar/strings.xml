@@ -123,8 +123,14 @@
     <string name="extensions_refresh">تحديث</string>
     <string name="extensions_empty">لا توجد إضافات متاحة</string>
     <string name="extensions_install">تثبيت</string>
+    <string name="extensions_update">تحديث</string>
+    <string name="extensions_reinstall">إعادة التثبيت</string>
+    <string name="extensions_repair">إصلاح</string>
     <string name="extensions_installed">مثبّتة</string>
     <string name="extensions_updated">محدّثة</string>
+    <string name="extensions_state_installed">مثبّتة %1$s</string>
+    <string name="extensions_state_repair">تحتاج إصلاح</string>
+    <string name="extensions_start_failed">تم تنزيل الإضافة لكن تعذر تشغيلها. اضغط لإعادة المحاولة.</string>
     <string name="extensions_refused">مرفوضة: %1$s</string>
 
     <!-- Diagnostics -->

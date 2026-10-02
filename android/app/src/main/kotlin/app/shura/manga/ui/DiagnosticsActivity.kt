@@ -86,7 +86,13 @@ class DiagnosticsActivity : AsyncScreenActivity() {
             val installed = repository.repository.installed()
             report.appendLine("installed extensions: ${installed.size}")
             installed.forEach { extension ->
-                report.appendLine("  ${extension.packageName} v${extension.versionCode} (${extension.extensionLib})")
+                // Registered and loadable are different facts. Reporting both is what makes an
+                // "installed but no sources" report diagnosable from this screen alone.
+                val loads = repository.repository.isLoadable(extension.packageName)
+                report.appendLine(
+                    "  ${extension.packageName} v${extension.versionCode} (${extension.extensionLib}) " +
+                        if (loads) "loads" else "NEEDS REPAIR",
+                )
             }
         } catch (failure: Throwable) {
             Diagnostics.recordError(failure.describe())

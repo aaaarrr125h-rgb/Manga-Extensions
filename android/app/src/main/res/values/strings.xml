@@ -123,8 +123,14 @@
     <string name="extensions_refresh">Refresh</string>
     <string name="extensions_empty">No extensions available</string>
     <string name="extensions_install">Install</string>
+    <string name="extensions_update">Update</string>
+    <string name="extensions_reinstall">Reinstall</string>
+    <string name="extensions_repair">Repair</string>
     <string name="extensions_installed">Installed</string>
     <string name="extensions_updated">Updated</string>
+    <string name="extensions_state_installed">Installed %1$s</string>
+    <string name="extensions_state_repair">Needs repair</string>
+    <string name="extensions_start_failed">Downloaded, but could not start. Tap to retry.</string>
     <string name="extensions_refused">Refused: %1$s</string>
 
     <!-- Diagnostics -->

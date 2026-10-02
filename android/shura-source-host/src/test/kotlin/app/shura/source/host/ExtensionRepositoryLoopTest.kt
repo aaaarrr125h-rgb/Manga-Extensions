@@ -94,6 +94,7 @@ class ExtensionRepositoryLoopTest {
         private val jar: File get() = artifact
         private var signingKey: String = SigningFingerprint.ofCertificate(certificateOf(jar))
         private var unservedPackages: MutableSet<String> = mutableSetOf()
+        private var emptyArtifact: Boolean = false
         private lateinit var baseUrl: String
 
         val manifest: ExtensionManifest = JarDescriptorInspector.manifestOf(jar)
@@ -108,6 +109,11 @@ class ExtensionRepositoryLoopTest {
             unservedPackages += pkg
         }
 
+        /** Answers the artifact with a 200 and no bytes, the "download did nothing" case. */
+        fun serveEmptyArtifact() {
+            emptyArtifact = true
+        }
+
         fun start(): LoopbackRepository {
             val started = HttpServer.create(InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0)
             started.createContext("/index.json") { exchange ->
@@ -116,13 +122,22 @@ class ExtensionRepositoryLoopTest {
                 exchange.responseBody.use { it.write(body) }
             }
             started.createContext("/artifacts/") { exchange ->
-                if (packageName in unservedPackages) {
-                    exchange.sendResponseHeaders(404, -1)
-                    exchange.close()
-                } else {
-                    val bytes = jar.readBytes()
-                    exchange.sendResponseHeaders(200, bytes.size.toLong())
-                    exchange.responseBody.use { it.write(bytes) }
+                when {
+                    packageName in unservedPackages -> {
+                        exchange.sendResponseHeaders(404, -1)
+                        exchange.close()
+                    }
+
+                    emptyArtifact -> {
+                        exchange.sendResponseHeaders(200, 0)
+                        exchange.responseBody.close()
+                    }
+
+                    else -> {
+                        val bytes = jar.readBytes()
+                        exchange.sendResponseHeaders(200, bytes.size.toLong())
+                        exchange.responseBody.use { it.write(bytes) }
+                    }
                 }
             }
             started.executor = null
@@ -524,6 +539,21 @@ class ExtensionRepositoryLoopTest {
         assertContains(assertNotNull((outcome as InstallOutcome.Refused).reason), "404")
         assertTrue(store.installed().isEmpty())
         assertNull(store.installedVersion(packageName))
+    }
+
+    @Test
+    fun `an artifact that arrives with no bytes is refused, not installed`() = runBlocking {
+        val repository = repository().apply { serveEmptyArtifact() }
+        val store = newStore()
+        val host = newRepository(repository, store)
+        host.discover()
+
+        val outcome = host.install(host.snapshot!!.byPackage(packageName)!!)
+
+        assertTrue(outcome is InstallOutcome.Refused, "was: $outcome")
+        assertContains(assertNotNull((outcome as InstallOutcome.Refused).reason), "empty")
+        assertTrue(store.installed().isEmpty(), "an empty download may never be registered")
+        assertFalse(store.stagingFile(packageName, 106_000L).exists())
     }
 
     @Test

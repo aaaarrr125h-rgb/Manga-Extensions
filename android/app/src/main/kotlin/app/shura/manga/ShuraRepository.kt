@@ -71,6 +71,10 @@ class ShuraRepository private constructor(
             val inspector: ApkInspector = AndroidApkInspector(context)
             val loader = ExtensionLoader(
                 abiRegistry = AbiAssetsInstaller(context).install(),
+                // Without this the host would use its JVM URLClassLoader, which cannot read the
+                // classes.dex inside a downloaded APK, so every installed extension would install
+                // cleanly and then fail to produce a single source on device.
+                classLoaderFactory = AndroidExtensionClassLoaderFactory(context),
             )
             val repository = ExtensionRepository(
                 client = client,

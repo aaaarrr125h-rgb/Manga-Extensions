@@ -345,6 +345,65 @@ class ExtensionLoaderTest {
         assertFailsWith<IllegalArgumentException> { loader.loadFromJar(missing) }
     }
 
+    @Test
+    fun `loads through the injected classloader strategy, not a built-in one`() {
+        val requestedClasspaths = mutableListOf<List<File>>()
+        val injected = ExtensionLoader(
+            AbiRegistry.fromDirectory(TestArtifacts.extensionArtifacts),
+            classLoaderFactory = { classpath, parent ->
+                requestedClasspaths += classpath
+                JvmExtensionClassLoaderFactory.create(classpath, parent)
+            },
+        )
+
+        injected.use { host ->
+            val extension = host.loadFromJar(TestArtifacts.extension("shura-ext-tachiyomix-abi16"))
+            try {
+                assertEquals(1, requestedClasspaths.size)
+                assertEquals(
+                    listOf(
+                        TestArtifacts.extension("shura-ext-tachiyomix-abi16"),
+                        TestArtifacts.abiJar("1.6"),
+                    ),
+                    requestedClasspaths.single(),
+                    "the extension artifact must come first, then the ABI jar for its level",
+                )
+                // The bridge the host casts to SourceProvider has to be defined by the loader the
+                // factory chose. If it were not, the injected strategy would be cosmetic.
+                assertEquals(extension.classLoader, extension.providers.single().javaClass.classLoader)
+            } finally {
+                extension.close()
+            }
+        }
+    }
+
+    @Test
+    fun `a classloader factory that fails is surfaced, not replaced by a default`() {
+        val loader = ExtensionLoader(
+            AbiRegistry.fromDirectory(TestArtifacts.extensionArtifacts),
+            classLoaderFactory = { _, _ -> throw IllegalStateException("no dex runtime here") },
+        )
+
+        val failure = assertFailsWith<IllegalStateException> {
+            loader.loadFromJar(TestArtifacts.extension("shura-ext-tachiyomix-abi16"))
+        }
+        assertEquals("no dex runtime here", failure.message)
+    }
+
+    @Test
+    fun `a loader that fails during load is closed rather than leaked`() {
+        val loaders = mutableListOf<RecordingClassLoader>()
+        val loader = ExtensionLoader(
+            AbiRegistry.fromDirectory(TestArtifacts.extensionArtifacts),
+            classLoaderFactory = { _, parent -> RecordingClassLoader(parent).also { loaders += it } },
+        )
+
+        runCatching { loader.loadFromJar(TestArtifacts.extension("shura-ext-tachiyomix-abi16")) }
+
+        assertEquals(1, loaders.size)
+        assertTrue(loaders.single().closed, "the loader created for a failed load must be closed")
+    }
+
     private fun createTempJar(vararg properties: Pair<String, String>): File {
         val jar = File.createTempFile("shura-test-extension", ".jar")
         jar.deleteOnExit()
@@ -356,5 +415,21 @@ class ExtensionLoaderTest {
             }
         }
         return jar
+    }
+}
+
+/**
+ * A classloader that records being closed.
+ *
+ * It delegates to its parent and cannot resolve the extension surface, so loading through it always
+ * fails. That is the point: the failure is what exercises the loader's cleanup path, which must close
+ * a loader it created even when the load never produced a source.
+ */
+private class RecordingClassLoader(parent: ClassLoader) : ClassLoader(parent), java.io.Closeable {
+    var closed: Boolean = false
+        private set
+
+    override fun close() {
+        closed = true
     }
 }
