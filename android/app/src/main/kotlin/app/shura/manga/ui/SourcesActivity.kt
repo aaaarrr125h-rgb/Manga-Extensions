@@ -6,15 +6,12 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import app.shura.manga.ShuraRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import app.shura.source.host.InstalledSource
 
-class SourcesActivity : ComponentActivity() {
-    private val scope = CoroutineScope(Dispatchers.Default)
+class SourcesActivity : AsyncScreenActivity() {
+
+    private lateinit var list: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,46 +23,47 @@ class SourcesActivity : ComponentActivity() {
         scroll.addView(root)
         setContentView(scroll)
 
-        root.addView(TextView(this).apply {
-            text = "Sources"
-            textSize = 20f
-            setPadding(0, 0, 0, 16)
+        root.addView(TextView(this).apply { text = "Sources"; textSize = 20f })
+        addStatusViews(root)
+        root.addView(Button(this).apply {
+            text = "Reload sources"
+            setOnClickListener { load() }
         })
-        val log = TextView(this).apply { text = "Loading..."; textSize = 11f }
-        root.addView(log)
+        list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(list)
 
-        scope.launch {
-            val sources = try {
-                val repository = ShuraRepository.create(this@SourcesActivity)
-                repository.repository.catalogue()
-            } catch (e: Exception) {
-                runOnUiThread { log.text = "Error: ${e.message}" }
-                return@launch
-            }
-            if (sources.isEmpty()) {
-                runOnUiThread { log.text = "No installed extensions. Install one from Extensions first." }
-                return@launch
-            }
-            runOnUiThread {
-                log.text = "${sources.size} source(s)"
-                sources.forEach { source ->
-                    root.addView(Button(this@SourcesActivity).apply {
-                        text = "${source.descriptor.name} (${source.descriptor.language})"
-                        setOnClickListener {
-                            startActivity(
-                                Intent(this@SourcesActivity, BrowseActivity::class.java)
-                                    .putExtra(SourceExtras.PACKAGE, source.packageName)
-                                    .putExtra(SourceExtras.SOURCE_ID, source.descriptor.sourceId),
-                            )
-                        }
-                    })
-                }
-            }
+        load()
+    }
+
+    private fun load() {
+        runLoad(
+            loading = "Loading installed extensions...",
+            retry = { load() },
+            block = { ShuraRepository.create(this).repository.catalogue() },
+            onLoaded = { sources -> show(sources) },
+        )
+    }
+
+    private fun show(sources: List<InstalledSource>) {
+        list.removeAllViews()
+        if (sources.isEmpty()) {
+            status.text = "No installed extensions. Install one from Extensions first."
+            return
+        }
+        status.text = "${sources.size} source(s)"
+        sources.forEach { source ->
+            list.addView(Button(this).apply {
+                text = "${source.descriptor.name} (${source.descriptor.language})"
+                setOnClickListener { open(source) }
+            })
         }
     }
 
-    override fun onDestroy() {
-        scope.cancel()
-        super.onDestroy()
+    private fun open(source: InstalledSource) {
+        startActivity(
+            Intent(this, BrowseActivity::class.java)
+                .putExtra(SourceExtras.PACKAGE, source.packageName)
+                .putExtra(SourceExtras.SOURCE_ID, source.descriptor.sourceId),
+        )
     }
 }

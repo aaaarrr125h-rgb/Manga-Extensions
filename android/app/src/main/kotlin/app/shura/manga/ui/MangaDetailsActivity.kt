@@ -6,33 +6,35 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import app.shura.manga.ShuraRepository
 import app.shura.source.api.Chapter
-import app.shura.source.api.ChapterRef
 import app.shura.source.api.Manga
 import app.shura.source.api.MangaRef
 import app.shura.source.api.SourceCapability
 import app.shura.source.api.SourceProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class MangaDetailsActivity : ComponentActivity() {
-    private val scope = CoroutineScope(Dispatchers.Default)
+class MangaDetailsActivity : AsyncScreenActivity() {
 
+    private var repository: ShuraRepository? = null
     private var provider: SourceProvider? = null
-    private lateinit var status: TextView
+    private var packageName: String? = null
+    private var sourceId = -1L
+    private var mangaRef: String? = null
+    private var mangaTitle = ""
+    private var thumbnailUrl: String? = null
+    private lateinit var libraryButton: Button
     private lateinit var details: TextView
     private lateinit var chapters: LinearLayout
 
+    private data class Details(val manga: Manga?, val chapterList: List<Chapter>, val warning: String?)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val packageName = intent.getStringExtra(SourceExtras.PACKAGE)
-        val sourceId = intent.getLongExtra(SourceExtras.SOURCE_ID, -1L)
-        val mangaRef = intent.getStringExtra(SourceExtras.MANGA_REF)
-        val title = intent.getStringExtra(SourceExtras.MANGA_TITLE).orEmpty()
+        packageName = intent.getStringExtra(SourceExtras.PACKAGE)
+        sourceId = intent.getLongExtra(SourceExtras.SOURCE_ID, -1L)
+        mangaRef = intent.getStringExtra(SourceExtras.MANGA_REF)
+        mangaTitle = intent.getStringExtra(SourceExtras.MANGA_TITLE).orEmpty()
         if (packageName == null || sourceId < 0 || mangaRef == null) {
             finish()
             return
@@ -46,72 +48,129 @@ class MangaDetailsActivity : ComponentActivity() {
         scroll.addView(root)
         setContentView(scroll)
 
-        root.addView(TextView(this).apply { text = title; textSize = 20f })
-        status = TextView(this).apply { text = "Loading..."; textSize = 11f; setPadding(0, 8, 0, 8) }
-        root.addView(status)
-        details = TextView(this).apply { textSize = 12f; setPadding(0, 0, 0, 16) }
+        root.addView(TextView(this).apply { text = mangaTitle; textSize = 20f })
+        addStatusViews(root)
+        libraryButton = Button(this).apply {
+            text = "Add to Library"
+            isEnabled = false
+            setOnClickListener { toggleLibrary() }
+        }
+        root.addView(libraryButton)
+        details = TextView(this).apply { textSize = 12f; setPadding(0, 12, 0, 16) }
         root.addView(details)
         root.addView(TextView(this).apply { text = "Chapters"; textSize = 16f; setPadding(0, 8, 0, 8) })
         chapters = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         root.addView(chapters)
 
-        scope.launch {
-            val source = try {
-                ShuraRepository.create(this@MangaDetailsActivity).findSource(packageName, sourceId)
-            } catch (e: Exception) {
-                null
-            }
-            if (source == null) {
-                runOnUiThread { status.text = "Source is no longer installed" }
-                return@launch
-            }
-            provider = source.provider
-            val ref = MangaRef(mangaRef)
-            val manga = try {
-                if (source.provider.descriptor.supports(SourceCapability.FETCH_DETAILS)) {
-                    source.provider.mangaDetails(ref)
-                } else {
-                    null
-                }
-            } catch (e: Exception) {
-                runOnUiThread { status.text = "Details error: ${e.message}" }
-                null
-            }
-            val chapterList = try {
-                if (source.provider.descriptor.supports(SourceCapability.FETCH_CHAPTERS)) {
-                    source.provider.chapterList(ref)
-                } else {
-                    emptyList()
-                }
-            } catch (e: Exception) {
-                runOnUiThread { status.text = "Chapter error: ${e.message}" }
-                emptyList()
-            }
-            runOnUiThread { show(manga, chapterList) }
-        }
+        load()
     }
 
-    private fun show(manga: Manga?, chapterList: List<Chapter>) {
-        status.text = if (manga == null) "No details" else manga.status.name
-        details.text = manga?.let {
+    private fun load() {
+        val packageName = packageName ?: return
+        val mangaRef = mangaRef ?: return
+        runLoad(
+            loading = "Loading details...",
+            retry = { load() },
+            block = {
+                val created = ShuraRepository.create(this)
+                repository = created
+                val source = created.findSource(packageName, sourceId)
+                    ?: error("Source is no longer installed")
+                provider = source.provider
+                val ref = MangaRef(mangaRef)
+
+                val detailsResult = runCatching {
+                    if (source.provider.descriptor.supports(SourceCapability.FETCH_DETAILS)) {
+                        source.provider.mangaDetails(ref)
+                    } else {
+                        null
+                    }
+                }
+                val chaptersResult = runCatching {
+                    if (source.provider.descriptor.supports(SourceCapability.FETCH_CHAPTERS)) {
+                        source.provider.chapterList(ref)
+                    } else {
+                        emptyList()
+                    }
+                }
+                val warning = listOfNotNull(
+                    detailsResult.exceptionOrNull()?.let { "Details: ${it.describe()}" },
+                    chaptersResult.exceptionOrNull()?.let { "Chapters: ${it.describe()}" },
+                ).takeIf { it.isNotEmpty() }?.joinToString()
+                detailsResult.exceptionOrNull()?.let { Diagnostics.recordError(it.describe()) }
+                chaptersResult.exceptionOrNull()?.let { Diagnostics.recordError(it.describe()) }
+
+                Details(
+                    manga = detailsResult.getOrNull(),
+                    chapterList = chaptersResult.getOrElse { emptyList() },
+                    warning = warning,
+                )
+            },
+            onLoaded = { result -> show(result) },
+        )
+    }
+
+    private fun show(result: Details) {
+        thumbnailUrl = result.manga?.thumbnailUrl
+        details.text = result.manga?.let { manga ->
             buildString {
-                it.author?.let { author -> appendLine("Author: $author") }
-                it.artist?.let { artist -> appendLine("Artist: $artist") }
-                it.genres.takeIf { genres -> genres.isNotEmpty() }
-                    ?.let { genres -> appendLine("Genres: ${genres.joinToString()}") }
-                it.description?.let { description -> appendLine(description) }
+                manga.author?.let { appendLine("Author: $it") }
+                manga.artist?.let { appendLine("Artist: $it") }
+                manga.genres.takeIf { it.isNotEmpty() }?.let { appendLine("Genres: ${it.joinToString()}") }
+                manga.description?.let { appendLine(it) }
             }.trim()
         }.orEmpty()
+        if (result.warning != null) {
+            status.text = result.warning
+        } else if (result.manga == null) {
+            status.text = "No details"
+        }
 
+        updateLibraryButton()
         chapters.removeAllViews()
-        if (chapterList.isEmpty()) {
+        if (result.chapterList.isEmpty()) {
             chapters.addView(TextView(this).apply { text = "No chapters"; textSize = 11f })
         }
-        chapterList.forEach { chapter ->
+        result.chapterList.forEach { chapter ->
             chapters.addView(Button(this).apply {
                 text = chapter.name
                 setOnClickListener { open(chapter) }
             })
+        }
+    }
+
+    private fun updateLibraryButton() {
+        val library = repository?.library ?: return
+        val packageName = packageName ?: return
+        val mangaRef = mangaRef ?: return
+        val present = runCatching { library.contains(packageName, sourceId, mangaRef) }.getOrDefault(false)
+        libraryButton.isEnabled = true
+        libraryButton.text = if (present) "Remove from Library" else "Add to Library"
+    }
+
+    private fun toggleLibrary() {
+        val target = repository ?: return
+        val packageName = packageName ?: return
+        val mangaRef = mangaRef ?: return
+        val library = target.library
+        scope.launch {
+            val present = runCatching { library.contains(packageName, sourceId, mangaRef) }.getOrDefault(false)
+            val result = runCatching {
+                if (present) {
+                    library.remove(packageName, sourceId, mangaRef)
+                } else {
+                    library.add(packageName, sourceId, mangaRef, mangaTitle, thumbnailUrl)
+                }
+            }
+            runOnUiThread {
+                result.fold(
+                    onSuccess = { updateLibraryButton() },
+                    onFailure = { failure ->
+                        Diagnostics.recordError(failure.describe())
+                        status.text = "Library: ${failure.describe()}"
+                    },
+                )
+            }
         }
     }
 
@@ -121,13 +180,10 @@ class MangaDetailsActivity : ComponentActivity() {
             Intent(this, ReaderActivity::class.java)
                 .putExtra(SourceExtras.PACKAGE, source.descriptor.packageName)
                 .putExtra(SourceExtras.SOURCE_ID, source.descriptor.sourceId)
+                .putExtra(SourceExtras.MANGA_REF, mangaRef)
+                .putExtra(SourceExtras.MANGA_TITLE, mangaTitle)
                 .putExtra(SourceExtras.CHAPTER_REF, chapter.ref.value)
                 .putExtra(SourceExtras.CHAPTER_NAME, chapter.name),
         )
-    }
-
-    override fun onDestroy() {
-        scope.cancel()
-        super.onDestroy()
     }
 }

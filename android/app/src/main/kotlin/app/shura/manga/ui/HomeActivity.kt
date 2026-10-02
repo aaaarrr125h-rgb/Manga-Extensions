@@ -47,6 +47,24 @@ class HomeActivity : ComponentActivity() {
             }
         })
         root.addView(Button(this).apply {
+            text = "Library"
+            setOnClickListener {
+                startActivity(Intent(this@HomeActivity, LibraryActivity::class.java))
+            }
+        })
+        root.addView(Button(this).apply {
+            text = "Downloads"
+            setOnClickListener {
+                startActivity(Intent(this@HomeActivity, DownloadsActivity::class.java))
+            }
+        })
+        root.addView(Button(this).apply {
+            text = "Diagnostics"
+            setOnClickListener {
+                startActivity(Intent(this@HomeActivity, DiagnosticsActivity::class.java))
+            }
+        })
+        root.addView(Button(this).apply {
             text = "Self Test"
             setOnClickListener {
                 startActivity(Intent(this@HomeActivity, app.shura.manga.MainActivity::class.java))

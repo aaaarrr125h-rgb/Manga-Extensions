@@ -8,28 +8,24 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import app.shura.manga.ShuraRepository
 import app.shura.source.api.Manga
 import app.shura.source.api.MangaListPage
 import app.shura.source.api.SourceCapability
 import app.shura.source.api.SourceProvider
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 
-class BrowseActivity : ComponentActivity() {
-    private val scope = CoroutineScope(Dispatchers.Default)
+class BrowseActivity : AsyncScreenActivity() {
 
     private var provider: SourceProvider? = null
-    private lateinit var status: TextView
-    private lateinit var listContainer: LinearLayout
+    private var packageName: String? = null
+    private var sourceId = -1L
+    private lateinit var query: EditText
+    private lateinit var list: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val packageName = intent.getStringExtra(SourceExtras.PACKAGE)
-        val sourceId = intent.getLongExtra(SourceExtras.SOURCE_ID, -1L)
+        packageName = intent.getStringExtra(SourceExtras.PACKAGE)
+        sourceId = intent.getLongExtra(SourceExtras.SOURCE_ID, -1L)
         if (packageName == null || sourceId < 0) {
             finish()
             return
@@ -44,10 +40,9 @@ class BrowseActivity : ComponentActivity() {
         setContentView(scroll)
 
         root.addView(TextView(this).apply { text = "Browse"; textSize = 20f })
-        status = TextView(this).apply { text = "Loading..."; textSize = 11f; setPadding(0, 8, 0, 8) }
-        root.addView(status)
+        addStatusViews(root)
 
-        val query = EditText(this).apply {
+        query = EditText(this).apply {
             hint = "Search"
             inputType = InputType.TYPE_CLASS_TEXT
         }
@@ -55,70 +50,61 @@ class BrowseActivity : ComponentActivity() {
         val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
         row.addView(Button(this).apply {
             text = "Search"
-            setOnClickListener { load(search = query.text.toString()) }
+            setOnClickListener { load(query.text.toString()) }
         })
         row.addView(Button(this).apply {
             text = "Popular"
-            setOnClickListener { load(search = null) }
+            setOnClickListener { load(null) }
         })
         root.addView(row)
-        listContainer = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        root.addView(listContainer)
+        list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        root.addView(list)
 
-        scope.launch {
-            val source = try {
-                ShuraRepository.create(this@BrowseActivity).findSource(packageName, sourceId)
-            } catch (e: Exception) {
-                null
-            }
-            if (source == null) {
-                runOnUiThread { status.text = "Source is no longer installed" }
-                return@launch
-            }
-            provider = source.provider
-            runOnUiThread {
-                title = source.descriptor.name
-                load(search = null)
-            }
-        }
+        resolveSource()
+    }
+
+    private fun resolveSource() {
+        val packageName = packageName ?: return
+        runLoad(
+            loading = "Opening source...",
+            retry = { resolveSource() },
+            block = { ShuraRepository.create(this).findSource(packageName, sourceId) },
+            onLoaded = { source ->
+                if (source == null) {
+                    status.text = "Source is no longer installed"
+                } else {
+                    provider = source.provider
+                    load(null)
+                }
+            },
+        )
     }
 
     private fun load(search: String?) {
         val source = provider ?: return
-        status.text = if (search == null) "Loading popular..." else "Searching '$search'..."
-        listContainer.removeAllViews()
-        scope.launch {
-            val page = try {
-                if (search == null) {
-                    if (!source.descriptor.supports(SourceCapability.BROWSE_POPULAR)) {
-                        MangaListPage.EMPTY
-                    } else {
+        runLoad(
+            loading = if (search == null) "Loading popular..." else "Searching '$search'...",
+            retry = { load(search) },
+            block = {
+                when {
+                    search == null && source.descriptor.supports(SourceCapability.BROWSE_POPULAR) ->
                         source.popularManga(1)
-                    }
-                } else {
-                    if (!source.descriptor.supports(SourceCapability.SEARCH)) {
-                        MangaListPage.EMPTY
-                    } else {
+
+                    search != null && source.descriptor.supports(SourceCapability.SEARCH) ->
                         source.searchManga(1, search)
-                    }
+
+                    else -> MangaListPage.EMPTY
                 }
-            } catch (e: Exception) {
-                runOnUiThread { status.text = "Error: ${e.message}" }
-                return@launch
-            }
-            runOnUiThread { show(page) }
-        }
+            },
+            onLoaded = { page -> show(page) },
+        )
     }
 
     private fun show(page: MangaListPage) {
-        listContainer.removeAllViews()
-        status.text = if (page.mangas.isEmpty()) {
-            "No results"
-        } else {
-            "${page.mangas.size} result(s)"
-        }
+        list.removeAllViews()
+        status.text = if (page.mangas.isEmpty()) "No results" else "${page.mangas.size} result(s)"
         page.mangas.forEach { manga ->
-            listContainer.addView(Button(this).apply {
+            list.addView(Button(this).apply {
                 text = manga.title
                 setOnClickListener { open(manga) }
             })
@@ -134,10 +120,5 @@ class BrowseActivity : ComponentActivity() {
                 .putExtra(SourceExtras.MANGA_REF, manga.ref.value)
                 .putExtra(SourceExtras.MANGA_TITLE, manga.title),
         )
-    }
-
-    override fun onDestroy() {
-        scope.cancel()
-        super.onDestroy()
     }
 }

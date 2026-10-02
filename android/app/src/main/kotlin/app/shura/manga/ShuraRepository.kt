@@ -6,6 +6,8 @@ import app.shura.source.host.ArtifactUrlPolicy
 import app.shura.source.host.ExtensionRepository
 import app.shura.source.host.ExtensionStore
 import app.shura.source.host.HttpTransport
+import app.shura.source.host.LibraryStore
+import app.shura.source.host.DownloadStore
 import app.shura.source.host.RepositoryClient
 import app.shura.source.host.UrlHttpTransport
 import app.shura.source.host.ApkInspector
@@ -28,6 +30,8 @@ import java.net.Proxy
  */
 class ShuraRepository private constructor(
     val repository: ExtensionRepository,
+    val library: LibraryStore,
+    val downloads: DownloadStore,
     private val store: ExtensionStore,
 ) {
 
@@ -41,6 +45,12 @@ class ShuraRepository private constructor(
 
         /** The name of the private directory the extension artifacts are stored in. */
         private const val EXTENSIONS_DIRECTORY = "extensions"
+
+        /** The library and reading positions live here, under the app's private files directory. */
+        private const val LIBRARY_DIRECTORY = "library"
+
+        /** Downloaded chapters live here. Not a cache: nothing here is evicted automatically. */
+        private const val DOWNLOADS_DIRECTORY = "downloads"
 
         fun create(context: Context): ShuraRepository {
             val transport: HttpTransport = UrlHttpTransport(
@@ -69,7 +79,12 @@ class ShuraRepository private constructor(
                 loader = loader,
                 transport = transport,
             )
-            return ShuraRepository(repository, store)
+            return ShuraRepository(
+                repository = repository,
+                library = LibraryStore(File(context.filesDir, LIBRARY_DIRECTORY)),
+                downloads = DownloadStore(File(context.filesDir, DOWNLOADS_DIRECTORY)),
+                store = store,
+            )
         }
     }
 }
