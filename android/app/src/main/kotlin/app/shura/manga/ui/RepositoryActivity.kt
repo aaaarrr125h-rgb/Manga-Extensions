@@ -8,11 +8,12 @@ import androidx.activity.ComponentActivity
 import app.shura.manga.ShuraRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class RepositoryActivity : ComponentActivity() {
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val scope = CoroutineScope(Dispatchers.Default)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val root = LinearLayout(this).apply {
@@ -28,22 +29,28 @@ class RepositoryActivity : ComponentActivity() {
         root.addView(Button(this).apply {
             text = "Refresh Default Repository"
             setOnClickListener {
+                status.text = "Refreshing..."
                 scope.launch {
-                    status.text = "Refreshing..."
-                    try {
-                        val repo = ShuraRepository.create(this@RepositoryActivity)
-                        val snap = withContext(Dispatchers.IO) { repo.repository.discover() }
-                        status.text = "OK: ${snap.extensions.size} extensions • ${snap.unusable.size} unusable"
+                    val message = try {
+                        val repository = ShuraRepository.create(this@RepositoryActivity)
+                        val snapshot = repository.repository.discover()
+                        "OK: ${snapshot.extensions.size} extensions, ${snapshot.unusable.size} unusable"
                     } catch (e: Exception) {
-                        status.text = "Error: ${e.message}"
+                        "Error: ${e.message}"
                     }
+                    runOnUiThread { status.text = message }
                 }
             }
         })
         root.addView(TextView(this).apply {
-            text = "Default: https://raw.githubusercontent.com/aaaarrr125h-rgb/Manga-Extensions/main/repo/index.json"
+            text = "Default: ${ShuraRepository.DEFAULT_REPOSITORY_URL}"
             textSize = 10f
             setPadding(0, 24, 0, 0)
         })
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 }

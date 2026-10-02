@@ -10,7 +10,6 @@ import app.shura.source.host.RepositoryClient
 import app.shura.source.host.UrlHttpTransport
 import app.shura.source.host.ApkInspector
 import app.shura.source.host.ExtensionLoader
-import app.shura.source.host.AbiRegistry
 import java.io.File
 import java.net.Proxy
 
@@ -61,7 +60,7 @@ class ShuraRepository private constructor(
             val store = ExtensionStore(root)
             val inspector: ApkInspector = AndroidApkInspector(context)
             val loader = ExtensionLoader(
-                abiRegistry = AbiRegistry.fromDirectory(AbiAssetsInstaller.install(context).directory),
+                abiRegistry = AbiAssetsInstaller(context).install(),
             )
             val repository = ExtensionRepository(
                 client = client,

@@ -11,28 +11,23 @@
         android:theme="@style/Theme.Shura">
 
         <!--
-          Without a MAIN/LAUNCHER activity the APK installs but has nothing to launch, and the
-          package installer greys out "Open".
+          The launcher is the real UI. The self-test screen stays reachable from it, but is no
+          longer the entry point: without a launcher the APK installs and the installer greys out
+          "Open", and two launchers would put two identical icons in the drawer.
         -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-    
         <activity
             android:name=".ui.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
         <activity android:name=".ui.RepositoryActivity" />
         <activity android:name=".ui.ExtensionsActivity" />
         <activity android:name=".ui.SourcesActivity" />

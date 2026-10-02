@@ -8,39 +8,55 @@ import androidx.activity.ComponentActivity
 import app.shura.manga.ShuraRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SourcesActivity : ComponentActivity() {
-    private val scope = CoroutineScope(Dispatchers.Main)
+    private val scope = CoroutineScope(Dispatchers.Default)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val scroll = ScrollView(this)
-        val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(48,48,48,48) }
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 48, 48, 48)
+        }
         scroll.addView(root)
         setContentView(scroll)
 
-        root.addView(TextView(this).apply { text = "Sources"; textSize = 20f; setPadding(0,0,0,16) })
+        root.addView(TextView(this).apply {
+            text = "Sources"
+            textSize = 20f
+            setPadding(0, 0, 0, 16)
+        })
         val log = TextView(this).apply { text = "Loading..."; textSize = 11f }
         root.addView(log)
 
         scope.launch {
-            try {
-                val repo = ShuraRepository.create(this@SourcesActivity)
-                val installed = withContext(Dispatchers.IO) { repo.repository.installed() }
+            val message = try {
+                val repository = ShuraRepository.create(this@SourcesActivity)
+                val installed = repository.repository.installed()
                 if (installed.isEmpty()) {
-                    log.text = "No installed extensions"
-                    return@launch
-                }
-                val catalogue = withContext(Dispatchers.IO) { repo.repository.catalogue() }
-                if (catalogue.isEmpty()) {
-                    log.text = "Installed: ${installed.size}\nNo sources loaded"
+                    "No installed extensions. Install one from Extensions first."
                 } else {
-                    log.text = catalogue.joinToString("\n") { "${it.descriptor.name} • ${it.abi.version} • ${it.descriptor.language}" }
+                    val catalogue = repository.repository.catalogue()
+                    if (catalogue.isEmpty()) {
+                        "Installed: ${installed.size}\nNo sources loaded"
+                    } else {
+                        catalogue.joinToString("\n") {
+                            "${it.descriptor.name} • ABI ${it.abi.version} • ${it.descriptor.language}"
+                        }
+                    }
                 }
             } catch (e: Exception) {
-                log.text = "Error: ${e.message}"
+                "Error: ${e.message}"
             }
+            runOnUiThread { log.text = message }
         }
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        super.onDestroy()
     }
 }

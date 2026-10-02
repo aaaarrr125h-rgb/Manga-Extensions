@@ -46,5 +46,11 @@ class HomeActivity : ComponentActivity() {
                 startActivity(Intent(this@HomeActivity, SourcesActivity::class.java))
             }
         })
+        root.addView(Button(this).apply {
+            text = "Self Test"
+            setOnClickListener {
+                startActivity(Intent(this@HomeActivity, app.shura.manga.MainActivity::class.java))
+            }
+        })
     }
 }
