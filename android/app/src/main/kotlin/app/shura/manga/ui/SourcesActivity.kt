@@ -1,6 +1,8 @@
 package app.shura.manga.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -33,25 +35,32 @@ class SourcesActivity : ComponentActivity() {
         root.addView(log)
 
         scope.launch {
-            val message = try {
+            val sources = try {
                 val repository = ShuraRepository.create(this@SourcesActivity)
-                val installed = repository.repository.installed()
-                if (installed.isEmpty()) {
-                    "No installed extensions. Install one from Extensions first."
-                } else {
-                    val catalogue = repository.repository.catalogue()
-                    if (catalogue.isEmpty()) {
-                        "Installed: ${installed.size}\nNo sources loaded"
-                    } else {
-                        catalogue.joinToString("\n") {
-                            "${it.descriptor.name} • ABI ${it.abi.version} • ${it.descriptor.language}"
-                        }
-                    }
-                }
+                repository.repository.catalogue()
             } catch (e: Exception) {
-                "Error: ${e.message}"
+                runOnUiThread { log.text = "Error: ${e.message}" }
+                return@launch
             }
-            runOnUiThread { log.text = message }
+            if (sources.isEmpty()) {
+                runOnUiThread { log.text = "No installed extensions. Install one from Extensions first." }
+                return@launch
+            }
+            runOnUiThread {
+                log.text = "${sources.size} source(s)"
+                sources.forEach { source ->
+                    root.addView(Button(this@SourcesActivity).apply {
+                        text = "${source.descriptor.name} (${source.descriptor.language})"
+                        setOnClickListener {
+                            startActivity(
+                                Intent(this@SourcesActivity, BrowseActivity::class.java)
+                                    .putExtra(SourceExtras.PACKAGE, source.packageName)
+                                    .putExtra(SourceExtras.SOURCE_ID, source.descriptor.sourceId),
+                            )
+                        }
+                    })
+                }
+            }
         }
     }
 

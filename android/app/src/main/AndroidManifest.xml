@@ -31,6 +31,9 @@
         <activity android:name=".ui.RepositoryActivity" />
         <activity android:name=".ui.ExtensionsActivity" />
         <activity android:name=".ui.SourcesActivity" />
+        <activity android:name=".ui.BrowseActivity" />
+        <activity android:name=".ui.MangaDetailsActivity" />
+        <activity android:name=".ui.ReaderActivity" />
 </application>
 
 </manifest>
