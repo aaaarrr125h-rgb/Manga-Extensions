@@ -8,13 +8,15 @@ import app.shura.source.api.MangaListPage
 import app.shura.source.api.MangaRef
 import app.shura.source.api.SourceCapability
 import app.shura.source.api.SourceFilters
-import app.shura.source.api.SourceKey
 import app.shura.source.api.SourceLanguage
 import app.shura.source.api.SourceProvider
 import app.shura.source.host.AbiRegistry
+import app.shura.source.host.ExtensionManifest
+import app.shura.source.host.ExtensionManifestParser
 import java.io.File
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.util.Properties
 import java.util.jar.JarFile
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -22,24 +24,6 @@ import kotlinx.coroutines.runBlocking
 
 /** One line of the extension report, and whether it counts as a pass. */
 private data class Finding(val label: String, val detail: String, val passed: Boolean)
-
-/**
- * The one fixture staged for one ABI level.
- *
- * [entryClass] and [packageName] are the two facts a real extension carries in its
- * `META-INF/tachiyomi/extension.properties`, and they are named here because the on-device build
- * does not ship that file: `dexShuraFixture14` and `dexShuraFixture16` hand the fixture jar to
- * d8, and d8 writes `classes.dex` and nothing else into the jar that reaches `assets`. The
- * report says so out loud, and [reportIdentity] never takes these on trust — every one of them is
- * cross-checked against something the extension itself reports.
- */
-private data class StagedExtension(
-    val asset: String,
-    val entryClass: String,
-    val packageName: String,
-    val versionName: String,
-    val versionCode: Long,
-)
 
 /**
  * Loads a real extension out of the APK and drives it the way the host will.
@@ -86,7 +70,7 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
         val loaders = buildLoaders(registry)
         if (loaders.isNotEmpty()) {
             reportHostIsolation(loaders)
-            STAGED.forEach { (abi, staged) -> exerciseLevel(abi, staged, loaders[abi]) }
+            EXTENSIONS.forEach { (abi, asset) -> exerciseLevel(abi, asset, loaders[abi]) }
         }
         return render()
     }
@@ -105,7 +89,7 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
      * anything a real extension does not.
      */
     private fun stageExtensions() {
-        STAGED.values.map(StagedExtension::asset).distinct().forEach { name ->
+        EXTENSIONS.values.distinct().forEach { name ->
             val target = File(extensionDirectory, name)
             if (target.isFile && target.length() > 0) return@forEach
             runCatching {
@@ -125,15 +109,15 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
      */
     private fun buildLoaders(registry: AbiRegistry): Map<ExtensionAbi, AndroidAbiClassLoader> {
         val loaders = mutableMapOf<ExtensionAbi, AndroidAbiClassLoader>()
-        STAGED.forEach { (abi, staged) ->
+        EXTENSIONS.forEach { (abi, asset) ->
             val apiJar = runCatching { registry.require(abi).apiJar }.getOrNull()
-            val extensionJar = File(extensionDirectory, staged.asset)
+            val extensionJar = File(extensionDirectory, asset)
             if (apiJar == null || !apiJar.isFile) {
                 finding("loader ABI ${abi.version}", "no ABI jar on disk", false)
                 return@forEach
             }
             if (!extensionJar.isFile) {
-                finding("loader ABI ${abi.version}", "${staged.asset} not staged", false)
+                finding("loader ABI ${abi.version}", "$asset not staged", false)
                 return@forEach
             }
             // Extension first, ABI jar second: the entry class and its `keiyoushi.source.*` come
@@ -203,11 +187,19 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
 
     private fun exerciseLevel(
         abi: ExtensionAbi,
-        staged: StagedExtension,
+        asset: String,
         loader: AndroidAbiClassLoader?,
     ) {
         if (loader == null) return
-        reportDescriptorAbsence(abi, staged)
+        val manifest = readManifest(abi, asset) ?: return
+        if (manifest.abi != abi) {
+            finding(
+                "descriptor ABI ${abi.version}",
+                "${asset} declares ${manifest.extensionLib}, expected ${abi.version}",
+                false,
+            )
+            return
+        }
 
         val catalogueType = runCatching { loader.loadClass(CATALOGUE_INTERFACE) }.getOrElse {
             finding("surface ABI ${abi.version}", "THREW ${it.describe()}", false)
@@ -217,15 +209,15 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
         val expected = BROWSE_SURFACE.getValue(abi)
         finding(
             "surface ABI ${abi.version}",
-            "${catalogueType.name} declares $browses, and ${staged.entryClass} will be linked " +
+            "${catalogueType.name} declares $browses, and ${manifest.entryClass} will be linked " +
                 "against it and nothing else",
             expected in browses,
         )
 
         val sources = runCatching {
-            val entry = loader.loadClass(staged.entryClass).getDeclaredConstructor().newInstance()
+            val entry = loader.loadClass(manifest.entryClass).getDeclaredConstructor().newInstance()
             val factory = loader.loadClass(FACTORY_INTERFACE)
-            check(factory.isInstance(entry)) { "${staged.entryClass} is not a $FACTORY_INTERFACE" }
+            check(factory.isInstance(entry)) { "${manifest.entryClass} is not a $FACTORY_INTERFACE" }
             @Suppress("UNCHECKED_CAST")
             (factory.getMethod("createSources").invoke(entry) as List<*>).filterNotNull()
         }.getOrElse {
@@ -238,43 +230,70 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
         }
         finding(
             "entry class ABI ${abi.version}",
-            "${staged.entryClass} -> ${sources.size} source(s) " +
+            "${manifest.entryClass} -> ${sources.size} source(s) " +
                 sources.map { it.javaClass.name.substringAfterLast('.') } +
                 ", all from ${describe(loader)}",
             true,
         )
 
-        sources.forEach { source -> driveSource(abi, staged, catalogueType, loader, source) }
+        sources.forEach { source -> driveSource(abi, manifest, catalogueType, loader, source) }
     }
 
     /**
-     * The descriptor is not in the APK, and that is a property of the build rather than of the
-     * extension, so it is reported as a finding instead of being papered over.
+     * Reads the extension's own descriptor out of the jar that reached the device.
      *
-     * It also acts as a tripwire: if a later build does start shipping
-     * `META-INF/tachiyomi/extension.properties` inside the staged jar, this goes red and the test
-     * is expected to switch to reading it, as [app.shura.source.host.ExtensionManifestParser]
-     * does on a workstation.
+     * This is the descriptor-driven path, not a shortcut around it: the entry class, the package
+     * name and the ABI level all come from `META-INF/tachiyomi/extension.properties` exactly as
+     * [ExtensionLoader.loadFromJar] reads them, so nothing here depends on the test knowing the
+     * fixture. If the packaging ever drops that file again the report goes red with the list of
+     * entries the jar actually holds, rather than quietly falling back to a name written down here.
      */
-    private fun reportDescriptorAbsence(abi: ExtensionAbi, staged: StagedExtension) {
+    private fun readManifest(abi: ExtensionAbi, asset: String): ExtensionManifest? {
+        val jar = File(extensionDirectory, asset)
         val entries = runCatching {
-            JarFile(File(extensionDirectory, staged.asset)).use { it.entries().toList().map { e -> e.name } }
+            JarFile(jar).use { file -> file.entries().toList().map { it.name } }
         }.getOrElse {
             finding("descriptor ${abi.version}", "THREW ${it.describe()}", false)
-            return
+            return null
         }
-        val present = entries.filter { it == DESCRIPTOR_PATH }
-        finding(
-            "descriptor ${abi.version}",
-            "${staged.asset} holds ${entries.sorted().joinToString()}; " +
-                if (present.isEmpty()) {
-                    "no $DESCRIPTOR_PATH, so entryClass and packageName are named by this test " +
-                        "and cross-checked against the extension's own getters"
-                } else {
-                    "$DESCRIPTOR_PATH is now shipped; this test should read it"
-                },
-            present.isEmpty(),
-        )
+        if (entries.none { it == DESCRIPTOR_PATH }) {
+            finding(
+                "descriptor ${abi.version}",
+                "$asset holds ${entries.sorted().joinToString()} but no $DESCRIPTOR_PATH; " +
+                    "the packaged jar cannot be loaded the way a downloaded one is",
+                false,
+            )
+            return null
+        }
+        return runCatching {
+            val properties = JarFile(jar).use { file ->
+                file.getInputStream(file.getJarEntry(DESCRIPTOR_PATH)).use { stream ->
+                    Properties().apply { load(stream) }
+                }
+            }
+            ExtensionManifestParser.fromProperties(
+                packageName = properties.getProperty(JAR_PROPERTY_PACKAGE)
+                    ?: error("$asset declares no $JAR_PROPERTY_PACKAGE"),
+                versionCode = properties.getProperty(JAR_PROPERTY_VERSION_CODE)?.toLongOrNull()
+                    ?: error("$asset declares no usable $JAR_PROPERTY_VERSION_CODE"),
+                versionName = properties.getProperty(JAR_PROPERTY_VERSION_NAME).orEmpty(),
+                properties = properties,
+            )
+        }.getOrElse {
+            finding("descriptor ${abi.version}", "THREW ${it.describe()}", false)
+            null
+        }.also { manifest ->
+            if (manifest != null) {
+                finding(
+                    "descriptor ${abi.version}",
+                    "$asset carries ${entries.sorted().joinToString()}; " +
+                        "${manifest.packageName} v${manifest.versionName} (${manifest.versionCode}), " +
+                        "lib ${manifest.extensionLib}, entry ${manifest.entryClass}, " +
+                        "'${manifest.displayName}'",
+                    true,
+                )
+            }
+        }
     }
 
     /**
@@ -288,7 +307,7 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
      */
     private fun driveSource(
         abi: ExtensionAbi,
-        staged: StagedExtension,
+        manifest: ExtensionManifest,
         catalogueType: Class<*>,
         loader: AndroidAbiClassLoader,
         source: Any,
@@ -303,7 +322,7 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
             )
             return
         }
-        val provider = runCatching { buildProvider(abi, staged, catalogueType, loader, source) }.getOrElse {
+        val provider = runCatching { buildProvider(abi, manifest, catalogueType, loader, source) }.getOrElse {
             finding("bridge $label", "THREW ${it.describe()}", false)
             return
         }
@@ -325,7 +344,7 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
             true,
         )
 
-        reportIdentity(provider, catalogueType, source, abi, label)
+        reportIdentity(provider, manifest, catalogueType, source, abi, label)
         reportUnadvertisedRefusal(provider, label)
         val firstEntry = reportPopular(provider, label)
         reportSearch(provider, label)
@@ -343,16 +362,17 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
      */
     private fun buildProvider(
         abi: ExtensionAbi,
-        staged: StagedExtension,
+        manifest: ExtensionManifest,
         catalogueType: Class<*>,
         loader: AndroidAbiClassLoader,
         source: Any,
     ): SourceProvider {
         val bridgeType = loader.loadClass(AbiRegistry.bridgeClassFor(abi))
         val metadata = ExtensionMetadata(
-            packageName = staged.packageName,
-            versionName = staged.versionName,
-            versionCode = staged.versionCode,
+            packageName = manifest.packageName,
+            versionName = manifest.versionName,
+            versionCode = manifest.versionCode,
+            contentWarning = manifest.contentWarning,
         )
         val dispatcher: CoroutineDispatcher = Dispatchers.IO
         val constructor = bridgeType.declaredConstructors
@@ -381,10 +401,13 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
      *
      * `id`, `name`, `lang` and `supportsLatest` are read straight off the source through the
      * level's own `eu.kanade` interface, so the descriptor is compared with an independently
-     * obtained value rather than with something this file wrote down.
+     * obtained value rather than with something this file wrote down. The package name, version
+     * and ABI level are compared with what the extension's descriptor said, so a bridge built
+     * from the wrong metadata cannot pass either.
      */
     private fun reportIdentity(
         provider: SourceProvider,
+        manifest: ExtensionManifest,
         catalogueType: Class<*>,
         source: Any,
         abi: ExtensionAbi,
@@ -410,8 +433,17 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
             if (descriptor.supports(SourceCapability.LATEST_SUPPORTED) != declaredLatest) {
                 add("LATEST_SUPPORTED disagrees with supportsLatest=$declaredLatest")
             }
-            if (!SourceKey.isValidPackageName(descriptor.key.packageName)) {
-                add("package='${descriptor.key.packageName}' is not a valid package name")
+            if (descriptor.key.packageName != manifest.packageName) {
+                add("package='${descriptor.key.packageName}', descriptor says '${manifest.packageName}'")
+            }
+            if (descriptor.versionName != manifest.versionName) {
+                add("versionName='${descriptor.versionName}', descriptor says '${manifest.versionName}'")
+            }
+            if (descriptor.versionCode != manifest.versionCode) {
+                add("versionCode=${descriptor.versionCode}, descriptor says ${manifest.versionCode}")
+            }
+            if (descriptor.contentWarning != manifest.contentWarning) {
+                add("contentWarning=${descriptor.contentWarning}, descriptor says ${manifest.contentWarning}")
             }
             if (caps.isEmpty()) add("no capabilities")
         }
@@ -420,7 +452,8 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
             "key=${descriptor.key}, name='${descriptor.name}', lang=${descriptor.language} " +
                 "(extension reports id=$declaredId name='$declaredName' lang='$declaredLang' " +
                 "supportsLatest=$declaredLatest), v${descriptor.versionName} " +
-                "(${descriptor.versionCode}), ${caps.size} caps $caps",
+                "(${descriptor.versionCode}) warning=${descriptor.contentWarning}, " +
+                "${caps.size} caps $caps",
             problems.isEmpty(),
         )
         if (problems.isNotEmpty()) finding("identity $label", "PROBLEMS: $problems", false)
@@ -641,6 +674,9 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
 
     private companion object {
         const val DESCRIPTOR_PATH = "META-INF/tachiyomi/extension.properties"
+        const val JAR_PROPERTY_PACKAGE = "packageName"
+        const val JAR_PROPERTY_VERSION_CODE = "versionCode"
+        const val JAR_PROPERTY_VERSION_NAME = "versionName"
         const val FACTORY_INTERFACE = "eu.kanade.tachiyomi.source.SourceFactory"
         const val CATALOGUE_INTERFACE = "eu.kanade.tachiyomi.source.CatalogueSource"
         const val ASSET_DIRECTORY = "shura-test-fixtures"
@@ -670,22 +706,16 @@ class ExtensionRuntimeSelfTest(private val context: Context) {
             ExtensionAbi.V1_6 to "getPopularManga",
         )
 
-        /** The extension staged for each level: same entry class, same package, different ABI. */
-        val STAGED: Map<ExtensionAbi, StagedExtension> = mapOf(
-            ExtensionAbi.V1_4 to StagedExtension(
-                asset = "tachiyomix-abi14.jar",
-                entryClass = "keiyoushi.source.Generated",
-                packageName = "eu.kanade.tachiyomi.extension.all.tachiyomix",
-                versionName = "1.4.0",
-                versionCode = 104_000L,
-            ),
-            ExtensionAbi.V1_6 to StagedExtension(
-                asset = "tachiyomix-abi16.jar",
-                entryClass = "keiyoushi.source.Generated",
-                packageName = "eu.kanade.tachiyomi.extension.all.tachiyomix",
-                versionName = "1.6.0",
-                versionCode = 106_000L,
-            ),
+        /**
+         * The extension staged for each level.
+         *
+         * Only the asset name is known here. Everything else -- entry class, package, version,
+         * ABI level -- is read out of the staged jar's own descriptor, so this test never encodes
+         * a fact about the extension that the extension itself does not also publish.
+         */
+        val EXTENSIONS: Map<ExtensionAbi, String> = mapOf(
+            ExtensionAbi.V1_4 to "tachiyomix-abi14.jar",
+            ExtensionAbi.V1_6 to "tachiyomix-abi16.jar",
         )
     }
 }

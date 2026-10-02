@@ -132,6 +132,20 @@ enum class ExtensionContentWarning {
     NSFW,
     ;
 
+    /**
+     * The inverse of [fromIndexValue], and the only spelling written to storage.
+     *
+     * Persisting the enum's own name would round trip through `fromIndexValue` back to [SAFE],
+     * because `fromIndexValue` only knows the `CONTENT_WARNING_*` spellings. A registry that stored
+     * the short name would therefore quietly turn an NSFW extension into a safe one after a
+     * restart, which is exactly the kind of mistake this value exists to prevent.
+     */
+    fun toIndexValue(): String = when (this) {
+        SAFE -> "CONTENT_WARNING_SAFE"
+        MIXED -> "CONTENT_WARNING_MIXED"
+        NSFW -> "CONTENT_WARNING_NSFW"
+    }
+
     companion object {
         fun fromIndexValue(raw: String?): ExtensionContentWarning = when (raw?.trim()?.uppercase()) {
             "CONTENT_WARNING_MIXED" -> MIXED

@@ -1,4 +1,5 @@
 package app.shura.source.api
+import java.io.Closeable
 
 /**
  * Everything the host knows about a source without asking it anything.
@@ -53,12 +54,12 @@ data class LoadedExtension(
     val entryClass: String,
     val providers: List<SourceProvider>,
     val classLoader: ClassLoader,
-) {
+) : Closeable {
     val packageName: String get() = metadata.packageName
 
     val sources: List<SourceDescriptor> get() = providers.map(SourceProvider::descriptor)
 
-    fun close() {
+    override fun close() {
         // URLClassLoader is the only closeable loader the host creates; DexClassLoader on
         // Android is closed by the platform and does not implement Closeable there.
         (classLoader as? java.io.Closeable)?.close()

@@ -1,5 +1,9 @@
 import org.gradle.jvm.tasks.Jar
+import java.io.File
 import java.util.Properties
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,6 +12,11 @@ plugins {
 
 val shuraCompileSdk = 34
 val shuraMinSdk = 26
+
+/** What d8 emits, what the task copies back, and what the staging task throws away. */
+val DEX_ENTRY_NAME = "classes.dex"
+val CLASS_SUFFIX = ".class"
+val RESOURCE_SUFFIX = ".with-resources"
 
 // Build identity. The device screen must be able to name the exact commit it is running, so the
 // launcher activity can never be confused with a stale install. Both values are supplied by CI as
@@ -219,6 +228,47 @@ fun registerDexAsset(
         "--output", outputFile.get().asFile.absolutePath,
         jarFile.get().asFile.absolutePath,
     )
+
+    // d8 writes `classes.dex` and nothing else into its output jar, so every non-class entry of
+    // the input is dropped -- including `META-INF/tachiyomi/extension.properties`, the descriptor
+    // that says which entry class to instantiate and at which ABI level. A jar staged as an asset
+    // without it cannot be loaded the way a downloaded one is, which is a property of *this*
+    // staging pipeline rather than of the extension.
+    //
+    // The resources are put back here, in the one place a staged jar is built, rather than worked
+    // around by naming the entry class in code. It applies to every jar this task dexes, so an
+    // ABI jar or a fixture staged later keeps whatever its author shipped.
+    doLast {
+        val destination = outputFile.get().asFile
+        val source = jarFile.get().asFile
+        val resources = ZipFile(source).use { zip ->
+            zip.entries().asSequence()
+                .filterNot { it.isDirectory }
+                .filterNot { it.name.endsWith(CLASS_SUFFIX) }
+                .map { entry -> entry.name to zip.getInputStream(entry).readBytes() }
+                .toList()
+        }
+        if (resources.isEmpty()) return@doLast
+
+        val rebuilt = File(destination.parentFile, "${destination.name}$RESOURCE_SUFFIX")
+        JarOutputStream(rebuilt.outputStream()).use { out ->
+            ZipFile(destination).use { zip ->
+                zip.entries().asSequence().filter { it.name == DEX_ENTRY_NAME }.forEach { entry ->
+                    out.putNextEntry(ZipEntry(entry.name))
+                    zip.getInputStream(entry).copyTo(out)
+                    out.closeEntry()
+                }
+            }
+            resources.forEach { (name, bytes) ->
+                out.putNextEntry(ZipEntry(name))
+                out.write(bytes)
+                out.closeEntry()
+            }
+        }
+        destination.delete()
+        if (!rebuilt.renameTo(destination)) error("could not put ${destination.name}'s resources back")
+        rebuilt.delete()
+    }
     // d8 is a shell wrapper that ends in `exec java ...`, so it resolves `java` from PATH and
     // ignores JAVA_HOME. The Gradle JVM is already the JDK that compiled the input, so its `bin`
     // is put in front of PATH rather than trusting whatever `java` the machine happens to expose

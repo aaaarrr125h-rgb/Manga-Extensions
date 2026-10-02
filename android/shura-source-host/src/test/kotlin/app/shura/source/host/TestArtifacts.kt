@@ -33,3 +33,28 @@ object TestArtifacts {
         },
     )
 }
+
+/**
+ * An [HttpTransport] that answers from memory.
+ *
+ * Used where the assertion is about what the repository *client* decides, not about the wire: the
+ * transport's own behaviour over a real socket is covered by `UrlHttpTransportTest`.
+ */
+class StubTransport(
+    private val body: String,
+    private val status: Int = 200,
+    private val contentType: String? = "application/json",
+) : HttpTransport {
+
+    var lastUrl: String? = null
+        private set
+
+    var callCount: Int = 0
+        private set
+
+    override fun get(url: String): HttpResponse {
+        lastUrl = url
+        callCount++
+        return HttpResponse(url, status, contentType, body.toByteArray())
+    }
+}
