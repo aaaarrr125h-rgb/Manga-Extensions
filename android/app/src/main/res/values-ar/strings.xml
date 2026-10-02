@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shura</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_library">المكتبة</string>
+    <string name="nav_sources">المصادر</string>
+    <string name="nav_history">السجل</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <!-- First run -->
+    <string name="welcome_title">مرحباً بك في Shura</string>
+    <string name="welcome_subtitle">قارئ مانهوا حديث. أضف مستودعاً لتثبيت المصادر وابدأ القراءة.</string>
+    <string name="welcome_start">ابدأ الآن</string>
+
+    <!-- Home -->
+    <string name="home_continue">أكمل القراءة</string>
+    <string name="home_recent">أُضيف حديثاً</string>
+    <string name="home_latest">أحدث الفصول</string>
+    <string name="home_discover">استكشف</string>
+    <string name="home_empty">لا يوجد شيء بعد</string>
+    <string name="home_empty_hint">أضف مانهوا إلى مكتبتك أو تصفّح مصدراً لتظهر هنا.</string>
+    <string name="home_browse">تصفّح المصادر</string>
+    <string name="chapter_progress">الفصل %1$s · %2$d%%</string>
+
+    <!-- Library -->
+    <string name="library_title">المكتبة</string>
+    <string name="library_empty">لا توجد مانهوا في مكتبتك</string>
+    <string name="library_empty_hint">افتح مانهوا واضغط إضافة إلى المكتبة.</string>
+    <string name="library_grid">شبكة</string>
+    <string name="library_list">قائمة</string>
+
+    <!-- Sources -->
+    <string name="sources_title">المصادر</string>
+    <string name="sources_empty">لا توجد مصادر مثبتة</string>
+    <string name="sources_empty_hint">أضف مستودعاً ثم ثبّت إضافة للحصول على مصادر.</string>
+    <string name="sources_add_repository">إضافة مستودع</string>
+    <string name="sources_language">اللغة</string>
+    <string name="sources_installed">مثبّت</string>
+
+    <!-- History -->
+    <string name="history_title">السجل</string>
+    <string name="history_empty">لم تقرأ شيئاً بعد</string>
+    <string name="history_empty_hint">ستظهر هنا الفصول التي تقرؤها.</string>
+    <string name="history_page">صفحة %1$d</string>
+    <string name="history_continue_reading">متابعة</string>
+
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_general">عام</string>
+    <string name="settings_reading">القراءة</string>
+    <string name="settings_downloads">التنزيلات</string>
+    <string name="settings_sources">المصادر</string>
+    <string name="settings_advanced">متقدّم</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_theme">المظهر</string>
+    <string name="settings_theme_dark">داكن سينمائي</string>
+    <string name="settings_reader">إعدادات القارئ</string>
+    <string name="settings_direction">اتجاه القراءة</string>
+    <string name="settings_direction_vertical">عمودي</string>
+    <string name="settings_scroll">طريقة التمرير</string>
+    <string name="settings_scroll_continuous">مستمر</string>
+    <string name="settings_save_position">حفظ موضع القراءة</string>
+    <string name="settings_downloads_folder">مجلد التنزيلات</string>
+    <string name="settings_wifi_only">التنزيل عبر Wi-Fi فقط</string>
+    <string name="settings_manage_downloads">إدارة التنزيلات</string>
+    <string name="settings_repositories">المستودعات</string>
+    <string name="settings_extensions">الإضافات</string>
+    <string name="settings_diagnostics">التشخيص</string>
+    <string name="settings_self_test">الاختبار الذاتي</string>
+    <string name="settings_build_info">معلومات الإصدار</string>
+    <string name="language_system">لغة النظام</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic">العربية</string>
+    <string name="setting_on">مُفعّل</string>
+    <string name="setting_off">مُعطّل</string>
+
+    <!-- Manga details -->
+    <string name="details_read">قراءة</string>
+    <string name="details_add_library">إضافة إلى المكتبة</string>
+    <string name="details_remove_library">في المكتبة</string>
+    <string name="details_chapters">الفصول</string>
+    <string name="details_no_chapters">لا توجد فصول متاحة</string>
+    <string name="details_author">المؤلف</string>
+    <string name="details_artist">الرسام</string>
+    <string name="details_status">الحالة</string>
+    <string name="details_genres">التصنيفات</string>
+    <string name="details_description">الوصف</string>
+
+    <!-- Reader -->
+    <string name="reader_prev_chapter">الفصل السابق</string>
+    <string name="reader_next_chapter">الفصل التالي</string>
+    <string name="reader_download">تنزيل</string>
+    <string name="reader_downloaded">تم التنزيل</string>
+    <string name="reader_retry_download">إعادة التنزيل</string>
+    <string name="reader_page_of">%1$d / %2$d</string>
+    <string name="reader_offline">بدون اتصال</string>
+    <string name="reader_failed_page">فشل تحميل الصفحة %1$d. اضغط لإعادة المحاولة.</string>
+
+    <!-- Downloads -->
+    <string name="downloads_title">التنزيلات</string>
+    <string name="downloads_empty">لا توجد فصول منزّلة</string>
+    <string name="downloads_empty_hint">نزّل فصلاً من القارئ لقراءته بدون اتصال.</string>
+    <string name="downloads_complete">مكتمل</string>
+    <string name="downloads_failed">فشل</string>
+    <string name="downloads_open">فتح</string>
+    <string name="downloads_delete">حذف</string>
+    <string name="downloads_retry">إعادة</string>
+    <string name="downloads_pages">%1$d صفحات · %2$s</string>
+
+    <!-- Browse -->
+    <string name="browse_search_hint">ابحث في هذا المصدر</string>
+    <string name="browse_search">بحث</string>
+    <string name="browse_popular">الأكثر رواجاً</string>
+    <string name="browse_no_results">لا توجد نتائج</string>
+
+    <!-- Repository / extensions -->
+    <string name="repository_title">المستودعات</string>
+    <string name="repository_refresh">تحديث المستودع الافتراضي</string>
+    <string name="repository_default">الافتراضي: %1$s</string>
+    <string name="extensions_title">الإضافات</string>
+    <string name="extensions_refresh">تحديث</string>
+    <string name="extensions_empty">لا توجد إضافات متاحة</string>
+    <string name="extensions_install">تثبيت</string>
+    <string name="extensions_installed">مثبّتة</string>
+    <string name="extensions_updated">محدّثة</string>
+    <string name="extensions_refused">مرفوضة: %1$s</string>
+
+    <!-- Diagnostics -->
+    <string name="diagnostics_title">التشخيص</string>
+    <string name="diagnostics_run">تشغيل الفحوصات</string>
+    <string name="diagnostics_clear">مسح الأخطاء المسجّلة</string>
+
+    <!-- Generic -->
+    <string name="action_back">رجوع</string>
+    <string name="action_reload">إعادة تحميل</string>
+    <string name="action_retry">اضغط لإعادة المحاولة.</string>
+    <string name="loading">جارٍ التحميل…</string>
+    <string name="error_prefix">خطأ: %1$s</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Shura's palette: dark cinematic with a single crimson accent. The crimson is reserved for the
+      few things that ask for action or mark the current state (read button, active tab, progress,
+      selection); everything else is a near-black surface with white and grey text so covers and
+      page art carry the colour.
+    -->
+    <color name="shura_background">#FF0B0B0D</color>
+    <color name="shura_surface">#FF141417</color>
+    <color name="shura_surface_variant">#FF1C1C21</color>
+    <color name="shura_card">#FF17171B</color>
+    <color name="shura_accent">#FFE23744</color>
+    <color name="shura_accent_pressed">#FFB01521</color>
+    <color name="shura_on_accent">#FFFFFFFF</color>
+    <color name="shura_on_background">#FFFFFFFF</color>
+    <color name="shura_text_secondary">#FF9AA0A6</color>
+    <color name="shura_text_tertiary">#FF6B7075</color>
+    <color name="shura_outline">#FF2A2A30</color>
+    <color name="shura_success">#FF5CC98B</color>
+    <color name="shura_error">#FFFF5A5F</color>
+    <color name="shura_scrim">#CC000000</color>
+    <color name="shura_transparent">#00000000</color>
+</resources>

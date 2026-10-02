@@ -2,60 +2,77 @@ package app.shura.manga.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import app.shura.manga.ShuraRepository
 import app.shura.source.host.InstalledSource
+import app.shura.manga.R
 
+/**
+ * The installed extensions' sources, grouped by language.
+ *
+ * A source is only a gateway: this screen lists what can be opened and hands the chosen one to
+ * Browse. Installing or removing extensions stays in Settings, under Sources, because it is a
+ * configuration act rather than a reading one.
+ */
 class SourcesActivity : AsyncScreenActivity() {
 
-    private lateinit var list: LinearLayout
+    private lateinit var content: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val scroll = ScrollView(this)
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
-        }
-        scroll.addView(root)
-        setContentView(scroll)
+        content = buildScreen(titleRes = R.string.sources_title, bottomTab = Tab.SOURCES).content
+        addStatusViews(content)
+    }
 
-        root.addView(TextView(this).apply { text = "Sources"; textSize = 20f })
-        addStatusViews(root)
-        root.addView(Button(this).apply {
-            text = "Reload sources"
-            setOnClickListener { load() }
-        })
-        list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        root.addView(list)
-
+    override fun onResume() {
+        super.onResume()
         load()
     }
 
     private fun load() {
         runLoad(
-            loading = "Loading installed extensions...",
+            loading = str(R.string.loading),
             retry = { load() },
             block = { ShuraRepository.create(this).repository.catalogue() },
-            onLoaded = { sources -> show(sources) },
+            onLoaded = { show(it) },
         )
     }
 
     private fun show(sources: List<InstalledSource>) {
-        list.removeAllViews()
+        content.removeAllViews()
+        addStatusViews(content)
+        status.text = ""
+
+        content.addView(spacer(4))
+        content.addView(
+            secondaryButton(str(R.string.sources_add_repository)) {
+                startActivity(Intent(this, RepositoryActivity::class.java))
+            },
+        )
+
         if (sources.isEmpty()) {
-            status.text = "No installed extensions. Install one from Extensions first."
+            content.addView(
+                emptyState(
+                    str(R.string.sources_empty),
+                    str(R.string.sources_empty_hint),
+                    str(R.string.settings_extensions),
+                ) { startActivity(Intent(this, ExtensionsActivity::class.java)) },
+            )
             return
         }
-        status.text = "${sources.size} source(s)"
-        sources.forEach { source ->
-            list.addView(Button(this).apply {
-                text = "${source.descriptor.name} (${source.descriptor.language})"
-                setOnClickListener { open(source) }
-            })
+
+        sources.groupBy { it.descriptor.language }.toSortedMap().forEach { (language, group) ->
+            content.addView(spacer(16))
+            content.addView(sectionHeader(language))
+            group.sortedBy { it.descriptor.name }.forEach { source ->
+                content.addView(
+                    settingRow(
+                        source.descriptor.name,
+                        "${source.descriptor.language} · ${source.extension.versionName}",
+                    ) { open(source) },
+                )
+                content.addView(divider())
+            }
         }
     }
 

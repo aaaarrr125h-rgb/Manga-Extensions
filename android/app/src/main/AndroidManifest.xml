@@ -35,6 +35,8 @@
         <activity android:name=".ui.MangaDetailsActivity" />
         <activity android:name=".ui.ReaderActivity" />
         <activity android:name=".ui.LibraryActivity" />
+        <activity android:name=".ui.HistoryActivity" />
+        <activity android:name=".ui.SettingsActivity" />
         <activity android:name=".ui.DownloadsActivity" />
         <activity android:name=".ui.DiagnosticsActivity" />
 </application>

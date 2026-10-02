@@ -1,10 +1,11 @@
 package app.shura.manga.ui
 
+import android.content.res.ColorStateList
+import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -54,7 +55,7 @@ internal fun Throwable.describe(): String =
  * retry rather than letting the process die. Every network or extension call in the UI goes
  * through [runLoad] for that reason.
  */
-abstract class AsyncScreenActivity : ComponentActivity() {
+abstract class AsyncScreenActivity : ShuraActivity() {
 
     protected val scope = CoroutineScope(Dispatchers.Default)
     protected lateinit var progress: ProgressBar
@@ -62,10 +63,19 @@ abstract class AsyncScreenActivity : ComponentActivity() {
 
     /** Adds the shared spinner and status line to a vertical root, after the screen's own header. */
     protected fun addStatusViews(root: LinearLayout) {
-        progress = ProgressBar(this).apply { visibility = View.GONE }
+        progress = ProgressBar(this).apply {
+            visibility = View.GONE
+            indeterminateTintList = ColorStateList.valueOf(ShuraColors.accent)
+            layoutParams = LinearLayout.LayoutParams(dp(28), dp(28)).apply {
+                gravity = Gravity.CENTER_HORIZONTAL
+                topMargin = dp(12)
+            }
+        }
         status = TextView(this).apply {
-            textSize = 11f
-            setPadding(0, 4, 0, 8)
+            textSize = 12f
+            setTextColor(ShuraColors.textSecondary)
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(0, dp(8), 0, dp(8))
         }
         root.addView(progress)
         root.addView(status)

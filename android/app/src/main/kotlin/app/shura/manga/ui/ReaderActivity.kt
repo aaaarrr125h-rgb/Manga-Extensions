@@ -1,21 +1,36 @@
 package app.shura.manga.ui
 
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.widget.Button
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
-import android.widget.TextView
 import app.shura.manga.ShuraRepository
+import app.shura.source.api.Chapter
 import app.shura.source.api.ChapterRef
+import app.shura.source.api.MangaRef
 import app.shura.source.api.PageRef
 import app.shura.source.api.SourceCapability
 import app.shura.source.host.DownloadStatus
 import app.shura.source.host.UrlHttpTransport
 import kotlinx.coroutines.launch
 import java.io.File
+import app.shura.manga.R
 
+/**
+ * The reader.
+ *
+ * Pages scroll vertically as one continuous strip, which is the layout that needs no page-turn
+ * gesture and works the same whether the chapter came from the network or from disk. Chrome is
+ * hidden by default and any tap on the strip brings it back, so the screen is the page and nothing
+ * else. The position is written to the library as the visible page changes, not only on exit,
+ * because a reader is the screen most likely to be killed while it is open.
+ */
 class ReaderActivity : AsyncScreenActivity() {
 
     private val transport = UrlHttpTransport()
@@ -30,16 +45,25 @@ class ReaderActivity : AsyncScreenActivity() {
 
     private var pages: List<PageRef> = emptyList()
     private var localFiles: List<File> = emptyList()
+    private var chapterList: List<Chapter> = emptyList()
     private var current = 0
 
-    private lateinit var counter: TextView
-    private lateinit var image: ImageView
-    private lateinit var downloadButton: Button
+    private lateinit var topControls: LinearLayout
+    private lateinit var bottomControls: LinearLayout
+    private lateinit var scroll: ScrollView
+    private lateinit var pagesColumn: LinearLayout
+    private lateinit var counter: android.widget.TextView
+    private lateinit var downloadButton: android.widget.ImageButton
+    private lateinit var prevButton: android.widget.Button
+    private lateinit var nextButton: android.widget.Button
 
-    private sealed class Loaded {
-        data class Online(val pages: List<PageRef>) : Loaded()
-        data class Offline(val files: List<File>) : Loaded()
-    }
+    private data class Contents(
+        val offlineFiles: List<File>,
+        val onlinePages: List<PageRef>,
+        val chapters: List<Chapter>,
+        val startPage: Int,
+        val offline: Boolean,
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,131 +78,255 @@ class ReaderActivity : AsyncScreenActivity() {
             return
         }
 
-        val scroll = ScrollView(this)
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
+            setBackgroundColor(ShuraColors.background)
         }
-        scroll.addView(root)
-        setContentView(scroll)
+        setContentView(root)
 
-        root.addView(TextView(this).apply { text = chapterName; textSize = 20f })
-        addStatusViews(root)
-        counter = TextView(this).apply { text = "-/-"; textSize = 11f; setPadding(0, 4, 0, 4) }
-        root.addView(counter)
-
-        image = ImageView(this).apply {
-            adjustViewBounds = true
-            scaleType = ImageView.ScaleType.FIT_CENTER
+        topControls = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setBackgroundColor(ShuraColors.surface)
+            setPaddingRelative(dp(4), dp(4), dp(4), dp(4))
         }
-        root.addView(image)
-
-        val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-        row.addView(Button(this).apply {
-            text = "Prev"
-            setOnClickListener { showPage(current - 1) }
+        topControls.addView(iconButton(R.drawable.ic_back) { finish() })
+        topControls.addView(
+            text(chapterName, 15f, ShuraColors.onBackground, bold = true, maxLines = 1),
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+        )
+        topControls.addView(iconButton(R.drawable.ic_settings) {
+            startActivity(Intent(this, SettingsActivity::class.java))
         })
-        row.addView(Button(this).apply {
-            text = "Next"
-            setOnClickListener { showPage(current + 1) }
-        })
-        downloadButton = Button(this).apply {
-            text = "Download"
-            setOnClickListener { download() }
+        downloadButton = iconButton(R.drawable.ic_download) { download() }
+        topControls.addView(downloadButton)
+        root.addView(
+            topControls,
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(52)),
+        )
+
+        progress = progressBar()
+        status = text("", 12f, ShuraColors.textSecondary).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+            setPaddingRelative(dp(12), dp(6), dp(12), dp(6))
         }
-        row.addView(downloadButton)
-        root.addView(row)
+        root.addView(progress, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+        })
+        root.addView(status)
+
+        scroll = ScrollView(this).apply {
+            isFillViewport = true
+            isClickable = true
+            setOnClickListener { toggleControls() }
+            setOnScrollChangeListener { _, _, _, _, _ -> updateVisiblePage() }
+            layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f)
+        }
+        pagesColumn = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        scroll.addView(
+            pagesColumn,
+            ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
+        )
+        root.addView(scroll)
+
+        bottomControls = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setBackgroundColor(ShuraColors.surface)
+            setPaddingRelative(dp(8), dp(6), dp(8), dp(6))
+        }
+        prevButton = secondaryButton(str(R.string.reader_prev_chapter)) { moveChapter(-1) }
+        nextButton = secondaryButton(str(R.string.reader_next_chapter)) { moveChapter(1) }
+        counter = text("", 12f, ShuraColors.textSecondary).apply { gravity = Gravity.CENTER }
+        bottomControls.addView(prevButton)
+        bottomControls.addView(
+            counter,
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+        )
+        bottomControls.addView(nextButton)
+        root.addView(
+            bottomControls,
+            LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(56)),
+        )
 
         open()
+    }
+
+    private fun toggleControls() {
+        val show = topControls.visibility != View.VISIBLE
+        topControls.visibility = if (show) View.VISIBLE else View.GONE
+        bottomControls.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     private fun open() {
         val packageName = packageName ?: return
         val chapterRef = chapterRef ?: return
         runLoad(
-            loading = "Loading chapter...",
+            loading = str(R.string.loading),
             retry = { open() },
             block = {
                 val created = ShuraRepository.create(this)
                 repository = created
+                val source = created.findSource(packageName, sourceId)
+                    ?: error("Source is no longer installed")
+                val chapters = runCatching {
+                    if (source.provider.descriptor.supports(SourceCapability.FETCH_CHAPTERS)) {
+                        source.provider.chapterList(MangaRef(mangaRef.orEmpty()))
+                    } else {
+                        emptyList()
+                    }
+                }.getOrDefault(emptyList())
+                val state = runCatching {
+                    created.library.readingState(packageName, sourceId, mangaRef.orEmpty())
+                }.getOrNull()
+                val startPage = if (state?.chapterRef == chapterRef) state.page else 0
+
                 val local = created.downloads.find(packageName, sourceId, mangaRef.orEmpty(), chapterRef)
                 if (local != null && local.status == DownloadStatus.COMPLETE) {
                     val files = created.downloads.pageFiles(local)
-                    if (files.isNotEmpty()) Loaded.Offline(files) else loadOnline(created, packageName, chapterRef)
-                } else {
-                    loadOnline(created, packageName, chapterRef)
-                }
-            },
-            onLoaded = { loaded ->
-                when (loaded) {
-                    is Loaded.Offline -> {
-                        localFiles = loaded.files
-                        pages = emptyList()
-                    }
-
-                    is Loaded.Online -> {
-                        pages = loaded.pages
-                        localFiles = emptyList()
+                    if (files.isNotEmpty()) {
+                        return@runLoad Contents(files, emptyList(), chapters, startPage, offline = true)
                     }
                 }
-                val count = maxOf(localFiles.size, pages.size)
-                counter.text = if (count == 0) "0/0" else "1/$count"
-                updateDownloadButton()
-                if (count == 0) {
-                    status.text = "No pages"
-                } else {
-                    showPage(0)
+                if (!source.provider.descriptor.supports(SourceCapability.FETCH_PAGES)) {
+                    error("Source cannot list pages")
                 }
+                val online = source.provider.pageList(ChapterRef(chapterRef))
+                Contents(emptyList(), online, chapters, startPage, offline = false)
             },
+            onLoaded = { show(it) },
         )
     }
 
-    private suspend fun loadOnline(repository: ShuraRepository, packageName: String, chapterRef: String): Loaded {
-        val source = repository.findSource(packageName, sourceId)
-            ?: error("Source is no longer installed")
-        if (!source.provider.descriptor.supports(SourceCapability.FETCH_PAGES)) {
-            error("Source cannot list pages")
+    private fun show(contents: Contents) {
+        localFiles = contents.offlineFiles
+        pages = contents.onlinePages
+        chapterList = contents.chapters
+        status.text = if (contents.offline) str(R.string.reader_offline) else ""
+        updateDownloadButton()
+
+        pagesColumn.removeAllViews()
+        val count = maxOf(localFiles.size, pages.size)
+        counter.text = str(R.string.reader_page_of, 1, count)
+        if (count == 0) {
+            status.text = "No pages"
+            return
         }
-        return Loaded.Online(source.provider.pageList(ChapterRef(chapterRef)))
+        for (index in 0 until count) {
+            val image = ImageView(this).apply {
+                adjustViewBounds = true
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setBackgroundColor(ShuraColors.surface)
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                )
+            }
+            pagesColumn.addView(image)
+            bindPage(image, index)
+        }
+
+        val start = contents.startPage.coerceIn(0, count - 1)
+        current = start
+        counter.text = str(R.string.reader_page_of, start + 1, count)
+        updateChapterButtons()
+        if (start > 0) {
+            scroll.post { scroll.scrollTo(0, pagesColumn.getChildAt(start)?.top ?: 0) }
+        }
     }
 
-    private fun showPage(index: Int) {
-        val count = maxOf(localFiles.size, pages.size)
-        if (count == 0) return
-        val clamped = index.coerceIn(0, count - 1)
-        current = clamped
-        counter.text = "${clamped + 1}/$count"
-        status.text = "Loading page ${clamped + 1}..."
-        val file = localFiles.getOrNull(clamped)
-        val url = pages.getOrNull(clamped)?.let { it.imageUrl ?: it.url }
-
+    private fun bindPage(image: ImageView, index: Int) {
+        val file = localFiles.getOrNull(index)
+        val url = pages.getOrNull(index)?.let { it.imageUrl ?: it.url }
+        image.setOnClickListener(null)
         scope.launch {
-            val bitmap = runCatching {
-                when {
-                    file != null -> BitmapFactory.decodeFile(file.path)
-                    url != null -> {
-                        val bytes = transport.get(url).body
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                    }
-
-                    else -> null
-                }
-            }.getOrNull()
+            val bitmap = runCatching { decodePage(file, url) }.getOrNull()
             runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
                 if (bitmap != null) {
                     image.setImageBitmap(bitmap)
-                    status.text = file?.name ?: url.orEmpty()
+                    image.isClickable = false
                 } else {
-                    status.text = "Failed to load page ${clamped + 1}\nTap to retry."
-                    status.setOnClickListener { showPage(clamped) }
-                    Diagnostics.recordError("page ${clamped + 1} of $chapterName failed")
+                    image.setImageDrawable(null)
+                    image.setBackgroundColor(ShuraColors.surfaceVariant)
+                    image.isClickable = true
+                    image.setOnClickListener { bindPage(image, index) }
+                    Diagnostics.recordError("page ${index + 1} of $chapterName failed")
+                    status.text = str(R.string.reader_failed_page, index + 1)
                 }
             }
         }
-        saveReadingState(clamped)
+    }
+
+    private fun decodePage(file: File?, url: String?): Bitmap? {
+        val targetWidth = resources.displayMetrics.widthPixels.coerceAtLeast(1)
+        val bytes = when {
+            file != null -> file.readBytes()
+            url != null -> transport.get(url).body
+            else -> return null
+        }
+        if (bytes.isEmpty()) return null
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+        var sample = 1
+        while (bounds.outWidth / (sample * 2) >= targetWidth) sample *= 2
+        val options = BitmapFactory.Options().apply {
+            inSampleSize = sample
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    }
+
+    private fun updateVisiblePage() {
+        if (pagesColumn.childCount == 0) return
+        val scrollTop = scroll.scrollY
+        val scrollBottom = scrollTop + scroll.height
+        var best = current
+        var bestOverlap = -1
+        for (index in 0 until pagesColumn.childCount) {
+            val child = pagesColumn.getChildAt(index)
+            val overlap = minOf(child.bottom, scrollBottom) - maxOf(child.top, scrollTop)
+            if (overlap > bestOverlap) {
+                bestOverlap = overlap
+                best = index
+            }
+        }
+        if (best != current) {
+            current = best
+            counter.text = str(R.string.reader_page_of, current + 1, pagesColumn.childCount)
+            saveReadingState(current)
+        }
+    }
+
+    private fun updateChapterButtons() {
+        val index = chapterList.indexOfFirst { it.ref.value == chapterRef }
+        val hasPrev = index > 0
+        val hasNext = index >= 0 && index < chapterList.size - 1
+        prevButton.isEnabled = hasPrev
+        nextButton.isEnabled = hasNext
+        prevButton.alpha = if (hasPrev) 1f else 0.4f
+        nextButton.alpha = if (hasNext) 1f else 0.4f
+    }
+
+    private fun moveChapter(delta: Int) {
+        val index = chapterList.indexOfFirst { it.ref.value == chapterRef }
+        if (index < 0) return
+        val target = chapterList.getOrNull(index + delta) ?: return
+        val packageName = packageName ?: return
+        startActivity(
+            Intent(this, ReaderActivity::class.java)
+                .putExtra(SourceExtras.PACKAGE, packageName)
+                .putExtra(SourceExtras.SOURCE_ID, sourceId)
+                .putExtra(SourceExtras.MANGA_REF, mangaRef)
+                .putExtra(SourceExtras.MANGA_TITLE, mangaTitle)
+                .putExtra(SourceExtras.CHAPTER_REF, target.ref.value)
+                .putExtra(SourceExtras.CHAPTER_NAME, target.name),
+        )
+        finish()
     }
 
     private fun saveReadingState(page: Int) {
+        if (!Prefs.savePosition(this)) return
         val repository = repository ?: return
         val packageName = packageName ?: return
         val mangaRef = mangaRef ?: return
@@ -214,7 +362,7 @@ class ReaderActivity : AsyncScreenActivity() {
                 runOnUiThread {
                     downloadButton.isEnabled = true
                     Diagnostics.recordError(failure.describe())
-                    status.text = "Cannot start download: ${failure.describe()}"
+                    status.text = str(R.string.error_prefix, failure.describe())
                 }
                 return@launch
             }
@@ -233,8 +381,8 @@ class ReaderActivity : AsyncScreenActivity() {
                 }.onFailure { failure ->
                     Diagnostics.recordError(failure.describe())
                 }
-                val progress = index + 1
-                runOnUiThread { status.text = "Downloading $progress/${pages.size}..." }
+                val progressCount = index + 1
+                runOnUiThread { status.text = "Downloading $progressCount/${pages.size}..." }
             }
 
             val complete = downloaded == pages.size
@@ -254,7 +402,7 @@ class ReaderActivity : AsyncScreenActivity() {
                         )
                     }.getOrNull()
                     localFiles = record?.let { repository.downloads.pageFiles(it) }.orEmpty()
-                    status.text = "Downloaded ${pages.size} page(s), $bytesTotal bytes"
+                    status.text = str(R.string.reader_downloaded)
                 } else {
                     runCatching {
                         repository.downloads.recordFailed(
@@ -269,8 +417,7 @@ class ReaderActivity : AsyncScreenActivity() {
                             error = "downloaded $downloaded/${pages.size}",
                         )
                     }
-                    status.text = "Download failed ($downloaded/${pages.size})\nTap to retry."
-                    status.setOnClickListener { download() }
+                    status.text = "Download failed ($downloaded/${pages.size})"
                 }
                 updateDownloadButton()
             }
@@ -284,10 +431,17 @@ class ReaderActivity : AsyncScreenActivity() {
         val record = runCatching {
             repository.downloads.find(packageName, sourceId, mangaRef.orEmpty(), chapterRef)
         }.getOrNull()
-        downloadButton.text = when (record?.status) {
-            DownloadStatus.COMPLETE -> "Downloaded"
-            DownloadStatus.FAILED -> "Retry download"
-            null -> "Download"
-        }
+        downloadButton.imageTintList = android.content.res.ColorStateList.valueOf(
+            when (record?.status) {
+                DownloadStatus.COMPLETE -> ShuraColors.success
+                DownloadStatus.FAILED -> ShuraColors.error
+                null -> ShuraColors.onBackground
+            },
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveReadingState(current)
     }
 }

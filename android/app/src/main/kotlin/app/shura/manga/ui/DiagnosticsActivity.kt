@@ -1,13 +1,13 @@
 package app.shura.manga.ui
 
+import android.graphics.Typeface
 import android.os.Bundle
-import android.widget.Button
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import app.shura.manga.BuildConfig
 import app.shura.manga.ShuraRepository
 import app.shura.source.host.DownloadStatus
+import app.shura.manga.R
 
 /**
  * The on-device diagnostic screen.
@@ -20,40 +20,33 @@ import app.shura.source.host.DownloadStatus
  */
 class DiagnosticsActivity : AsyncScreenActivity() {
 
+    private lateinit var content: LinearLayout
     private lateinit var output: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val scroll = ScrollView(this)
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
-        }
-        scroll.addView(root)
-        setContentView(scroll)
+        content = buildScreen(titleRes = R.string.diagnostics_title, showBack = true).content
+        addStatusViews(content)
 
-        root.addView(TextView(this).apply { text = "Diagnostics"; textSize = 20f })
-        addStatusViews(root)
-        root.addView(Button(this).apply {
-            text = "Run checks"
-            setOnClickListener { runChecks() }
-        })
-        root.addView(Button(this).apply {
-            text = "Clear recorded errors"
-            setOnClickListener {
+        content.addView(spacer(4))
+        content.addView(primaryButton(str(R.string.diagnostics_run)) { runChecks() })
+        content.addView(spacer(8))
+        content.addView(
+            secondaryButton(str(R.string.diagnostics_clear)) {
                 Diagnostics.clear()
                 runChecks()
-            }
-        })
-        output = TextView(this).apply { textSize = 11f }
-        root.addView(output)
+            },
+        )
+        content.addView(spacer(16))
+        output = text("", 11f, ShuraColors.textSecondary).apply { typeface = Typeface.MONOSPACE }
+        content.addView(output)
 
         runChecks()
     }
 
     private fun runChecks() {
         runLoad(
-            loading = "Running diagnostics...",
+            loading = str(R.string.loading),
             retry = { runChecks() },
             block = { collect() },
             onLoaded = { output.text = it },

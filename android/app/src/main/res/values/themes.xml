@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Shura" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+      A dark, action-bar-less theme. android:Theme.Material is the dark platform theme; the app
+      draws its own top bars and bottom navigation, so no action bar is used. The window background
+      is the same near-black the screens paint, which removes the white flash between activities.
+    -->
+    <style name="Theme.Shura" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/shura_background</item>
+        <item name="android:colorBackground">@color/shura_background</item>
+        <item name="android:statusBarColor">@color/shura_background</item>
+        <item name="android:navigationBarColor">@color/shura_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:colorAccent">@color/shura_accent</item>
+        <item name="android:textColorPrimary">@color/shura_on_background</item>
+        <item name="android:textColorSecondary">@color/shura_text_secondary</item>
+        <item name="android:textColorHint">@color/shura_text_tertiary</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+    <style name="Theme.Shura.Reader" parent="Theme.Shura">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
 </resources>

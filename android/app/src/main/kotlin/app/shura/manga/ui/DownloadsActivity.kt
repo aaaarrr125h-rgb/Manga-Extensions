@@ -2,45 +2,39 @@ package app.shura.manga.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import app.shura.manga.ShuraRepository
 import app.shura.source.host.DownloadStatus
 import app.shura.source.host.DownloadedChapter
 import kotlinx.coroutines.launch
+import app.shura.manga.R
 
+/**
+ * Chapters kept on disk, newest first.
+ *
+ * Not a destination in the bottom bar: a download is something the user chooses from the reader and
+ * revisits from Library or Settings, not a place to browse. Complete chapters open offline; failed
+ * ones keep their error so a retry has context.
+ */
 class DownloadsActivity : AsyncScreenActivity() {
 
     private var repository: ShuraRepository? = null
+    private lateinit var content: LinearLayout
     private lateinit var list: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val scroll = ScrollView(this)
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 48, 48, 48)
-        }
-        scroll.addView(root)
-        setContentView(scroll)
-
-        root.addView(TextView(this).apply { text = "Downloads"; textSize = 20f })
-        addStatusViews(root)
-        root.addView(Button(this).apply {
-            text = "Reload"
-            setOnClickListener { load() }
-        })
+        content = buildScreen(titleRes = R.string.downloads_title, showBack = true).content
+        addStatusViews(content)
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        root.addView(list)
-
+        content.addView(list)
         load()
     }
 
     private fun load() {
         runLoad(
-            loading = "Loading downloads...",
+            loading = str(R.string.loading),
             retry = { load() },
             block = {
                 val created = ShuraRepository.create(this)
@@ -54,39 +48,57 @@ class DownloadsActivity : AsyncScreenActivity() {
     private fun show(records: List<DownloadedChapter>) {
         list.removeAllViews()
         if (records.isEmpty()) {
-            status.text = "No downloaded chapters yet. Open a chapter and tap Download."
+            status.text = ""
+            list.addView(
+                emptyState(str(R.string.downloads_empty), str(R.string.downloads_empty_hint)),
+            )
             return
         }
         val complete = records.count { it.status == DownloadStatus.COMPLETE }
-        status.text = "$complete complete, ${records.size - complete} failed"
+        status.text = "${str(R.string.downloads_complete)} $complete · ${records.size - complete}"
         records.forEach { record ->
-            val column = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-            column.addView(TextView(this).apply {
-                text = buildString {
-                    append(if (record.status == DownloadStatus.COMPLETE) "\u2713 " else "\u2717 ")
-                    append(record.mangaTitle)
-                    append(" \u2014 ")
-                    append(record.chapterName)
-                    append("\n")
-                    append("${record.pageCount} pages, ${record.bytes / 1024} KiB")
-                    record.error?.let { append("\n$it") }
-                }
-                textSize = 12f
-            })
-            val row = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
-            if (record.status == DownloadStatus.COMPLETE) {
-                row.addView(Button(this).apply {
-                    text = "Open"
-                    setOnClickListener { open(record) }
-                })
-            }
-            row.addView(Button(this).apply {
-                text = "Delete"
-                setOnClickListener { remove(record) }
-            })
-            column.addView(row)
-            list.addView(column)
+            list.addView(row(record))
+            list.addView(divider())
         }
+    }
+
+    private fun row(record: DownloadedChapter): LinearLayout {
+        val column = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPaddingRelative(0, dp(12), 0, dp(12))
+        }
+        column.addView(text(record.mangaTitle, 15f, ShuraColors.onBackground, maxLines = 1))
+        column.addView(
+            text(record.chapterName, 13f, ShuraColors.textSecondary, maxLines = 1).apply {
+                setPaddingRelative(0, dp(2), 0, 0)
+            },
+        )
+        val size = "${record.bytes / 1024} KiB"
+        column.addView(
+            text(
+                str(R.string.downloads_pages, record.pageCount, size),
+                11f,
+                if (record.status == DownloadStatus.COMPLETE) ShuraColors.textTertiary else ShuraColors.error,
+            ).apply { setPaddingRelative(0, dp(2), 0, 0) },
+        )
+        val actions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPaddingRelative(0, dp(8), 0, 0)
+        }
+        if (record.status == DownloadStatus.COMPLETE) {
+            actions.addView(
+                secondaryButton(str(R.string.downloads_open)) { open(record) },
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginEnd = dp(8)
+                },
+            )
+        }
+        actions.addView(
+            secondaryButton(str(R.string.downloads_delete)) { remove(record) },
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+        )
+        column.addView(actions)
+        return column
     }
 
     private fun open(record: DownloadedChapter) {
