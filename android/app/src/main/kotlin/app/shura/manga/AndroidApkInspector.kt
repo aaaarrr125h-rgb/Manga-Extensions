@@ -88,10 +88,21 @@ class AndroidApkInspector(private val context: Context) : ApkInspector {
         if (packageInfo == null) {
             throw ExtensionLoadException("${apk.name} is not readable")
         }
-        val metaData = packageInfo.applicationInfo?.metaData
-            ?: throw ExtensionLoadException("${apk.name} has no meta-data in its AndroidManifest")
+        val appInfo = packageInfo.applicationInfo
+            ?: throw ExtensionLoadException("${apk.name} has no application info")
+        val metaDataBundle = appInfo.metaData ?: android.os.Bundle()
+        val metaData = mutableMapOf<String, String>()
+        for (key in metaDataBundle.keySet()) {
+            val value = metaDataBundle.get(key)
+            metaData[key] = value?.toString() ?: ""
+        }
 
-        return ExtensionManifestParser.fromMetaData(metaData)
+        return ExtensionManifestParser.fromMetaData(
+            packageName = packageInfo.packageName ?: "",
+            versionCode = packageInfo.versionCode.toLong(),
+            versionName = packageInfo.versionName ?: "",
+            metaData = metaData,
+        )
     }
 
     /**

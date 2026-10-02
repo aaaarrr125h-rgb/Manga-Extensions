@@ -92,7 +92,10 @@ class ExtensionSignatureVerifierTest {
 
     private val certificate = "the real signing certificate would be bytes".toByteArray()
     private val fingerprint = SigningFingerprint.ofCertificate(certificate)
-    private val apk = File("tachiyomix.apk").also { it.writeBytes(ByteArray(16)) }
+    private val apk = File.createTempFile("tachiyomix", ".apk").also {
+        it.writeBytes(ByteArray(16))
+        it.deleteOnExit()
+    }
 
     private fun verifierFor(der: ByteArray) =
         ExtensionSignatureVerifier(FixedApkInspector(der))
@@ -150,7 +153,10 @@ class ExtensionSignatureVerifierTest {
 
     @Test
     fun `an unsigned apk is refused`() {
-        val unsigned = File("unsigned.apk").also { it.writeBytes(ByteArray(4)) }
+        val unsigned = File.createTempFile("unsigned", ".apk").also {
+            it.writeBytes(ByteArray(4))
+            it.deleteOnExit()
+        }
         val failure = assertFailsWith<ExtensionVerificationException> {
             verifierFor(ByteArray(0)).verify(unsigned, fingerprint, "pkg")
         }
