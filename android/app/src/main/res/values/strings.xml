@@ -35,9 +35,6 @@
     <string name="sources_title">Sources</string>
     <string name="sources_empty">No sources installed</string>
     <string name="sources_empty_hint">Add a repository, then install an extension to get sources.</string>
-    <string name="sources_add_repository">Add a repository</string>
-    <string name="sources_language">Language</string>
-    <string name="sources_installed">Installed</string>
 
     <!-- History -->
     <string name="history_title">History</string>
@@ -51,7 +48,6 @@
     <string name="settings_general">General</string>
     <string name="settings_reading">Reading</string>
     <string name="settings_downloads">Downloads</string>
-    <string name="settings_sources">Sources</string>
     <string name="settings_advanced">Advanced</string>
     <string name="settings_language">Language</string>
     <string name="settings_theme">Theme</string>
@@ -120,8 +116,7 @@
 
     <!-- Repository / extensions -->
     <string name="repository_title">Repositories</string>
-    <string name="repository_refresh">Refresh default repository</string>
-    <string name="repository_default">Default: %1$s</string>
+    <string name="repository_refresh">Refresh</string>
     <string name="repository_add">Add repository</string>
     <string name="repository_add_action">Add</string>
     <string name="repository_name_hint">Repository name</string>

@@ -2,8 +2,15 @@
 
 This is the checklist for validating a Shura APK on a real Android device. Everything that can be
 checked without a device already runs in CI (assemble + dex identity check) and in the host unit
-tests (150 tests, `:shura-source-host:test`). This document covers only what those cannot: the
-Android runtime, the device's network, and real extensions.
+tests (`./gradlew build` on a JDK-17 machine: 170 tests in `:shura-source-host:test` and 45 in
+`:shura-source-api:test`). This document covers only what those cannot: the Android runtime, the
+device's network, and real extensions.
+
+Two prerequisites for running that build yourself: a **JDK 17**, and no Android SDK. `:app` is
+excluded from the build when no SDK is found (see `settings.gradle.kts`), so the Foundation modules
+build and test anywhere; `:app` needs the x86-64 runner `android-build.yml` uses, because `aapt2`
+has no aarch64 Linux binary. On a phone or PRoot host, point `JAVA_HOME` at a 17 JDK explicitly —
+a 21 JDK may refuse to start with `Failed to mark memory page as executable`.
 
 An emulator works for most of it. Use a real device for the storage and update cases, because the
 emulator's account and storage behaviour differ.
@@ -31,16 +38,18 @@ adb install -r shura-debug-<sha>.apk
 ## Checks
 
 Open the app. The launcher is **Shura** Home, with a bottom bar (Home / Library / Sources / History /
-Settings). The build identity is on **Settings → Build info** (`<version> (<git sha>)`) and, in more
-detail, on **Settings → Diagnostics**; confirm the sha matches the commit the APK was built from
-before doing anything else, because a stale install otherwise looks identical.
+Settings). The build identity is on **Settings → Advanced → Build information** (`<version>
+(<git sha>)`) and, in more detail, on **Settings → Advanced → Diagnostics**; confirm the sha matches
+the commit the APK was built from before doing anything else, because a stale install otherwise
+looks identical.
 
-The screens below are named by their path in the new navigation. Installing extensions, managing the
-repository, downloads and diagnostics all live under **Settings**.
+The screens below are named by their path in the new navigation. Everything that is a choice —
+repositories, extensions, downloads, diagnostics, the self test — lives under **Settings**; the
+bottom bar is only for using Shura.
 
 ### 1. Self test (no network)
 
-**Settings → Advanced → Self Test**, then tap the report to re-run it.
+**Settings → Advanced → Self test**, then tap the report to re-run it.
 
 - [ ] The report starts with `BUILD: <sha>`, `VERSION: 0.2.1 (3)`, `APK BUILD TIME: ...`.
 - [ ] The ABI report ends with `N/N passed`.
@@ -50,19 +59,40 @@ repository, downloads and diagnostics all live under **Settings**.
 A `FAIL` here is a packaging problem, not a network one. Record the failing label and the first
 lines of its detail.
 
-### 2. Repository (network)
+### 2. Repositories (network)
 
-**Settings → Sources → Repositories** → **Refresh**.
+**Settings → Repositories → Manage repositories**.
 
-- [ ] Status shows `OK: <n> extension(s), <m> unusable`.
+- [ ] The status line reads `1 of 1 reachable` on a fresh install.
+- [ ] The **Shura Official** card shows `<n> extensions · <m> unusable`, the repository URL and
+      `Last sync: <date>`. It carries the **Default** chip and, because it is built in, says so
+      instead of offering a **Remove** button.
 - [ ] `n` is non-zero (the published index has hundreds of entries).
-- [ ] An `Error:` status instead means the device cannot reach
+- [ ] **Refresh** refetches every configured repository: `Last sync` moves to the current time and
+      the status line is rewritten, so it is obvious the tap did something.
+- [ ] An `Unreachable: <error>` state — or an `Error:` status when every repository failed — means
+      the device cannot reach
       `https://raw.githubusercontent.com/aaaarrr125h-rgb/Manga-Extensions/main/repo/index.json`.
-      Tap the status to retry; a captive-portal or DNS block is the usual cause.
+      Tap the status to retry; a captive-portal or DNS block is the usual cause. One unreachable
+      repository must not stop the others from being listed.
+
+**Adding a second repository** (still on this screen) → **Add repository**.
+
+- [ ] A URL that does not answer with a usable index (`https://example.invalid/index.json`) is
+      refused with an error on the URL field and is **not** added to the list.
+- [ ] A non-https URL is refused the same way: only `https://` is accepted.
+- [ ] Re-adding the built-in repository under another name is refused as a duplicate — the URL is
+      the identity, the name is not.
+- [ ] A second working repository (any other Mihon-format index over https) is added, and the status
+      line becomes `2 of 2 reachable`. When both publish the same package, the list ends with
+      `<n> package(s) also published by another repository`.
+- [ ] **Make default** moves the **Default** chip to the other card, and **Remove** takes that card
+      away while the built-in one stays. Removing whichever repository was the default still leaves
+      exactly one default behind.
 
 ### 3. Install an extension
 
-**Settings → Sources → Extensions**.
+**Settings → Repositories → Extensions**.
 
 - [ ] The list fills with extension names (this fetches the index again).
 - [ ] Tap a row's **Install**; the status line ends as `<name> · installed` (or `· updated`), and the
@@ -73,14 +103,14 @@ lines of its detail.
 - [ ] A failure shows `Error: ...` on the status line; tap **Install** again to retry.
 
 This is the signed-install path: the APK's certificate is checked against the repository
-`signingKey` before it is moved into the store. A `refused:` label means that check stopped the
-install and is the expected result for anything tampered with.
+`signingKey` before it is moved into the store. A `Refused: <reason>` label means that check stopped
+the install and is the expected result for anything tampered with.
 
 After a successful install the extension is loaded through a `DexClassLoader`, not the host's
 `URLClassLoader`, because a downloaded APK's code is `classes.dex`. If **Sources** stays empty after
-a row reads `Installed`, check **Settings → Diagnostics**: an entry ending in `NEEDS REPAIR` means
-the registered file did not load, and the `installed extensions` / `loadable sources` counts are the
-two halves to compare.
+a row reads `Installed`, check **Settings → Advanced → Diagnostics**: an entry ending in `NEEDS REPAIR`
+means the registered file did not load, and the `installed extensions` / `loadable sources` counts are
+the two halves to compare.
 
 ### 4. Sources
 
@@ -125,7 +155,8 @@ Open a chapter and tap the download icon in the reader's top bar.
 
 - [ ] Status advances `Downloading i/n...` and ends `Downloaded`.
 - [ ] The download icon's tint turns green (success) once complete.
-- [ ] **Settings → Downloads**: the chapter is listed as `Complete` with its page count.
+- [ ] **Settings → Downloads → Manage downloads**: the chapter is listed as `Complete` with its page
+      count.
 - [ ] Tap **Open** on that row: the pages render without a network call.
 - [ ] Enable airplane mode, force-stop the app, reopen the chapter from **Downloads**: it still
       renders from disk (the reader shows `Offline`).
@@ -133,8 +164,8 @@ Open a chapter and tap the download icon in the reader's top bar.
 
 ### 9. Robustness
 
-- [ ] Turn on airplane mode and open **Settings → Sources → Repositories**: the screen shows an error
-      with retry rather than closing.
+- [ ] Turn on airplane mode and open **Settings → Repositories → Manage repositories**: the screen
+      shows an error with retry rather than closing.
 - [ ] Repeat in **Extensions**, **Sources**, **Browse**, and the reader. None of them should crash
       the app.
 - [ ] Turn networking back on, tap the error status, and confirm recovery without reinstalling.
@@ -143,9 +174,15 @@ Open a chapter and tap the download icon in the reader's top bar.
 
 **Settings → Advanced → Diagnostics** → **Run checks**.
 
-- [ ] `build`, `version`, and `repository` are the expected values.
-- [ ] `repository reachable: yes, ...`.
-- [ ] `trusted key` equals `9add655a78e96c4ec7a53ef89dccb557cb5d767489fac5e785d671a5a75d4da2`.
+- [ ] `build`, `version` and `built` are the expected values, and `default repository` is the URL of
+      the built-in one.
+- [ ] `repositories: <n>/<m> reachable` matches what the repositories screen showed, and every
+      repository is listed with its URL and its own `reachable:` or `FAILED:` line.
+- [ ] The built-in repository's `key` starts with `9add655a78e9`, the first twelve characters of
+      `9add655a78e96c4ec7a53ef89dccb557cb5d767489fac5e785d671a5a75d4da2`. It is abbreviated to keep
+      the line readable; the full digest is in `repo.json`.
+- [ ] `duplicate packages: 0` with one repository, and non-zero after adding a second one that
+      republishes the same packages.
 - [ ] Installed extensions and loadable sources are listed.
 - [ ] `downloads` and `library` counts match what screens 7 and 8 showed.
 - [ ] `last error` names the most recent failure from step 9, if any.
@@ -153,5 +190,5 @@ Open a chapter and tap the download icon in the reader's top bar.
 ## Reporting a failure
 
 Capture `adb logcat -s ShuraAbiSelfTest` around the failing step, the commit from
-**Settings → Build info**, and which numbered check failed. The diagnostics screen's `last error` and recent-errors
-list usually name the cause without a log.
+**Settings → Advanced → Build information**, and which numbered check failed. The diagnostics screen's
+`last error` and recent-errors list usually name the cause without a log.

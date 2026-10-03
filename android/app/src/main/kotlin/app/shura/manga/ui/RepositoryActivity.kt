@@ -24,9 +24,11 @@ import kotlinx.coroutines.launch
  *
  * The page lists every configured repository with what this device knows about it: its URL, whether
  * it answered on the last refresh, how many extensions it publishes, when it last answered, and
- * whether it is the default. A repository the user added can be removed; the one this build ships
- * with cannot. Adding a repository fetches it first and refuses to store one that does not answer
- * with a usable index, so the list never contains a repository that is known to be broken.
+ * whether it is the default. **Refresh** refetches all of them — the single-repository build did that
+ * once on open, which cannot work for a list whose contents change. A repository the user added can
+ * be removed; the one this build ships with cannot. Adding a repository fetches it first and refuses
+ * to store one that does not answer with a usable index, so the list never contains a repository
+ * that is known to be broken.
  */
 class RepositoryActivity : AsyncScreenActivity() {
 
@@ -41,12 +43,30 @@ class RepositoryActivity : AsyncScreenActivity() {
         addStatusViews(content)
 
         content.addView(spacer(4))
-        content.addView(primaryButton(str(R.string.repository_add)) { addRepository() })
+        content.addView(actions())
         content.addView(spacer(12))
         list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         content.addView(list)
 
         refresh()
+    }
+
+    /** Refetching is a button, not a one-off on open: what a repository publishes changes. */
+    private fun actions(): LinearLayout = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        // Equal halves, so one long translation cannot push the other out of the row. The gap is a
+        // margin rather than [spacer], which sizes itself against the parent's width.
+        addView(
+            secondaryButton(str(R.string.repository_refresh)) { refresh() },
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(8)
+            },
+        )
+        addView(
+            primaryButton(str(R.string.repository_add)) { addRepository() },
+            LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
+        )
     }
 
     private fun refresh() {
@@ -66,14 +86,13 @@ class RepositoryActivity : AsyncScreenActivity() {
         this.catalogue = catalogue
         list.removeAllViews()
 
-        list.addView(
-            text(
-                str(R.string.repository_count, catalogue.reachableCount, catalogue.repositories.size),
-                12f,
-                ShuraColors.textSecondary,
-            ),
+        // The summary lives on the shared status line, so an explicit refresh says what it did
+        // instead of leaving the user looking at an unchanged screen.
+        status.text = str(
+            R.string.repository_count,
+            catalogue.reachableCount,
+            catalogue.repositories.size,
         )
-        list.addView(spacer(8))
 
         catalogue.repositories.forEach { status ->
             list.addView(card(status))

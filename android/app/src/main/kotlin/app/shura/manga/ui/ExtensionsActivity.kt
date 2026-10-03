@@ -19,7 +19,7 @@ import app.shura.source.host.RepositoryCatalogue
 import kotlinx.coroutines.launch
 
 /**
- * The installable extensions, merged from every enabled repository.
+ * The installable extensions, merged from every configured repository.
  *
  * This screen is about extensions, not repositories: a package published by more than one
  * repository is shown once (the manager has already picked the default repository's copy, or the

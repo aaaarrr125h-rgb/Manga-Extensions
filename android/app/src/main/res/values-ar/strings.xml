@@ -35,9 +35,6 @@
     <string name="sources_title">المصادر</string>
     <string name="sources_empty">لا توجد مصادر مثبتة</string>
     <string name="sources_empty_hint">أضف مستودعاً ثم ثبّت إضافة للحصول على مصادر.</string>
-    <string name="sources_add_repository">إضافة مستودع</string>
-    <string name="sources_language">اللغة</string>
-    <string name="sources_installed">مثبّت</string>
 
     <!-- History -->
     <string name="history_title">السجل</string>
@@ -51,7 +48,6 @@
     <string name="settings_general">عام</string>
     <string name="settings_reading">القراءة</string>
     <string name="settings_downloads">التنزيلات</string>
-    <string name="settings_sources">المصادر</string>
     <string name="settings_advanced">متقدّم</string>
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
@@ -120,8 +116,7 @@
 
     <!-- Repository / extensions -->
     <string name="repository_title">المستودعات</string>
-    <string name="repository_refresh">تحديث المستودع الافتراضي</string>
-    <string name="repository_default">الافتراضي: %1$s</string>
+    <string name="repository_refresh">تحديث</string>
     <string name="repository_add">إضافة مستودع</string>
     <string name="repository_add_action">إضافة</string>
     <string name="repository_name_hint">اسم المستودع</string>

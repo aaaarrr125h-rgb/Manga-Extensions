@@ -11,7 +11,7 @@ import app.shura.manga.R
  * The installed extensions' sources, grouped by language.
  *
  * A source is only a gateway: this screen lists what can be opened and hands the chosen one to
- * Browse. Installing or removing extensions stays in Settings, under Sources, because it is a
+ * Browse. Installing or removing extensions stays in Settings, under Repositories, because it is a
  * configuration act rather than a reading one.
  */
 class SourcesActivity : AsyncScreenActivity() {
