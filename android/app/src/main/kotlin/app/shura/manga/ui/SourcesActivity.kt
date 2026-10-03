@@ -33,7 +33,7 @@ class SourcesActivity : AsyncScreenActivity() {
         runLoad(
             loading = str(R.string.loading),
             retry = { load() },
-            block = { ShuraRepository.create(this).repository.catalogue() },
+            block = { ShuraRepository.create(this).repositories.catalogue() },
             onLoaded = { show(it) },
         )
     }
@@ -44,11 +44,6 @@ class SourcesActivity : AsyncScreenActivity() {
         status.text = ""
 
         content.addView(spacer(4))
-        content.addView(
-            secondaryButton(str(R.string.sources_add_repository)) {
-                startActivity(Intent(this, RepositoryActivity::class.java))
-            },
-        )
 
         if (sources.isEmpty()) {
             content.addView(

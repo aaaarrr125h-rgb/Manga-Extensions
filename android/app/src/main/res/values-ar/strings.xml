@@ -56,6 +56,9 @@
     <string name="settings_language">اللغة</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_theme_dark">داكن سينمائي</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_library">المكتبة</string>
+    <string name="settings_manage_repositories">إدارة المستودعات</string>
     <string name="settings_reader">إعدادات القارئ</string>
     <string name="settings_direction">اتجاه القراءة</string>
     <string name="settings_direction_vertical">عمودي</string>
@@ -119,7 +122,29 @@
     <string name="repository_title">المستودعات</string>
     <string name="repository_refresh">تحديث المستودع الافتراضي</string>
     <string name="repository_default">الافتراضي: %1$s</string>
+    <string name="repository_add">إضافة مستودع</string>
+    <string name="repository_add_action">إضافة</string>
+    <string name="repository_name_hint">اسم المستودع</string>
+    <string name="repository_url_hint">رابط المستودع (https://…)</string>
+    <string name="repository_count">%1$d من %2$d متاح</string>
+    <string name="repository_status_ok">%1$d إضافة · %2$d غير قابلة للاستخدام</string>
+    <string name="repository_status_error">غير متاح: %1$s</string>
+    <string name="repository_last_sync">آخر مزامنة: %1$s</string>
+    <string name="repository_never_synced">لم تتم المزامنة بعد</string>
+    <string name="repository_default_badge">افتراضي</string>
+    <string name="repository_make_default">تعيين كافتراضي</string>
+    <string name="repository_remove">حذف</string>
+    <string name="repository_remove_confirm">حذف %1$s؟</string>
+    <string name="repository_builtin_hint">مستودع مدمج، لا يمكن حذفه</string>
+    <string name="repository_duplicates">%1$d حزمة منشورة أيضًا في مستودع آخر</string>
     <string name="extensions_title">الإضافات</string>
+    <string name="extensions_search_hint">بحث في الإضافات</string>
+    <string name="extensions_all_languages">الكل</string>
+    <string name="extensions_hide_english">إخفاء الإنجليزية فقط</string>
+    <string name="extensions_shown">%1$d من %2$d</string>
+    <string name="extensions_no_match">لا توجد إضافات مطابقة للتصفية</string>
+    <string name="language_multiple">لغات متعددة</string>
+    <string name="language_other">أخرى</string>
     <string name="extensions_refresh">تحديث</string>
     <string name="extensions_empty">لا توجد إضافات متاحة</string>
     <string name="extensions_install">تثبيت</string>
@@ -140,6 +165,7 @@
 
     <!-- Generic -->
     <string name="action_back">رجوع</string>
+    <string name="cancel">إلغاء</string>
     <string name="action_reload">إعادة تحميل</string>
     <string name="action_retry">اضغط لإعادة المحاولة.</string>
     <string name="loading">جارٍ التحميل…</string>

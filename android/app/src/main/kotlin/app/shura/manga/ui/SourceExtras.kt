@@ -28,6 +28,6 @@ internal object SourceExtras {
  * lifetime tied to the screen that is actually using it.
  */
 internal suspend fun ShuraRepository.findSource(packageName: String, sourceId: Long): InstalledSource? =
-    repository.catalogue().firstOrNull {
+    repositories.catalogue().firstOrNull {
         it.packageName == packageName && it.descriptor.sourceId == sourceId
     }

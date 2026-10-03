@@ -18,6 +18,8 @@ object Prefs {
     const val LIBRARY_GRID = "library_grid"
     const val SAVE_POSITION = "save_position"
     const val WIFI_ONLY = "wifi_only"
+    const val HIDE_ENGLISH = "extensions_hide_english"
+    const val EXTENSIONS_LANGUAGE = "extensions_language"
 
     const val SYSTEM = "system"
     const val ENGLISH = "en"
@@ -46,6 +48,22 @@ object Prefs {
     fun wifiOnly(context: Context): Boolean = get(context).getBoolean(WIFI_ONLY, false)
     fun setWifiOnly(context: Context, value: Boolean) {
         get(context).edit().putBoolean(WIFI_ONLY, value).apply()
+    }
+
+    /** Hides extensions whose sources are English-only when true. Kept across restarts. */
+    fun hideEnglish(context: Context): Boolean = get(context).getBoolean(HIDE_ENGLISH, false)
+    fun setHideEnglish(context: Context, value: Boolean) {
+        get(context).edit().putBoolean(HIDE_ENGLISH, value).apply()
+    }
+
+    /** The selected source language for the extensions list, or null for "all languages". */
+    fun extensionsLanguage(context: Context): String? =
+        get(context).getString(EXTENSIONS_LANGUAGE, null)?.takeIf { it.isNotBlank() }
+
+    fun setExtensionsLanguage(context: Context, value: String?) {
+        val editor = get(context).edit()
+        if (value.isNullOrBlank()) editor.remove(EXTENSIONS_LANGUAGE) else editor.putString(EXTENSIONS_LANGUAGE, value)
+        editor.apply()
     }
 
     /**

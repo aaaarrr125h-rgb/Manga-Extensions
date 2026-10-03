@@ -32,16 +32,19 @@ class SettingsActivity : AsyncScreenActivity() {
     private fun render() {
         content.removeAllViews()
 
-        content.addView(sectionHeader(str(R.string.settings_general)))
-        content.addView(
-            settingRow(str(R.string.settings_language), languageLabel()) { chooseLanguage() },
-        )
+        content.addView(sectionHeader(str(R.string.settings_appearance)))
         content.addView(
             valueRow(str(R.string.settings_theme), str(R.string.settings_theme_dark)),
         )
 
         content.addView(spacer(12))
-        content.addView(sectionHeader(str(R.string.settings_reading)))
+        content.addView(sectionHeader(str(R.string.settings_language)))
+        content.addView(
+            settingRow(str(R.string.settings_language), languageLabel()) { chooseLanguage() },
+        )
+
+        content.addView(spacer(12))
+        content.addView(sectionHeader(str(R.string.settings_library)))
         content.addView(
             switchRow(
                 str(R.string.settings_save_position),
@@ -70,9 +73,9 @@ class SettingsActivity : AsyncScreenActivity() {
         )
 
         content.addView(spacer(12))
-        content.addView(sectionHeader(str(R.string.settings_sources)))
+        content.addView(sectionHeader(str(R.string.settings_repositories)))
         content.addView(
-            settingRow(str(R.string.settings_repositories)) {
+            settingRow(str(R.string.settings_manage_repositories)) {
                 startActivity(Intent(this, RepositoryActivity::class.java))
             },
         )

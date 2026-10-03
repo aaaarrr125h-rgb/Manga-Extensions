@@ -51,7 +51,7 @@ class HomeActivity : AsyncScreenActivity() {
                 HomeData(
                     library = runCatching { created.library.entries() }.getOrDefault(emptyList()),
                     reading = runCatching { created.library.readingStates() }.getOrDefault(emptyList()),
-                    sources = runCatching { created.repository.catalogue() }.getOrDefault(emptyList()),
+                    sources = runCatching { created.repositories.catalogue() }.getOrDefault(emptyList()),
                 )
             },
             onLoaded = { show(it) },
@@ -107,8 +107,8 @@ class HomeActivity : AsyncScreenActivity() {
                 emptyState(
                     str(R.string.sources_empty),
                     str(R.string.sources_empty_hint),
-                    str(R.string.sources_add_repository),
-                ) { startActivity(Intent(this, RepositoryActivity::class.java)) },
+                    str(R.string.settings_extensions),
+                ) { startActivity(Intent(this, ExtensionsActivity::class.java)) },
             )
         } else {
             data.sources.sortedBy { it.descriptor.name }.forEach { source ->
